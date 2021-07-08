@@ -5,23 +5,20 @@ CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCOPY := arm-none-eabi-objcopy
 
-opt := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi
+CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall
 
-CFLAGS := $(opt) -std=c89 -pedantic -Wall
+.PHONY: all
+all: out/example.gba out/main.gba
 
-$(bin): $(obj)
-	$(CC) -o out/out.elf $(obj) -Tscript.ld -nostartfiles -lm
-	$(OBJCOPY) -O binary out/out.elf $(bin)
-	$(RM) out/out.elf
+out/%.gba: out/%.elf
+	$(OBJCOPY) -O binary out/$*.elf $@
 
--include $(obj:.o=.d)
-
-%.d: %.c
-	@rm -f $@; $(CC) -MM $(CFLAGS) $< > $@
+out/%.elf: out/crt0.o out/%.o
+	$(CC) -o out/$*.elf $^ -Tscript.ld -nostartfiles -lm
 
 out/%.o: %.c
 	mkdir -p out
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $^
 
 out/%.o: %.s
 	mkdir -p out
