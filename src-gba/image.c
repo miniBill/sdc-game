@@ -1,84 +1,119 @@
+#include "out/font.h"
 #include "out/orla.h"
 #include "utils.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
-void print_text(volatile uint16_t *buffer, const char *text, int x, int y) {}
+#define font_string_length 94
 
-float hue(uint16_t color) {
-  uint8_t r = color & 0x1F;
-  uint8_t g = (color >> 5) & 0x1F;
-  uint8_t b = (color >> 10) & 0x1F;
-  uint8_t max = u8max(r, u8max(g, b));
-  uint8_t min = u8min(r, u8min(g, b));
+const char *font_string = " !\"#$%&'()*+,-./"
+                          "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                          "abcdefghijklmnopqrstuvwxyz{|}~";
 
-  float hue;
-  if (r == max)
-    hue = (float)(g - b) / (float)(max - min);
-  else if (g == max)
-    hue = 2.0 + (float)(b - r) / (float)(max - min);
-  else if (b == max)
-    hue = 4.0 + (float)(r - g) / (float)(max - min);
-  else
-    hue = 0;
+uint8_t color_cached[3] = {0};
+int fontl_cached[font_string_length] = {0};
+int fontr_cached[font_string_length] = {0};
 
-  if (hue < 0)
-    hue += 6;
-
-  if (max == min) {
-    return -min;
-  }
-
-  return (int)(hue * 1000) + 0.2126 * r + 0.7152 * g + 0.0722 * b;
+int find_font_index(char curr) {
+  int index = -1;
+  while (++index < strlen(font_string))
+    if (font_string[index] == curr)
+      return index;
+  return -1;
 }
 
-void sort_palette(const uint16_t *palette, uint8_t *sorted, int size) {
-  // Yes, it's a stupid sort. No, I do not care [yet].
-  float *hues = malloc(size * sizeof(float));
-  uint8_t *indexes = malloc(size);
-  for (int i = 0; i < size; i++) {
-    hues[i] = hue(palette[i]);
-    indexes[i] = i;
-  }
-
-  for (int i = 1; i < size; i++) {
-    float h = hues[i];
-    int ts = indexes[i];
-    int j = i - 1;
-    for (; j >= 0 && hues[j] > h; j--) {
-      hues[j + 1] = hues[j];
-      indexes[j + 1] = indexes[j];
+uint8_t find_fontl_fontr(int index, int *fontl, int *fontr) {
+  int font_index = 0;
+  while (*fontr < font_indexed_width) {
+    (*fontr)++;
+    if (font_indexed[*fontr] == 1) {
+      font_index++;
+      if (font_index == index)
+        *fontl = *fontr;
+      if (font_index == index + 1)
+        return 1;
     }
-    hues[j + 1] = h;
-    indexes[j + 1] = ts;
   }
-
-  for (int i = 0; i < size; i++)
-    sorted[i] = indexes[i];
-
-  free(hues);
-  free(indexes);
+  return 0;
 }
 
-void draw_palette(volatile uint16_t *buffer, const uint16_t *palette,
-                  int palette_size) {
-  uint8_t *sorted_palette = malloc(palette_size);
-  sort_palette(palette, sorted_palette, palette_size);
+uint8_t find_color(uint16_t col) {
+  uint8_t cr = col & 0x1f;
+  uint8_t cg = (col >> 5) & 0x1f;
+  uint8_t cb = (col >> 10) & 0x1f;
+  int best = 0;
+  int best_dist = cr + cg + cb;
+  for (int i = 1; i < orla_palette_size; i++) {
+    uint8_t r = orla_palette[i] & 0x1f;
+    uint8_t g = (orla_palette[i] >> 5) & 0x1f;
+    uint8_t b = (orla_palette[i] >> 10) & 0x1f;
+    int dist = iabs(r - cr) + iabs(g - cg) + iabs(b - cb);
+    if (dist < best_dist)
+      best = i;
+  }
+  return best;
+}
 
-  for (int x = 0; x < imin(WIDTH, palette_size); x++)
-    for (int y = 0; y < HEIGHT; y++)
-      put_pixel(buffer, y, x, sorted_palette[x]);
+int print_char(volatile uint16_t *buffer, char curr, int x, int y) {
+  int index = find_font_index(curr);
+  if (index < 0)
+    return 0;
 
-  free(sorted_palette);
+  int fontl = fontl_cached[index];
+  int fontr = fontr_cached[index];
+
+  for (int fy = 1; fy < font_indexed_height; fy++) {
+    for (int fx = fontl; fx < fontr; fx++) {
+      uint8_t pixel = font_indexed[fy * font_indexed_width + fx];
+      uint8_t indexed_color = color_cached[pixel];
+      put_pixel(buffer, y + fy - 1, x + fx - fontl, indexed_color);
+    }
+  }
+
+  return fontr - fontl;
+}
+
+int measure_text(const char *text) {
+  int result = 0;
+  for (int i = 0; i < strlen(text); i++) {
+    char curr = text[i];
+    int index = find_font_index(curr);
+    if (index < 0)
+      continue;
+
+    int fontl = fontl_cached[index];
+    int fontr = fontr_cached[index];
+    result += fontr - fontl;
+  }
+  return result;
+}
+
+void print_text(volatile uint16_t *buffer, const char *text, int x, int y) {
+  for (int i = 0; i < strlen(text); i++) {
+    char curr = text[i];
+    int curr_width = print_char(buffer, curr, x, y);
+    x += curr_width;
+  }
+}
+
+void print_text_centered(volatile uint16_t *buffer, const char *text, int x,
+                         int y) {
+  int w = measure_text(text);
+  print_text(buffer, text, x - w / 2, y);
+}
+
+volatile uint8_t *trash = color_cached;
+
+void delay(int milliseconds) {
+  for (int i = 0; i < 500 * milliseconds; i++)
+    trash[0] = 0;
 }
 
 /* the main function */
 int main() {
   /* we set the mode to mode 4 with bg2 on */
   *display_control = MODE4 | BG2;
-
-  /* add black to the palette */
-  uint8_t black = 0;
 
   add_color(0, 0, 0);
   for (int i = 1; i < orla_palette_size; i++)
@@ -87,32 +122,45 @@ int main() {
   /* the buffer we start with */
   volatile uint16_t *buffer = back_buffer;
 
-  clear_screen(front_buffer, black);
-  clear_screen(back_buffer, black);
+  draw_fullscreen_image(buffer, orla_indexed);
 
-  // draw_fullscreen_image(buffer, orla_indexed);
+  wait_vblank();
+  buffer = flip_buffers(buffer);
 
-  // /* wait for vblank before switching buffers */
-  // wait_vblank();
-
-  // /* swap the buffers */
-  // buffer = flip_buffers(buffer);
-
-  // draw_fullscreen_image(buffer, orla_indexed);
-
-  // print_text(buffer, "Hello! This is a test.", 1, 1);
-
-  // /* wait for vblank before switching buffers */
-  // wait_vblank();
-
-  // /* swap the buffers */
-  // buffer = flip_buffers(buffer);
+  for (int i = 0; i < font_palette_size; i++)
+    color_cached[i] = find_color(font_palette[i]);
+  for (int i = 0; i < font_string_length; i++)
+    find_fontl_fontr(i, &fontl_cached[i], &fontr_cached[i]);
 
   /* loop forever */
-  while (1) {
-    clear_screen(buffer, black);
-    draw_palette(buffer, orla_palette, orla_palette_size);
+  for (int i = 0;; i++) {
+    draw_fullscreen_image(buffer, orla_indexed);
+
+    char *sentence;
+    switch (i) {
+    case 0:
+      sentence = "Hello, this is a test!";
+      break;
+    case 1:
+      sentence = "I'm testing font rendering";
+      break;
+    case 2:
+      sentence = "It's apparently working";
+      break;
+    case 3:
+      sentence = "NOICE!";
+      break;
+    default:
+      sentence = "";
+      break;
+    }
+
+    print_text_centered(buffer, sentence, WIDTH / 2,
+                        HEIGHT - 20 - font_indexed_height);
+
     wait_vblank();
     buffer = flip_buffers(buffer);
+
+    delay(2000);
   }
 }

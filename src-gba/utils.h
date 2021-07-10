@@ -9,6 +9,8 @@ int imax(int l, int r);
 uint8_t u8min(uint8_t l, uint8_t r);
 uint8_t u8max(uint8_t l, uint8_t r);
 
+int iabs(int i);
+
 // Graphics
 
 /* pointers to the front and back buffers - the front buffer is the start
@@ -43,7 +45,4 @@ volatile uint16_t *flip_buffers(volatile uint16_t *buffer);
 
 void clear_screen(volatile uint16_t *buffer, uint8_t color);
 
-void draw_fullscreen_image(volatile uint16_t *buffer, const uint16_t *image);
-
-// 🤷
-#define MULTIBOOT int __gba_multiboot;
+void draw_fullscreen_image(volatile uint16_t *buffer, const uint8_t *image);

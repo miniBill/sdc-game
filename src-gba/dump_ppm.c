@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
       scanf("%d %d %d", &r, &g, &b);
 
       uint16_t color = (b >> 3) << 10 | (g >> 3) << 5 | (r >> 3);
-      if (palette_inverse[color] == 0) {
+      if (color > 0 && palette_inverse[color] == 0) {
         if (next_free_palette > 255) {
           fprintf(stderr, "Ran out of palette at %f%%\n",
                   (100.0 * (y * width + x)) / (1.0 * width * height));
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
 
   fprintf(output_h, "extern const int %s_indexed_width;\n", image_name);
   fprintf(output_h, "extern const int %s_indexed_height;\n", image_name);
-  fprintf(output_h, "extern const uint16_t %s_indexed[%d];\n", image_name,
-          width * height / 2);
+  fprintf(output_h, "extern const uint8_t %s_indexed[%d];\n", image_name,
+          width * height);
 
   fclose(output_h);
 
@@ -108,13 +108,12 @@ int main(int argc, char *argv[]) {
   fprintf(output_c, "const int %s_indexed_height = %d;\n", image_name, height);
   fprintf(output_c, "\n");
   fprintf(output_c,
-          "const uint16_t %s_indexed[%d] __attribute__((aligned(4))) = {",
-          image_name, width * height / 2);
-  for (int i = 0; i < width * height; i += 2) {
+          "const uint8_t %s_indexed[%d] __attribute__((aligned(4))) = {",
+          image_name, width * height);
+  for (int i = 0; i < width * height; i++) {
     if (i % 24 == 0)
       fprintf(output_c, "\n  ");
-    uint32_t color_couple = (indexed_image[i + 1] << 8) | indexed_image[i];
-    fprintf(output_c, (i % 24) < 23 ? "0x%04x, " : "0x%04x,", color_couple);
+    fprintf(output_c, (i % 24) < 23 ? "0x%02x, " : "0x%02x,", indexed_image[i]);
   }
   fprintf(output_c, "};\n");
 

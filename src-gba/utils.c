@@ -25,6 +25,8 @@ int imax(int l, int r) { return l > r ? l : r; }
 uint8_t u8min(uint8_t l, uint8_t r) { return l < r ? l : r; }
 uint8_t u8max(uint8_t l, uint8_t r) { return l > r ? l : r; }
 
+int iabs(int i) { return i < 0 ? -i : i; }
+
 /* put a pixel on the screen in mode 4 */
 void put_pixel(volatile uint16_t *buffer, int row, int col, uint8_t color) {
   /* find the offset which is the regular offset divided by two */
@@ -94,8 +96,7 @@ void clear_screen(volatile uint16_t *buffer, uint8_t color) {
   }
 }
 
-void draw_fullscreen_image(volatile uint16_t *buffer, const uint16_t *image) {
-  for (int i = 0; i < HEIGHT * WIDTH / 2; i++) {
-    buffer[i] = image[i];
-  }
+void draw_fullscreen_image(volatile uint16_t *buffer, const uint8_t *image) {
+  for (int i = 0; i < HEIGHT * WIDTH; i += 2)
+    buffer[i / 2] = (image[i + 1] << 8) | image[i];
 }

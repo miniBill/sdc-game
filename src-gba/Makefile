@@ -8,11 +8,12 @@ CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall
 all: out/example.gba out/main.gba out/image.gba
 
 out/image.o: out/orla.h
-out/image.elf: out/crt0.o out/utils.o out/sys.o out/image.o out/orla.o
+out/image.elf: out/crt0.o out/utils.o out/sys.o out/image.o out/orla.o out/font.o
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
 
+.PRECIOUS: out/%.elf
 out/%.elf: out/crt0.o out/utils.o out/sys.o out/%.o
 	$(CC) -o out/$*.elf $^ -Tscript.ld -nostartfiles -lm
 
