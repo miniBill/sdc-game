@@ -6,6 +6,9 @@
 int imin(int l, int r);
 int imax(int l, int r);
 
+uint8_t u8min(uint8_t l, uint8_t r);
+uint8_t u8max(uint8_t l, uint8_t r);
+
 // Graphics
 
 /* pointers to the front and back buffers - the front buffer is the start

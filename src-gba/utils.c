@@ -22,6 +22,9 @@ void wait_vblank() {
 int imin(int l, int r) { return l < r ? l : r; }
 int imax(int l, int r) { return l > r ? l : r; }
 
+uint8_t u8min(uint8_t l, uint8_t r) { return l < r ? l : r; }
+uint8_t u8max(uint8_t l, uint8_t r) { return l > r ? l : r; }
+
 /* put a pixel on the screen in mode 4 */
 void put_pixel(volatile uint16_t *buffer, int row, int col, uint8_t color) {
   /* find the offset which is the regular offset divided by two */
