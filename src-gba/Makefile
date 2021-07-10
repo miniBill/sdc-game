@@ -1,24 +1,35 @@
-obj := out/crt0.o out/example.o
-bin := out/example.gba
-
 CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCOPY := arm-none-eabi-objcopy
 
-CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall
+CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall -Werror
 
 .PHONY: all
-all: out/example.gba out/main.gba
+all: out/example.gba out/main.gba out/image.gba
+
+out/image.elf: out/crt0.o out/utils.o out/sys.o out/image.o # out/orla.o
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
 
-out/%.elf: out/crt0.o out/%.o
+out/%.elf: out/crt0.o out/utils.o out/sys.o out/%.o
 	$(CC) -o out/$*.elf $^ -Tscript.ld -nostartfiles -lm
 
 out/%.o: %.c
 	mkdir -p out
 	$(CC) -c $(CFLAGS) -o $@ $^
+
+.PRECIOUS: out/%.ppm
+out/%.ppm: art/%.png
+	convert $^ -compress none $@
+
+.PRECIOUS: out/%.c
+out/%.c: out/%.ppm out/dump_ppm
+	./out/dump_ppm $* < $< > $@
+
+out/dump_ppm: dump_ppm.c
+	mkdir -p out
+	gcc -o $@ $^
 
 out/%.o: %.s
 	mkdir -p out

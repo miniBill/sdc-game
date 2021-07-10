@@ -4,6 +4,8 @@
  * it simply creates a colored screen and waits
  */
 
+#include <stdlib.h>
+
 /* the width and height of the screen */
 #define WIDTH 240
 #define HEIGHT 160
@@ -34,6 +36,13 @@ void put_pixel(int row, int col, unsigned short color) {
 }
 
 int main() {
+  char *test = malloc(100);
+  test[10] = 12;
+  if (test[10] != 12)
+    while (1) {
+    }
+  free(test);
+
   /* we set the mode to mode 3 with background 2 on */
   *display_control = MODE3 | BG2;
 
