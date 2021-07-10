@@ -4,6 +4,7 @@
  * it simply creates a colored screen and waits
  */
 
+#include "utils.h"
 #include <stdlib.h>
 
 /* the width and height of the screen */
@@ -18,9 +19,6 @@
  * pointer points to 16-bit colors of which there are 240x160 */
 volatile unsigned short *screen = (volatile unsigned short *)0x6000000;
 
-/* the display control pointer points to the gba graphics register */
-volatile unsigned long *display_control = (volatile unsigned long *)0x4000000;
-
 /* compute a 16-bit integer color based on the three components */
 unsigned short make_color(unsigned char r, unsigned char g, unsigned char b) {
   unsigned short color = (b & 0x1f) << 10;
@@ -30,7 +28,7 @@ unsigned short make_color(unsigned char r, unsigned char g, unsigned char b) {
 }
 
 /* place a pixel of a given color on the screen */
-void put_pixel(int row, int col, unsigned short color) {
+void put_pixel_direct(int row, int col, unsigned short color) {
   /* set the screen location to this color */
   screen[row * WIDTH + col] = color;
 }
@@ -54,7 +52,7 @@ int main() {
 
     /* loop through each column of the screen */
     for (int col = 0; col < WIDTH; col++) {
-      put_pixel(row, col, color);
+      put_pixel_direct(row, col, color);
     }
   }
 
