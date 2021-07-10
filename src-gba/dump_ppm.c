@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 uint16_t palette[256] = {0};
 
@@ -43,7 +44,7 @@ int main(int argc, char *argv[]) {
       uint32_t r, g, b;
       scanf("%d %d %d", &r, &g, &b);
 
-      uint16_t color = (r >> 3) << 10 | (g >> 3) << 5 | (b >> 3);
+      uint16_t color = (b >> 3) << 10 | (g >> 3) << 5 | (r >> 3);
       if (palette_inverse[color] == 0) {
         if (next_free_palette > 255) {
           fprintf(stderr, "Ran out of palette at %f%%\n",
@@ -56,26 +57,66 @@ int main(int argc, char *argv[]) {
       indexed_image[i] = palette_inverse[color];
     }
 
-  printf("#include <stdint.h>\n");
-  printf("\n");
-  printf("uint16_t %s_palette[] = {\n", image_name);
-  for (int y = 0; y < 8; y++) {
-    printf("  ");
-    for (int x = 0; x < 8; x++)
-      printf(x < 7 ? "0x%04x, " : "0x%04x,", palette[y * 8 + x]);
-    printf("\n");
-  }
-  printf("};\n");
+  // Print header
+  char *output_h_name = calloc(
+      strlen("out/") + strlen(image_name) + strlen(".h") + 1, sizeof(char));
+  sprintf(output_h_name, "out/%s.h", image_name);
 
-  printf("\n");
+  FILE *output_h = fopen(output_h_name, "w");
 
-  printf("uint8_t %s_indexed[] = {\n", image_name);
-  for (int y = 0; y < height; y++) {
-    printf("  ");
-    for (int x = 0; x < width; x++)
-      printf(x < width - 1 ? "0x%02x, " : "0x%02x,",
-             indexed_image[y * width + x]);
-    printf("\n");
+  fprintf(output_h, "#include <stdint.h>\n");
+  fprintf(output_h, "\n");
+  fprintf(output_h, "extern const int %s_palette_size;\n", image_name);
+  fprintf(output_h, "extern const uint16_t %s_palette[%d];\n", image_name,
+          next_free_palette);
+
+  fprintf(output_h, "\n");
+
+  fprintf(output_h, "extern const int %s_indexed_width;\n", image_name);
+  fprintf(output_h, "extern const int %s_indexed_height;\n", image_name);
+  fprintf(output_h, "extern const uint16_t %s_indexed[%d];\n", image_name,
+          width * height / 2);
+
+  fclose(output_h);
+
+  // Print code
+  char *output_c_name = calloc(
+      strlen("out/") + strlen(image_name) + strlen(".c") + 1, sizeof(char));
+  sprintf(output_c_name, "out/%s.c", image_name);
+
+  FILE *output_c = fopen(output_c_name, "w");
+
+  fprintf(output_c, "#include \"%s.h\"\n", image_name);
+  fprintf(output_c, "#include <stdint.h>\n");
+  fprintf(output_c, "\n");
+  fprintf(output_c, "const int %s_palette_size = %d;\n", image_name,
+          next_free_palette);
+  fprintf(output_c, "\n");
+  fprintf(output_c,
+          "const uint16_t %s_palette[%d] __attribute__((aligned(4))) = {",
+          image_name, next_free_palette);
+  for (int i = 0; i < next_free_palette; i++) {
+    if (i % 8 == 0)
+      fprintf(output_c, "\n  ");
+    fprintf(output_c, (i % 8) < 7 ? "0x%04x, " : "0x%04x,", palette[i]);
   }
-  printf("};\n");
+  fprintf(output_c, "\n};\n");
+
+  fprintf(output_c, "\n");
+
+  fprintf(output_c, "const int %s_indexed_width = %d;\n", image_name, width);
+  fprintf(output_c, "const int %s_indexed_height = %d;\n", image_name, height);
+  fprintf(output_c, "\n");
+  fprintf(output_c,
+          "const uint16_t %s_indexed[%d] __attribute__((aligned(4))) = {",
+          image_name, width * height / 2);
+  for (int i = 0; i < width * height; i += 2) {
+    if (i % 24 == 0)
+      fprintf(output_c, "\n  ");
+    uint32_t color_couple = (indexed_image[i + 1] << 8) | indexed_image[i];
+    fprintf(output_c, (i % 24) < 23 ? "0x%04x, " : "0x%04x,", color_couple);
+  }
+  fprintf(output_c, "};\n");
+
+  fclose(output_c);
 }

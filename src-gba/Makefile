@@ -7,7 +7,8 @@ CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall
 .PHONY: all
 all: out/example.gba out/main.gba out/image.gba
 
-out/image.elf: out/crt0.o out/utils.o out/sys.o out/image.o # out/orla.o
+out/image.o: out/orla.h
+out/image.elf: out/crt0.o out/utils.o out/sys.o out/image.o out/orla.o
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
@@ -17,14 +18,14 @@ out/%.elf: out/crt0.o out/utils.o out/sys.o out/%.o
 
 out/%.o: %.c
 	mkdir -p out
-	$(CC) -c $(CFLAGS) -o $@ $^
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 out/%.ppm: art/%.png
 	convert $^ -compress none $@
 
-.PRECIOUS: out/%.c
-out/%.c: out/%.ppm out/dump_ppm
-	./out/dump_ppm $* < $< > $@
+.PRECIOUS: out/%.c out/%.h
+out/%.c out/%.h: out/%.ppm out/dump_ppm
+	./out/dump_ppm $* < $<
 
 out/dump_ppm: dump_ppm.c
 	mkdir -p out

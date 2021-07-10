@@ -91,8 +91,8 @@ void clear_screen(volatile uint16_t *buffer, uint8_t color) {
   }
 }
 
-void draw_fullscreen_image(volatile uint16_t *buffer, uint8_t *image) {
+void draw_fullscreen_image(volatile uint16_t *buffer, const uint16_t *image) {
   for (int i = 0; i < HEIGHT * WIDTH / 2; i++) {
-    buffer[i] = image[i * 2] << 4 | image[i * 2 + 1];
+    buffer[i] = image[i];
   }
 }
