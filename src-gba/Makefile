@@ -19,7 +19,6 @@ out/%.o: %.c
 	mkdir -p out
 	$(CC) -c $(CFLAGS) -o $@ $^
 
-.PRECIOUS: out/%.ppm
 out/%.ppm: art/%.png
 	convert $^ -compress none $@
 
