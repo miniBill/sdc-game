@@ -1,5 +1,11 @@
 #include "out/font.h"
-#include "out/orla.h"
+#include "out/orla1.h"
+#include "out/orla2.h"
+#include "out/orla3.h"
+#include "out/orla4.h"
+#include "out/orla5.h"
+#include "out/orla6.h"
+#include "out/orla7.h"
 #include "utils.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -11,7 +17,7 @@ const char *font_string = " !\"#$%&'()*+,-./"
                           "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
                           "abcdefghijklmnopqrstuvwxyz{|}~";
 
-uint8_t color_cached[3] = {0};
+uint8_t font_color_index[3] = {0};
 int fontl_cached[font_string_length] = {0};
 int fontr_cached[font_string_length] = {0};
 
@@ -38,16 +44,16 @@ uint8_t find_fontl_fontr(int index, int *fontl, int *fontr) {
   return 0;
 }
 
-uint8_t find_color(uint16_t col) {
+uint8_t find_color(const uint16_t *palette, int palette_size, uint16_t col) {
   uint8_t cr = col & 0x1f;
   uint8_t cg = (col >> 5) & 0x1f;
   uint8_t cb = (col >> 10) & 0x1f;
   int best = 0;
   int best_dist = cr + cg + cb;
-  for (int i = 1; i < orla_palette_size; i++) {
-    uint8_t r = orla_palette[i] & 0x1f;
-    uint8_t g = (orla_palette[i] >> 5) & 0x1f;
-    uint8_t b = (orla_palette[i] >> 10) & 0x1f;
+  for (int i = 1; i < palette_size; i++) {
+    uint8_t r = palette[i] & 0x1f;
+    uint8_t g = (palette[i] >> 5) & 0x1f;
+    uint8_t b = (palette[i] >> 10) & 0x1f;
     int dist = iabs(r - cr) + iabs(g - cg) + iabs(b - cb);
     if (dist < best_dist)
       best = i;
@@ -66,7 +72,7 @@ int print_char(volatile uint16_t *buffer, char curr, int x, int y) {
   for (int fy = 1; fy < font_indexed_height; fy++) {
     for (int fx = fontl; fx < fontr; fx++) {
       uint8_t pixel = font_indexed[fy * font_indexed_width + fx];
-      uint8_t indexed_color = color_cached[pixel];
+      uint8_t indexed_color = font_color_index[pixel];
       put_pixel(buffer, y + fy - 1, x + fx - fontl, indexed_color);
     }
   }
@@ -103,7 +109,7 @@ void print_text_centered(volatile uint16_t *buffer, const char *text, int x,
   print_text(buffer, text, x - w / 2, y);
 }
 
-volatile uint8_t *trash = color_cached;
+volatile uint8_t *trash = font_color_index;
 
 void delay(int milliseconds) {
   for (int i = 0; i < 500 * milliseconds; i++)
@@ -115,48 +121,89 @@ int main() {
   /* we set the mode to mode 4 with bg2 on */
   *display_control = MODE4 | BG2;
 
-  add_color(0, 0, 0);
-  for (int i = 1; i < orla_palette_size; i++)
-    add_color_16(orla_palette[i]);
-
   /* the buffer we start with */
   volatile uint16_t *buffer = back_buffer;
-
-  draw_fullscreen_image(buffer, orla_indexed);
 
   wait_vblank();
   buffer = flip_buffers(buffer);
 
-  for (int i = 0; i < font_palette_size; i++)
-    color_cached[i] = find_color(font_palette[i]);
   for (int i = 0; i < font_string_length; i++)
     find_fontl_fontr(i, &fontl_cached[i], &fontr_cached[i]);
 
   /* loop forever */
   for (int i = 0;; i++) {
-    draw_fullscreen_image(buffer, orla_indexed);
-
     char *sentence;
-    switch (i) {
+    const uint16_t *palette;
+    const uint8_t *image;
+    int palette_size;
+    switch (i % 7) {
     case 0:
       sentence = "Hello, this is a test!";
+      palette = orla1_palette;
+      image = orla1_indexed;
+      palette_size = orla1_palette_size;
       break;
     case 1:
       sentence = "I'm testing font rendering";
+      palette = orla2_palette;
+      image = orla2_indexed;
+      palette_size = orla2_palette_size;
       break;
     case 2:
       sentence = "It's apparently working";
+      palette = orla3_palette;
+      image = orla3_indexed;
+      palette_size = orla3_palette_size;
       break;
     case 3:
       sentence = "NOICE!";
+      palette = orla4_palette;
+      image = orla4_indexed;
+      palette_size = orla4_palette_size;
+      break;
+    case 4:
+      sentence = "";
+      palette = orla5_palette;
+      image = orla5_indexed;
+      palette_size = orla5_palette_size;
+      break;
+    case 5:
+      sentence = "";
+      palette = orla6_palette;
+      image = orla6_indexed;
+      palette_size = orla6_palette_size;
+      break;
+    case 6:
+      sentence = "";
+      palette = orla7_palette;
+      image = orla7_indexed;
+      palette_size = orla7_palette_size;
       break;
     default:
       sentence = "";
+      palette = orla7_palette;
+      image = orla7_indexed;
+      palette_size = orla7_palette_size;
       break;
     }
 
-    print_text_centered(buffer, sentence, WIDTH / 2,
-                        HEIGHT - 20 - font_indexed_height);
+    for (int i = 0; i < font_palette_size; i++)
+      font_color_index[i] = find_color(palette, palette_size, font_palette[i]);
+    if (font_color_index[1] == font_color_index[2])
+      font_color_index[2]++;
+
+    wait_vblank();
+    buffer = flip_buffers(buffer);
+
+    reset_palette();
+    add_color(0, 0, 0);
+    for (int i = 1; i < palette_size; i++)
+      add_color_16(palette[i]);
+    draw_fullscreen_image(buffer, image);
+
+    if (i < 7)
+      print_text_centered(buffer, sentence, WIDTH / 2,
+                          HEIGHT - 20 - font_indexed_height);
 
     wait_vblank();
     buffer = flip_buffers(buffer);

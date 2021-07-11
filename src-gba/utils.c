@@ -60,14 +60,15 @@ uint8_t add_color(uint8_t r, uint8_t g, uint8_t b) {
   return add_color_16(color);
 }
 
+int next_palette_index = 0;
+
+void reset_palette() { next_palette_index = 0; }
+
 /*
  * function which adds a color to the palette and returns the
  * index to it
  */
 uint8_t add_color_16(uint16_t color) {
-  /* keep track of the next palette index */
-  static int next_palette_index = 0;
-
   /* add the color to the palette */
   palette[next_palette_index] = color;
 

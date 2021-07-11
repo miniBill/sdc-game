@@ -35,8 +35,8 @@ volatile uint16_t *display_control;
 
 void wait_vblank();
 
+void reset_palette();
 uint8_t add_color(uint8_t r, uint8_t g, uint8_t b);
-
 uint8_t add_color_16(uint16_t color);
 
 void put_pixel(volatile uint16_t *buffer, int row, int col, uint8_t color);
