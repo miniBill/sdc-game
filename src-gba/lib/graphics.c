@@ -1,4 +1,5 @@
-#include "utils.h"
+#include "graphics.h"
+#include <stdbool.h>
 
 /* the scanline counter is a memory cell which is updated to indicate how
  * much of the screen has been drawn */
@@ -18,14 +19,6 @@ void wait_vblank() {
   while (*scanline_counter < 160) {
   }
 }
-
-int imin(int l, int r) { return l < r ? l : r; }
-int imax(int l, int r) { return l > r ? l : r; }
-
-uint8_t u8min(uint8_t l, uint8_t r) { return l < r ? l : r; }
-uint8_t u8max(uint8_t l, uint8_t r) { return l > r ? l : r; }
-
-int iabs(int i) { return i < 0 ? -i : i; }
 
 /* put a pixel on the screen in mode 4 */
 void put_pixel(volatile uint16_t *buffer, int row, int col, uint8_t color) {

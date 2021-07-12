@@ -1,20 +1,15 @@
 #pragma once
 
-#include "stdint.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-// Generic
-int imin(int l, int r);
-int imax(int l, int r);
-
-uint8_t u8min(uint8_t l, uint8_t r);
-uint8_t u8max(uint8_t l, uint8_t r);
-
-int iabs(int i);
-
-// Graphics
+//////////////
+// Graphics //
+//////////////
 
 /* pointers to the front and back buffers - the front buffer is the start
- * of the screen array and the back buffer is a pointer to the second half */
+ * of the screen array and the back buffer is a pointer to the second half
+ */
 volatile uint16_t *front_buffer;
 volatile uint16_t *back_buffer;
 
