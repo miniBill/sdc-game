@@ -1,0 +1,15 @@
+{
+    "main": {
+        "text": "This story begins with a clown.",
+        "next": [
+            [
+                "",
+                "clown"
+            ]
+        ]
+    },
+    "clown": {
+        "text": "This clown here.",
+        "image": "clown_cool"
+    }
+}

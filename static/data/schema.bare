@@ -1,0 +1,10 @@
+type Scene {
+  text: string
+  image: optional<string>
+  next: []Next
+}
+
+type Next {
+    label: string
+    scene: int
+}
