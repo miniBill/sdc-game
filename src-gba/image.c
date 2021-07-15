@@ -92,7 +92,7 @@ int main() {
 
     setup_font_palette();
     print_text_centered(buffer, sentence, WIDTH / 2,
-                        HEIGHT - 20 - font_indexed_height);
+                        HEIGHT - font_indexed_height + 1);
 
     wait_vblank();
     buffer = flip_buffers(buffer);
