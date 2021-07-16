@@ -43,7 +43,8 @@ int main() {
       clear_screen(buffer, 0);
 
     setup_font_palette();
-    print_text_centered(buffer, text, WIDTH / 2, 0);
+    print_text_centered(buffer, text, WIDTH / 2,
+                        current_scene < 0 ? HEIGHT / 2 : 0);
 
     char *left_label = 0;
     char *right_label = 0;
@@ -73,14 +74,24 @@ int main() {
     buffer = flip_buffers(buffer);
 
     choice = -1;
-    while (choice < 0) {
-      uint16_t btn = buttons_pressed();
-      if ((btn & Button_Left) == 0 || (btn & Button_B) == 0) {
-        choice = 0;
-      } else if ((btn & Button_Right) == 0 || (btn & Button_A) == 0) {
-        choice = 1;
+    if (current_scene < 0) {
+      while (current_scene < 0) {
+        uint16_t btn = buttons_pressed();
+        if ((btn & Button_Start) == 0) {
+          current_scene = 0;
+          scene = main_scene;
+        }
       }
+    } else {
+      while (choice < 0) {
+        uint16_t btn = buttons_pressed();
+        if ((btn & Button_Left) == 0 || (btn & Button_B) == 0) {
+          choice = 0;
+        } else if ((btn & Button_Right) == 0 || (btn & Button_A) == 0) {
+          choice = 1;
+        }
+      }
+      scene = step(&current_scene, choice);
     }
-    scene = step(&current_scene, choice);
   }
 }
