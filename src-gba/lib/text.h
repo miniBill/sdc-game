@@ -2,14 +2,12 @@
 
 #include <stdint.h>
 
-int measure_text(const char *text);
+enum Align { ALIGN_BEGIN, ALIGN_MIDDLE, ALIGN_END };
 
-void print_text(volatile uint16_t *buffer, const char *text, int x, int y);
+int count_lines(const char *text);
+int measure_text_width(const char *text);
 
-void print_text_centered(volatile uint16_t *buffer, const char *text, int x,
-                         int y);
-
-void print_text_right(volatile uint16_t *buffer, const char *text, int x,
-                      int y);
+void print_text(volatile uint16_t *buffer, const char *text, int x, int y,
+                enum Align halign, enum Align valign);
 
 void setup_font_palette();

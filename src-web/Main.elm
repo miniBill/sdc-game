@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Codec
 import Dict
-import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, link, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, column, el, fill, height, image, link, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -135,11 +135,11 @@ view model =
                 |> List.map (\( k, v ) -> viewScene model k v)
     in
     column [ width fill, spacing rythm, padding rythm ]
-        (fileControls model :: scenes)
+        (fileControls :: scenes)
 
 
-fileControls : Model -> Element Msg
-fileControls model =
+fileControls : Element Msg
+fileControls =
     row [ spacing rythm ]
         [ Input.button [ Border.width 1, padding rythm ]
             { onPress = Just FileSelect
@@ -172,7 +172,7 @@ viewScene model name scene =
                 [ Html.text key ]
 
         viewNext i ( k, v ) =
-            [ Input.text [ alignTop, width <| Element.minimum 240 fill ]
+            [ Input.multiline [ alignTop, width <| Element.minimum 240 fill ]
                 { label = Input.labelAbove [] <| text "Label"
                 , text = k
                 , onChange =
@@ -185,6 +185,7 @@ viewScene model name scene =
                                 | next = List.setAt i ( newValue, v ) scene.next
                             }
                 , placeholder = Nothing
+                , spellcheck = True
                 }
             , column [ alignTop, spacing (rythm - 4) ]
                 [ text "Go to"
