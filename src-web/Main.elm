@@ -6,8 +6,9 @@ import Browser
 import Codec
 import Codec.Bare
 import Dict
-import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, link, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import File exposing (File)
 import File.Select
@@ -234,6 +235,10 @@ viewScene model name scene =
                             ]
                         <|
                             List.map (toOption v) (Dict.keys model ++ [ "" ])
+                , link [ Font.color <| Element.rgb 0 0 1 ]
+                    { label = text "Scroll to"
+                    , url = "#" ++ v
+                    }
                 ]
             ]
                 |> List.map (Element.map (Tuple.pair name))
@@ -287,7 +292,11 @@ viewScene model name scene =
                         alignRight
                     ]
             )
-        |> wrappedRow [ Border.width 1, width fill ]
+        |> wrappedRow
+            [ Element.htmlAttribute <| Html.Attributes.id name
+            , Border.width 1
+            , width fill
+            ]
         |> Element.map (Replace name)
 
 
