@@ -6,7 +6,7 @@ import Browser
 import Codec
 import Codec.Bare
 import Dict
-import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Input as Input
 import File exposing (File)
