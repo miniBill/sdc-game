@@ -1,8 +1,10 @@
 module Main exposing (main)
 
+import Bare
 import Base64
 import Browser
 import Codec
+import Codec.Bare
 import Dict
 import Element exposing (Element, alignTop, column, fill, image, newTabLink, none, padding, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
@@ -98,7 +100,11 @@ view dict =
                     }
                 , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.json" ]
                     { label = text "Download as JSON"
-                    , url = "data:application/json;base64," ++ Base64.encode (Codec.encodeToString 0 Json.dataCodec dict)
+                    , url = "data:application/json;base64," ++ jsonVersion
+                    }
+                , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.bare" ]
+                    { label = text "Download as BARE"
+                    , url = "data:application/binary;base64," ++ bareVersion
                     }
                 ]
 
@@ -126,6 +132,19 @@ view dict =
                     )
                 |> wrappedRow [ spacing rythm ]
                 |> Element.map Replace
+
+        bareVersion =
+            dict
+                |> Json.toBare
+                |> Codec.Bare.encodeToValue Bare.dataCodec
+                |> Base64.fromBytes
+                |> Maybe.withDefault ""
+
+        jsonVersion =
+            dict
+                |> Codec.encodeToString 0 Json.dataCodec
+                |> Base64.fromString
+                |> Maybe.withDefault ""
     in
     column [ width fill, spacing rythm, padding rythm ] [ fileControls, scenes ]
 
@@ -181,20 +200,29 @@ viewScene name scene =
                 [ input "Name" name <| \newName -> ( newName, scene ) ]
 
             else
-                [ input "Name" name <| \newName -> ( newName, scene )
-                , input "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
-                , if String.isEmpty scene.image then
-                    none
+                List.concat
+                    [ [ input "Name" name <| \newName -> ( newName, scene )
+                      , input "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
+                      , maybeImage
+                      , input "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
+                      ]
+                    , List.indexedMap viewNext scene.next
+                    , if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
+                        [ viewNext -1 ( "", "" ) ]
 
-                  else
-                    image []
-                        { src = "art/" ++ scene.image ++ ".png"
-                        , description = "Image for the scene " ++ name
-                        }
-                , input "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
-                ]
-                    ++ List.indexedMap viewNext scene.next
-                    ++ [ viewNext -1 ( "", "" ) ]
+                      else
+                        []
+                    ]
+
+        maybeImage =
+            if String.isEmpty scene.image then
+                none
+
+            else
+                image []
+                    { src = "art/" ++ scene.image ++ ".png"
+                    , description = "Image for the scene " ++ name
+                    }
     in
     column
         [ Border.width 2

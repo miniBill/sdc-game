@@ -2,13 +2,13 @@ CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCOPY := arm-none-eabi-objcopy
 
-CFLAGS := -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall -Werror
+CFLAGS := -I out -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall -Werror
 
-IMAGES_HEADERS := $(patsubst ../art/%.png,out/%.h,$(wildcard ../art/*.png))
-IMAGES_OBJECTS := $(patsubst ../art/%.png,out/%.o,$(wildcard ../art/*.png))
+IMAGES_HEADERS := $(patsubst static/art/%.png,out/%.h,$(wildcard static/art/*.png))
+IMAGES_OBJECTS := $(patsubst static/art/%.png,out/%.o,$(wildcard static/art/*.png))
 
-LIB_HEADERS := $(wildcard lib/*.h)
-LIB_OBJECTS := $(patsubst lib/%.c,out/%.o,$(wildcard lib/*.c))
+LIB_HEADERS := $(wildcard src-gba/lib/*.h)
+LIB_OBJECTS := $(patsubst src-gba/lib/%.c,out/%.o,$(wildcard src-gba/lib/*.c))
 
 .PHONY: all
 all: out/image.gba
@@ -17,19 +17,19 @@ out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
 
 out/image.elf: out/crt0.o out/image.o $(LIB_OBJECTS) $(IMAGES_OBJECTS)
-	$(CC) -o $@ $^ -Tscript.ld -nostartfiles -lm
+	$(CC) -o $@ $^ -Tsrc-gba/script.ld -nostartfiles -lm
 
 out/image.o: $(LIB_HEADERS) $(IMAGES_HEADERS)
 
-out/%.o: %.c
+out/%.o: src-gba/%.c
 	mkdir -p out
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-out/%.o: %.s
+out/%.o: src-gba/%.s
 	mkdir -p out
 	$(AS) -o $@ $<
 
-out/%.o: lib/%.c lib/%.h
+out/%.o: src-gba/lib/%.c src-gba/lib/%.h
 	mkdir -p out
 	$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -38,10 +38,10 @@ out/%.c out/%.h: out/%.ppm out/dump_ppm
 	./out/dump_ppm $* < $< 
 
 .PRECIOUS: out/%.ppm
-out/%.ppm: ../art/%.png
+out/%.ppm: static/art/%.png
 	convert $^ -compress none $@
 
-out/dump_ppm: dump_ppm.c
+out/dump_ppm: src-gba/dump_ppm.c
 	mkdir -p out
 	gcc -o $@ $^
 
