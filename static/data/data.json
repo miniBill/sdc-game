@@ -1,1 +1,0 @@
-{"001_clown":{"image":"clown_cool","next":[["","002_clown"]],"text":"This clown here."},"002_clown":{"image":"orlaclown","text":"Oh, and this clown. Let's not forget this clown."},"main":{"next":[["","001_clown"]],"text":"This story begins with a clown."}}
