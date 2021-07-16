@@ -34,6 +34,8 @@ enum Buttons {
   Button_L = 0x200
 };
 
+uint16_t buttons_pressed();
+
 bool button_pressed(enum Buttons button);
 
 void delay(int milliseconds);

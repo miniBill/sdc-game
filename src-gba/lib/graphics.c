@@ -90,7 +90,17 @@ void clear_screen(volatile uint16_t *buffer, uint8_t color) {
   }
 }
 
-void draw_fullscreen_image(volatile uint16_t *buffer, const uint8_t *image) {
+void add_image_palette(image image) {
+  reset_palette();
+  add_color_16(0);
+  for (int i = 0; i < image.palette_size; i++)
+    add_color_16(image.palette[i]);
+}
+
+void draw_fullscreen_image(volatile uint16_t *buffer, image image) {
+  if (!image.indexed || !image.palette)
+    return;
+  add_image_palette(image);
   for (int i = 0; i < HEIGHT * WIDTH; i += 2)
-    buffer[i / 2] = (image[i + 1] << 8) | image[i];
+    buffer[i / 2] = (image.indexed[i + 1] << 8) | image.indexed[i];
 }

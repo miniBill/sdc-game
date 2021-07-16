@@ -3,9 +3,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-//////////////
-// Graphics //
-//////////////
+typedef struct Image {
+  const uint8_t *indexed;
+  const uint16_t *palette;
+  int palette_size;
+} image;
 
 /* pointers to the front and back buffers - the front buffer is the start
  * of the screen array and the back buffer is a pointer to the second half
@@ -40,4 +42,5 @@ volatile uint16_t *flip_buffers(volatile uint16_t *buffer);
 
 void clear_screen(volatile uint16_t *buffer, uint8_t color);
 
-void draw_fullscreen_image(volatile uint16_t *buffer, const uint8_t *image);
+// Resets the palette and draws an image
+void draw_fullscreen_image(volatile uint16_t *buffer, image image);

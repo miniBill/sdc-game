@@ -1,12 +1,13 @@
 #! /usr/bin/env nix-shell
 #! nix-shell shell.nix -i bash
 
-make out/image.gba
+make out/game.gba
 
-inotifywait -m -e close_write *.* Makefile --format "%e %w" | while read event file; do 
+inotifywait -m -r -e close_write,move src-gba static Makefile --format "%e %w" | while read event file; do 
     echo ""
     echo ""
     echo ""
     echo "File $file changed: $event"
-    make out/image.gba
+    make out/game.gba
 done
+ 

@@ -11,15 +11,15 @@ LIB_HEADERS := $(wildcard src-gba/lib/*.h)
 LIB_OBJECTS := $(patsubst src-gba/lib/%.c,out/%.o,$(wildcard src-gba/lib/*.c))
 
 .PHONY: all
-all: out/image.gba
+all: out/game.gba
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
 
-out/image.elf: out/crt0.o out/image.o $(LIB_OBJECTS) $(IMAGES_OBJECTS)
+out/game.elf: out/crt0.o out/game.o out/logic.o $(LIB_OBJECTS) $(IMAGES_OBJECTS)
 	$(CC) -o $@ $^ -Tsrc-gba/script.ld -nostartfiles -lm
 
-out/image.o: $(LIB_HEADERS) $(IMAGES_HEADERS)
+out/game.o: $(LIB_HEADERS) $(IMAGES_HEADERS)
 
 out/%.o: src-gba/%.c
 	mkdir -p out

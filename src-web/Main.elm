@@ -1,22 +1,21 @@
 module Main exposing (main)
 
-import Bare
-import Base64
 import Browser
 import Codec
-import Codec.Bare
 import Dict
 import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, link, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import File exposing (File)
+import File.Download
 import File.Select
+import Generator
 import Html
 import Html.Attributes
 import Html.Events
-import Json exposing (Data, Scene)
 import List.Extra as List
+import Model exposing (Data, Scene, dfsSort)
 import Task
 
 
@@ -29,6 +28,8 @@ type Msg
     | FileSelected File
     | ReadFile String
     | Replace String ( String, Scene )
+    | GenerateC
+    | DownloadJson
 
 
 main : Program () Model Msg
@@ -84,7 +85,7 @@ update msg model =
             ( model, Task.perform ReadFile <| File.toString file )
 
         ReadFile str ->
-            case Codec.decodeString Json.dataCodec str of
+            case Codec.decodeString Model.dataCodec str of
                 Err err ->
                     let
                         _ =
@@ -94,6 +95,18 @@ update msg model =
 
                 Ok newModel ->
                     ( newModel, Cmd.none )
+
+        GenerateC ->
+            ( model
+            , File.Download.string "logic.c" "text/x-c" <|
+                Generator.generate model
+            )
+
+        DownloadJson ->
+            ( model
+            , File.Download.string "data.json" "application/json" <|
+                Codec.encodeToString 0 Model.dataCodec model
+            )
 
 
 clean : Data -> Data
@@ -127,64 +140,20 @@ view model =
 
 fileControls : Model -> Element Msg
 fileControls model =
-    let
-        bareVersion =
-            model
-                |> Json.toBare
-                |> Codec.Bare.encodeToValue Bare.dataCodec
-                |> Base64.fromBytes
-                |> Maybe.withDefault ""
-
-        jsonVersion =
-            model
-                |> Codec.encodeToString 0 Json.dataCodec
-                |> Base64.fromString
-                |> Maybe.withDefault ""
-    in
     row [ spacing rythm ]
         [ Input.button [ Border.width 1, padding rythm ]
             { onPress = Just FileSelect
             , label = text "Upload JSON"
             }
-        , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.json" ]
-            { label = text "Download as JSON"
-            , url = "data:application/json;base64," ++ jsonVersion
+        , Input.button [ Border.width 1, padding rythm ]
+            { onPress = Just DownloadJson
+            , label = text "Save as JSON"
             }
-        , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.bare" ]
-            { label = text "Download as BARE"
-            , url = "data:application/binary;base64," ++ bareVersion
+        , Input.button [ Border.width 1, padding rythm ]
+            { onPress = Just GenerateC
+            , label = text "Generate C"
             }
         ]
-
-
-dfsSort : String -> Data -> List ( String, Scene )
-dfsSort root scenes =
-    case Dict.get root scenes of
-        Nothing ->
-            []
-
-        Just scene ->
-            let
-                ( visible, nonvisible ) =
-                    List.foldl
-                        (\( _, v ) ( res, queue ) ->
-                            let
-                                found =
-                                    dfsSort v queue
-
-                                newQueue =
-                                    List.foldl (\( k, _ ) -> Dict.remove k) queue found
-                            in
-                            ( res ++ found, newQueue )
-                        )
-                        ( [ ( root, scene ) ], Dict.remove root scenes )
-                        scene.next
-            in
-            if root == "main" then
-                visible ++ Dict.toList nonvisible
-
-            else
-                visible
 
 
 rythm : number
@@ -277,20 +246,14 @@ viewScene model name scene =
             ]
     in
     elems
-        |> List.indexedMap
-            (\i ->
-                row
-                    [ spacing rythm
-                    , padding rythm
-                    , Border.width 1
-                    , width fill
-                    , height fill
-                    , if i == 0 then
-                        alignLeft
-
-                      else
-                        alignRight
-                    ]
+        |> List.map
+            (wrappedRow
+                [ spacing rythm
+                , padding rythm
+                , Border.width 1
+                , width fill
+                , height fill
+                ]
             )
         |> wrappedRow
             [ Element.htmlAttribute <| Html.Attributes.id name

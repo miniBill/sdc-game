@@ -12,6 +12,8 @@ int iabs(int i) { return i < 0 ? -i : i; }
 // I/O
 volatile uint16_t *buttons = (volatile uint16_t *)0x04000130;
 
+uint16_t buttons_pressed() { return *buttons; }
+
 /* this function checks whether a particular button has been pressed */
 bool button_pressed(enum Buttons button) {
   /* and the button register with the button constant we want */

@@ -1,6 +1,6 @@
 elm-stuff
 .cache
 node_modules
-/dist
+dist
+src-gba/logic.c
 out
-data/data.bare

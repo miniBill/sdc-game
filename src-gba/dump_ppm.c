@@ -65,6 +65,9 @@ int main(int argc, char *argv[]) {
   FILE *output_h = fopen(output_h_name, "w");
 
   fprintf(output_h, "#include <stdint.h>\n");
+  fprintf(output_h, "#include \"../src-gba/lib/graphics.h\"\n");
+  fprintf(output_h, "\n");
+  fprintf(output_h, "extern const image %s_image;\n", image_name);
   fprintf(output_h, "\n");
   fprintf(output_h, "extern const int %s_palette_size;\n", image_name);
   fprintf(output_h, "extern const uint16_t %s_palette[%d];\n", image_name,
@@ -88,6 +91,9 @@ int main(int argc, char *argv[]) {
 
   fprintf(output_c, "#include \"%s.h\"\n", image_name);
   fprintf(output_c, "#include <stdint.h>\n");
+  fprintf(output_c, "\n");
+  fprintf(output_h, "const image %s_image = { %s_indexed, %s_palette, %d };\n",
+          image_name, image_name, image_name, next_free_palette);
   fprintf(output_c, "\n");
   fprintf(output_c, "const int %s_palette_size = %d;\n", image_name,
           next_free_palette);
