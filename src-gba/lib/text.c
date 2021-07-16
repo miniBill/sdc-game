@@ -1,6 +1,7 @@
 #include "text.h"
 #include "../out/font.h"
 #include "graphics.h"
+#include "utils.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -95,6 +96,12 @@ void print_text_centered(volatile uint16_t *buffer, const char *text, int x,
                          int y) {
   int w = measure_text(text);
   print_text(buffer, text, x - w / 2, y);
+}
+
+void print_text_right(volatile uint16_t *buffer, const char *text, int x,
+                      int y) {
+  int w = measure_text(text);
+  print_text(buffer, text, x - w, y);
 }
 
 void setup_font_palette() {

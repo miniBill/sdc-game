@@ -43,17 +43,41 @@ int main() {
       clear_screen(buffer, 0);
 
     setup_font_palette();
-    print_text_centered(buffer, text, WIDTH / 2,
-                        HEIGHT - font_indexed_height + 1);
+    print_text_centered(buffer, text, WIDTH / 2, 0);
+
+    char *left_label = 0;
+    char *right_label = 0;
+    switch (scene.choices_count) {
+    case 1:
+      right_label = concat("A/B: ", strlen(scene.choices_labels[0])
+                                        ? scene.choices_labels[0]
+                                        : "Next");
+      break;
+    case 2:
+      left_label = concat("B: ", scene.choices_labels[0]);
+      right_label = concat("A: ", scene.choices_labels[1]);
+      break;
+    }
+
+    if (left_label) {
+      print_text(buffer, left_label, 1, HEIGHT - font_indexed_height + 1);
+      free(left_label);
+    }
+    if (right_label) {
+      print_text_right(buffer, right_label, WIDTH,
+                       HEIGHT - font_indexed_height + 1);
+      free(right_label);
+    }
 
     wait_vblank();
     buffer = flip_buffers(buffer);
 
     choice = -1;
     while (choice < 0) {
-      if (button_pressed(Button_Right) || button_pressed(Button_A)) {
+      uint16_t btn = buttons_pressed();
+      if ((btn & Button_Left) == 0 || (btn & Button_B) == 0) {
         choice = 0;
-      } else if (button_pressed(Button_Left) || button_pressed(Button_B)) {
+      } else if ((btn & Button_Right) == 0 || (btn & Button_A) == 0) {
         choice = 1;
       }
     }

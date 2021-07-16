@@ -9,4 +9,7 @@ void print_text(volatile uint16_t *buffer, const char *text, int x, int y);
 void print_text_centered(volatile uint16_t *buffer, const char *text, int x,
                          int y);
 
+void print_text_right(volatile uint16_t *buffer, const char *text, int x,
+                      int y);
+
 void setup_font_palette();

@@ -92,7 +92,6 @@ void clear_screen(volatile uint16_t *buffer, uint8_t color) {
 
 void add_image_palette(image image) {
   reset_palette();
-  add_color_16(0);
   for (int i = 0; i < image.palette_size; i++)
     add_color_16(image.palette[i]);
 }

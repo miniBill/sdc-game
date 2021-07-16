@@ -1,5 +1,7 @@
 #include "utils.h"
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 int imin(int l, int r) { return l < r ? l : r; }
 int imax(int l, int r) { return l > r ? l : r; }
@@ -8,6 +10,16 @@ uint8_t u8min(uint8_t l, uint8_t r) { return l < r ? l : r; }
 uint8_t u8max(uint8_t l, uint8_t r) { return l > r ? l : r; }
 
 int iabs(int i) { return i < 0 ? -i : i; }
+
+char *concat(const char *left, const char *right) {
+  int left_len = strlen(left);
+  int len = left_len + strlen(right) + 1;
+  char *result = malloc(len);
+  strcpy(result, left);
+  strcpy(result + left_len, right);
+  result[len] = 0;
+  return result;
+}
 
 // I/O
 volatile uint16_t *buttons = (volatile uint16_t *)0x04000130;

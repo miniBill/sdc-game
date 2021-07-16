@@ -14,6 +14,8 @@ uint8_t u8max(uint8_t l, uint8_t r);
 
 int iabs(int i);
 
+char *concat(const char *left, const char *right);
+
 /////////
 // I/O //
 /////////

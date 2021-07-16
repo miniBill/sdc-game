@@ -203,7 +203,7 @@ viewScene model name scene =
                                 )
                             ]
                         <|
-                            List.map (toOption v) (Dict.keys model ++ [ "" ])
+                            List.map (toOption v) ("" :: Dict.keys model ++ [ "end" ])
                 , link [ Font.color <| Element.rgb 0 0 1 ]
                     { label = text "Scroll to"
                     , url = "#" ++ v
