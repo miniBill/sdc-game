@@ -27,7 +27,7 @@ type Msg
     = FileSelect
     | FileSelected File
     | ReadFile String
-    | Replace Data
+    | Replace String ( String, Scene )
 
 
 main : Program () Model Msg
@@ -56,8 +56,28 @@ update msg model =
         FileSelect ->
             ( model, File.Select.file [ "application/json" ] FileSelected )
 
-        Replace newModel ->
-            ( clean newModel, Cmd.none )
+        Replace oldKey ( newKey, newValue ) ->
+            ( model
+                |> Dict.remove oldKey
+                |> Dict.insert newKey newValue
+                |> (if oldKey == "" then
+                        identity
+
+                    else
+                        Dict.map
+                            (\_ scene ->
+                                { scene
+                                    | next =
+                                        List.updateIf
+                                            (Tuple.second >> (==) oldKey)
+                                            (\( label, _ ) -> ( label, newKey ))
+                                            scene.next
+                                }
+                            )
+                   )
+                |> clean
+            , Cmd.none
+            )
 
         FileSelected file ->
             ( model, Task.perform ReadFile <| File.toString file )
@@ -94,57 +114,19 @@ cleanNext scene =
 view : Model -> Element Msg
 view model =
     let
-        fileControls =
-            row [ spacing rythm ]
-                [ Input.button [ Border.width 1, padding rythm ]
-                    { onPress = Just FileSelect
-                    , label = text "Upload JSON"
-                    }
-                , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.json" ]
-                    { label = text "Download as JSON"
-                    , url = "data:application/json;base64," ++ jsonVersion
-                    }
-                , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.bare" ]
-                    { label = text "Download as BARE"
-                    , url = "data:application/binary;base64," ++ bareVersion
-                    }
-                ]
-
         scenes =
             model
                 |> dfsSort "main"
                 |> (\l -> l ++ [ ( "", emptyScene ) ])
-                |> List.map
-                    (\( k, v ) ->
-                        Element.map
-                            (\( k_, v_ ) ->
-                                model
-                                    |> Dict.remove k
-                                    |> Dict.insert k_ v_
-                                    |> Dict.map
-                                        (\_ scene ->
-                                            { scene
-                                                | next =
-                                                    if k == "" then
-                                                        scene.next
+                |> List.map (\( k, v ) -> viewScene model k v)
+    in
+    column [ width fill, spacing rythm, padding rythm ]
+        (fileControls model :: scenes)
 
-                                                    else
-                                                        scene.next
-                                                            |> List.map
-                                                                (\( kn, vn ) ->
-                                                                    if vn == k then
-                                                                        ( kn, k_ )
 
-                                                                    else
-                                                                        ( kn, vn )
-                                                                )
-                                            }
-                                        )
-                                    |> Replace
-                            )
-                            (viewScene model k v)
-                    )
-
+fileControls : Model -> Element Msg
+fileControls model =
+    let
         bareVersion =
             model
                 |> Json.toBare
@@ -158,7 +140,20 @@ view model =
                 |> Base64.fromString
                 |> Maybe.withDefault ""
     in
-    column [ width fill, spacing rythm, padding rythm ] <| fileControls :: scenes
+    row [ spacing rythm ]
+        [ Input.button [ Border.width 1, padding rythm ]
+            { onPress = Just FileSelect
+            , label = text "Upload JSON"
+            }
+        , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.json" ]
+            { label = text "Download as JSON"
+            , url = "data:application/json;base64," ++ jsonVersion
+            }
+        , newTabLink [ Element.htmlAttribute <| Html.Attributes.download "data.bare" ]
+            { label = text "Download as BARE"
+            , url = "data:application/binary;base64," ++ bareVersion
+            }
+        ]
 
 
 dfsSort : String -> Data -> List ( String, Scene )
@@ -196,7 +191,7 @@ rythm =
     10
 
 
-viewScene : Model -> String -> Scene -> Element ( String, Scene )
+viewScene : Model -> String -> Scene -> Element Msg
 viewScene model name scene =
     let
         toOption selected key =
@@ -293,6 +288,7 @@ viewScene model name scene =
                     ]
             )
         |> wrappedRow [ Border.width 1, width fill ]
+        |> Element.map (Replace name)
 
 
 input : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
