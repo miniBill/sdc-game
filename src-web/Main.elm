@@ -6,7 +6,7 @@ import Browser
 import Codec
 import Codec.Bare
 import Dict
-import Element exposing (Element, alignTop, column, fill, image, newTabLink, none, padding, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Input as Input
 import File exposing (File)
@@ -127,11 +127,10 @@ view dict =
                                 dict
                                     |> Dict.remove k
                                     |> Dict.insert k_ v_
+                                    |> Replace
                             )
                             (viewScene k v)
                     )
-                |> wrappedRow [ spacing rythm ]
-                |> Element.map Replace
 
         bareVersion =
             dict
@@ -146,7 +145,7 @@ view dict =
                 |> Base64.fromString
                 |> Maybe.withDefault ""
     in
-    column [ width fill, spacing rythm, padding rythm ] [ fileControls, scenes ]
+    column [ width fill, spacing rythm, padding rythm ] <| fileControls :: scenes
 
 
 rythm : number
@@ -158,7 +157,7 @@ viewScene : String -> Scene -> Element ( String, Scene )
 viewScene name scene =
     let
         viewNext i ( k, v ) =
-            [ Input.text [ width fill ]
+            [ Input.text [ alignTop, width <| px 200 ]
                 { label = Input.labelAbove [] <| text "Label"
                 , text = k
                 , onChange =
@@ -172,7 +171,7 @@ viewScene name scene =
                             }
                 , placeholder = Nothing
                 }
-            , Input.text [ width fill ]
+            , Input.text [ alignTop, width <| px 200 ]
                 { label = Input.labelAbove [] <| text "Go to"
                 , text = v
                 , onChange =
@@ -187,32 +186,21 @@ viewScene name scene =
                 , placeholder = Nothing
                 }
             ]
-                |> column
-                    [ Border.width 1
-                    , padding rythm
-                    , spacing rythm
-                    , width fill
-                    ]
-                |> Element.map (Tuple.pair name)
+                |> List.map (Element.map (Tuple.pair name))
 
-        rows =
+        elems =
             if String.isEmpty name && scene == emptyScene then
-                [ input "Name" name <| \newName -> ( newName, scene ) ]
+                [ [ input [] "Name" name <| \newName -> ( newName, scene ) ] ]
 
             else
-                List.concat
-                    [ [ input "Name" name <| \newName -> ( newName, scene )
-                      , input "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
-                      , maybeImage
-                      , input "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
-                      ]
-                    , List.indexedMap viewNext scene.next
-                    , if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
-                        [ viewNext -1 ( "", "" ) ]
+                fixed
+                    :: List.indexedMap viewNext scene.next
+                    ++ (if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
+                            [ viewNext -1 ( "", "" ) ]
 
-                      else
-                        []
-                    ]
+                        else
+                            []
+                       )
 
         maybeImage =
             if String.isEmpty scene.image then
@@ -223,24 +211,51 @@ viewScene name scene =
                     { src = "art/" ++ scene.image ++ ".png"
                     , description = "Image for the scene " ++ name
                     }
+
+        fixed =
+            [ input [] "Name" name <| \newName -> ( newName, scene )
+            , input [] "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
+            , maybeImage
+            , multiline [ width <| px 400 ] "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
+            ]
     in
-    column
-        [ Border.width 2
-        , padding rythm
-        , spacing rythm
-        , alignTop
-        , width <| Element.minimum 300 fill
-        ]
-        rows
+    elems
+        |> List.indexedMap
+            (\i ->
+                row
+                    [ spacing rythm
+                    , padding rythm
+                    , Border.width 1
+                    , width fill
+                    , height fill
+                    , if i == 0 then
+                        alignLeft
+
+                      else
+                        alignRight
+                    ]
+            )
+        |> wrappedRow [ Border.width 1, width fill ]
 
 
-input : String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
-input label value setter =
-    Input.text [ width fill ]
+input : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
+input attrs label value setter =
+    Input.text ([ alignTop, width <| px 200 ] ++ List.map (Element.mapAttribute never) attrs)
         { label = Input.labelAbove [] <| text label
         , text = value
         , onChange = setter
         , placeholder = Nothing
+        }
+
+
+multiline : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
+multiline attrs label value setter =
+    Input.multiline ([ alignTop, width <| px 200, height fill ] ++ List.map (Element.mapAttribute never) attrs)
+        { label = Input.labelAbove [] <| text label
+        , text = value
+        , onChange = setter
+        , placeholder = Nothing
+        , spellcheck = True
         }
 
 
