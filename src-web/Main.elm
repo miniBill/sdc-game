@@ -6,12 +6,14 @@ import Browser
 import Codec
 import Codec.Bare
 import Dict
-import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignLeft, alignRight, alignTop, column, el, fill, height, image, newTabLink, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Input as Input
 import File exposing (File)
 import File.Select
+import Html
 import Html.Attributes
+import Html.Events
 import Json exposing (Data, Scene)
 import List.Extra as List
 import Task
@@ -90,7 +92,7 @@ cleanNext scene =
 
 
 view : Model -> Element Msg
-view dict =
+view model =
     let
         fileControls =
             row [ spacing rythm ]
@@ -109,38 +111,49 @@ view dict =
                 ]
 
         scenes =
-            dict
-                |> Dict.toList
-                |> List.sortBy
-                    (\( name, _ ) ->
-                        if name == "main" then
-                            ( 0, name )
-
-                        else
-                            ( 1, name )
-                    )
+            model
+                |> dfsSort "main"
                 |> (\l -> l ++ [ ( "", emptyScene ) ])
                 |> List.map
                     (\( k, v ) ->
                         Element.map
                             (\( k_, v_ ) ->
-                                dict
+                                model
                                     |> Dict.remove k
                                     |> Dict.insert k_ v_
+                                    |> Dict.map
+                                        (\_ scene ->
+                                            { scene
+                                                | next =
+                                                    if k == "" then
+                                                        scene.next
+
+                                                    else
+                                                        scene.next
+                                                            |> List.map
+                                                                (\( kn, vn ) ->
+                                                                    if vn == k then
+                                                                        ( kn, k_ )
+
+                                                                    else
+                                                                        ( kn, vn )
+                                                                )
+                                            }
+                                        )
                                     |> Replace
                             )
-                            (viewScene k v)
+                            (viewScene model k v)
                     )
 
         bareVersion =
-            dict
+            model
                 |> Json.toBare
                 |> Codec.Bare.encodeToValue Bare.dataCodec
                 |> Base64.fromBytes
                 |> Maybe.withDefault ""
 
         jsonVersion =
-            dict
+            model
                 |> Codec.encodeToString 0 Json.dataCodec
                 |> Base64.fromString
                 |> Maybe.withDefault ""
@@ -148,16 +161,53 @@ view dict =
     column [ width fill, spacing rythm, padding rythm ] <| fileControls :: scenes
 
 
+dfsSort : String -> Data -> List ( String, Scene )
+dfsSort root scenes =
+    case Dict.get root scenes of
+        Nothing ->
+            []
+
+        Just scene ->
+            let
+                ( visible, nonvisible ) =
+                    List.foldl
+                        (\( _, v ) ( res, queue ) ->
+                            let
+                                found =
+                                    dfsSort v queue
+
+                                newQueue =
+                                    List.foldl (\( k, _ ) -> Dict.remove k) queue found
+                            in
+                            ( res ++ found, newQueue )
+                        )
+                        ( [ ( root, scene ) ], Dict.remove root scenes )
+                        scene.next
+            in
+            if root == "main" then
+                visible ++ Dict.toList nonvisible
+
+            else
+                visible
+
+
 rythm : number
 rythm =
     10
 
 
-viewScene : String -> Scene -> Element ( String, Scene )
-viewScene name scene =
+viewScene : Model -> String -> Scene -> Element ( String, Scene )
+viewScene model name scene =
     let
+        toOption selected key =
+            Html.option
+                [ Html.Attributes.value key
+                , Html.Attributes.selected <| key == selected
+                ]
+                [ Html.text key ]
+
         viewNext i ( k, v ) =
-            [ Input.text [ alignTop, width <| px 200 ]
+            [ Input.text [ alignTop, width <| Element.minimum 240 fill ]
                 { label = Input.labelAbove [] <| text "Label"
                 , text = k
                 , onChange =
@@ -171,20 +221,25 @@ viewScene name scene =
                             }
                 , placeholder = Nothing
                 }
-            , Input.text [ alignTop, width <| px 200 ]
-                { label = Input.labelAbove [] <| text "Go to"
-                , text = v
-                , onChange =
-                    \newValue ->
-                        if i < 0 then
-                            { scene | next = scene.next ++ [ ( k, newValue ) ] }
+            , column [ alignTop, spacing (rythm - 4) ]
+                [ text "Go to"
+                , el [] <|
+                    Element.html <|
+                        Html.select
+                            [ Html.Events.onInput
+                                (\newValue ->
+                                    if i < 0 then
+                                        { scene | next = scene.next ++ [ ( k, newValue ) ] }
 
-                        else
-                            { scene
-                                | next = List.setAt i ( k, newValue ) scene.next
-                            }
-                , placeholder = Nothing
-                }
+                                    else
+                                        { scene
+                                            | next = List.setAt i ( k, newValue ) scene.next
+                                        }
+                                )
+                            ]
+                        <|
+                            List.map (toOption v) (Dict.keys model ++ [ "" ])
+                ]
             ]
                 |> List.map (Element.map (Tuple.pair name))
 
@@ -214,8 +269,10 @@ viewScene name scene =
 
         fixed =
             [ input [] "Name" name <| \newName -> ( newName, scene )
-            , input [] "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
-            , maybeImage
+            , column [ spacing rythm ]
+                [ input [] "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
+                , maybeImage
+                ]
             , multiline [ width <| px 400 ] "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
             ]
     in
@@ -240,7 +297,7 @@ viewScene name scene =
 
 input : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
 input attrs label value setter =
-    Input.text ([ alignTop, width <| px 200 ] ++ List.map (Element.mapAttribute never) attrs)
+    Input.text ([ alignTop, width <| Element.minimum 240 fill ] ++ List.map (Element.mapAttribute never) attrs)
         { label = Input.labelAbove [] <| text label
         , text = value
         , onChange = setter
@@ -250,7 +307,7 @@ input attrs label value setter =
 
 multiline : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
 multiline attrs label value setter =
-    Input.multiline ([ alignTop, width <| px 200, height fill ] ++ List.map (Element.mapAttribute never) attrs)
+    Input.multiline ([ alignTop, width <| Element.minimum 240 fill, height fill ] ++ List.map (Element.mapAttribute never) attrs)
         { label = Input.labelAbove [] <| text label
         , text = value
         , onChange = setter
