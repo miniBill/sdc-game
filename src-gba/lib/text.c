@@ -1,5 +1,5 @@
 #include "text.h"
-#include "../out/font.h"
+#include "art/font.h"
 #include "graphics.h"
 #include "utils.h"
 #include <stdint.h>

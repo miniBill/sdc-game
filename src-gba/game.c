@@ -1,15 +1,8 @@
-#include "font.h"
+#include "art/font.h"
 #include "lib/graphics.h"
 #include "lib/text.h"
 #include "lib/utils.h"
 #include "logic.h"
-#include "orla1.h"
-#include "orla2.h"
-#include "orla3.h"
-#include "orla4.h"
-#include "orla5.h"
-#include "orla6.h"
-#include "orla7.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,24 +15,23 @@ int main() {
   /* the buffer we start with */
   volatile uint16_t *buffer = back_buffer;
 
-  wait_vblank();
-  buffer = flip_buffers(buffer);
-
   int current_scene = 0;
   scene scene = main_scene;
+
+  // Prevent double-press by keeping track of the latest read
+  uint16_t last_buttons = 0;
 
   /* loop forever */
   while (1) {
     char *text = scene.text;
     const image *image = scene.image;
 
-    wait_vblank();
-    buffer = flip_buffers(buffer);
-
     if (image)
       draw_fullscreen_image(buffer, *image);
-    else
+    else {
+      reset_palette(buffer);
       clear_screen(buffer, 0);
+    }
 
     setup_font_palette();
     if (current_scene < 0)
@@ -76,6 +68,9 @@ int main() {
 
     while (1) {
       uint16_t btn = buttons_pressed();
+      if (btn == last_buttons)
+        continue;
+      last_buttons = btn;
       if ((btn & Button_Start) == 0) {
         current_scene = 0;
         scene = main_scene;

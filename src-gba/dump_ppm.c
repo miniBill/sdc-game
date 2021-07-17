@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
 
   // Print header
   char *output_h_name = calloc(
-      strlen("out/") + strlen(image_name) + strlen(".h") + 1, sizeof(char));
-  sprintf(output_h_name, "out/%s.h", image_name);
+      strlen("out/art/") + strlen(image_name) + strlen(".h") + 1, sizeof(char));
+  sprintf(output_h_name, "out/art/%s.h", image_name);
 
   FILE *output_h = fopen(output_h_name, "w");
 
@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
 
   // Print code
   char *output_c_name = calloc(
-      strlen("out/") + strlen(image_name) + strlen(".c") + 1, sizeof(char));
-  sprintf(output_c_name, "out/%s.c", image_name);
+      strlen("out/art/") + strlen(image_name) + strlen(".c") + 1, sizeof(char));
+  sprintf(output_c_name, "out/art/%s.c", image_name);
 
   FILE *output_c = fopen(output_c_name, "w");
 

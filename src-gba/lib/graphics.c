@@ -41,6 +41,10 @@ void put_pixel(volatile uint16_t *buffer, int row, int col, uint8_t color) {
 /* the address of the color palette used in graphics mode 4 */
 volatile uint16_t *palette = (volatile uint16_t *)0x5000000;
 
+uint8_t get_xor(volatile uint16_t *buffer) {
+  return buffer == front_buffer ? 0 : 0x80;
+}
+
 /*
  * function which adds a color to the palette and returns the
  * index to it
@@ -55,7 +59,9 @@ uint8_t add_color(uint8_t r, uint8_t g, uint8_t b) {
 
 int next_palette_index = 0;
 
-void reset_palette() { next_palette_index = 0; }
+void reset_palette(volatile uint16_t *buffer) {
+  next_palette_index = get_xor(buffer);
+}
 
 /*
  * function which adds a color to the palette and returns the
@@ -90,8 +96,8 @@ void clear_screen(volatile uint16_t *buffer, uint8_t color) {
   }
 }
 
-void add_image_palette(image image) {
-  reset_palette();
+void add_image_palette(volatile uint16_t *buffer, image image) {
+  reset_palette(buffer);
   for (int i = 0; i < image.palette_size; i++)
     add_color_16(image.palette[i]);
 }
@@ -99,7 +105,9 @@ void add_image_palette(image image) {
 void draw_fullscreen_image(volatile uint16_t *buffer, image image) {
   if (!image.indexed || !image.palette)
     return;
-  add_image_palette(image);
+  add_image_palette(buffer, image);
+  uint8_t xor = get_xor(buffer);
   for (int i = 0; i < HEIGHT * WIDTH; i += 2)
-    buffer[i / 2] = (image.indexed[i + 1] << 8) | image.indexed[i];
+    buffer[i / 2] =
+        ((image.indexed[i + 1] ^ xor) << 8) | (image.indexed[i] ^ xor);
 }
