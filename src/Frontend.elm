@@ -1,90 +1,110 @@
-module Main exposing (main)
+module Frontend exposing (app)
 
-import Browser
+import Browser exposing (UrlRequest(..))
+import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Attribute, Element, alignTop, column, el, fill, height, image, link, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, centerX, centerY, column, el, fill, height, image, link, none, padding, px, row, spacing, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
-import File exposing (File)
+import File
 import File.Download
 import File.Select
 import Generator
 import Html
 import Html.Attributes
 import Html.Events
+import Lamdera exposing (Key, Url)
 import List.Extra as List
-import Model exposing (Data, Scene, dfsSort)
+import Model exposing (dfsSort, emptyScene, replaceScene)
 import Task
+import Types exposing (Data, FrontendMsg(..), Model, Scene, ToBackend(..), ToFrontend(..))
+import Url
 
 
-type alias Model =
-    Data
-
-
-type Msg
-    = FileSelect
-    | FileSelected File
-    | ReadFile String
-    | Replace String ( String, Scene )
-    | GenerateC
-    | DownloadJson
-
-
-main : Program () Model Msg
-main =
-    Browser.element
+app :
+    { init : Url -> Key -> ( Model, Cmd FrontendMsg )
+    , view : Model -> Browser.Document FrontendMsg
+    , update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
+    , updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
+    , subscriptions : Model -> Sub FrontendMsg
+    , onUrlRequest : UrlRequest -> FrontendMsg
+    , onUrlChange : Url -> FrontendMsg
+    }
+app =
+    Lamdera.frontend
         { init = init
-        , view = Element.layout [] << view
+        , onUrlRequest = UrlClicked
+        , onUrlChange = UrlChanged
+        , view =
+            \model ->
+                { title = "SDC Game"
+                , body = [ Element.layout [] <| view model ]
+                }
         , update = update
         , subscriptions = subscriptions
+        , updateFromBackend = updateFromBackend
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( Dict.empty, Cmd.none )
+updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
+updateFromBackend msg model =
+    case msg of
+        TFReplace oldKey ( newKey, newValue ) ->
+            ( { model | data = Maybe.map (replaceScene oldKey newKey newValue) model.data }, Cmd.none )
+
+        TFData data ->
+            ( { model | data = Just data }, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
+init : Url -> Key -> ( Model, Cmd FrontendMsg )
+init _ key =
+    ( { key = key
+      , data = Nothing
+      }
+    , Cmd.none
+    )
+
+
+subscriptions : Model -> Sub FrontendMsg
 subscriptions _ =
     Sub.none
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
 update msg model =
-    case msg of
-        FileSelect ->
+    case ( msg, model.data ) of
+        ( UrlClicked urlRequest, _ ) ->
+            case urlRequest of
+                Internal url ->
+                    ( model
+                    , Cmd.batch [ Nav.pushUrl model.key (Url.toString url) ]
+                    )
+
+                External url ->
+                    ( model
+                    , Nav.load url
+                    )
+
+        ( UrlChanged _, _ ) ->
+            ( model, Cmd.none )
+
+        ( FileSelect, _ ) ->
             ( model, File.Select.file [ "application/json" ] FileSelected )
 
-        Replace oldKey ( newKey, newValue ) ->
-            ( model
-                |> Dict.remove oldKey
-                |> Dict.insert newKey newValue
-                |> (if oldKey == "" then
-                        identity
-
-                    else
-                        Dict.map
-                            (\_ scene ->
-                                { scene
-                                    | next =
-                                        List.updateIf
-                                            (Tuple.second >> (==) oldKey)
-                                            (\( label, _ ) -> ( label, newKey ))
-                                            scene.next
-                                }
-                            )
-                   )
-                |> clean
-            , Cmd.none
+        ( Replace oldKey ( newKey, newValue ), Just data ) ->
+            ( { model | data = Just <| replaceScene oldKey newKey newValue data }
+            , Lamdera.sendToBackend <| TBReplace oldKey ( newKey, newValue )
             )
 
-        FileSelected file ->
+        ( Replace _ _, _ ) ->
+            ( model, Cmd.none )
+
+        ( FileSelected file, _ ) ->
             ( model, Task.perform ReadFile <| File.toString file )
 
-        ReadFile str ->
+        ( ReadFile str, _ ) ->
             case Codec.decodeString Model.dataCodec str of
                 Err err ->
                     let
@@ -93,52 +113,47 @@ update msg model =
                     in
                     ( model, Cmd.none )
 
-                Ok newModel ->
-                    ( newModel, Cmd.none )
+                Ok newData ->
+                    ( { model | data = Just newData }, Lamdera.sendToBackend <| TBData newData )
 
-        GenerateC ->
+        ( GenerateC, Just data ) ->
             ( model
             , File.Download.string "logic.c" "text/x-c" <|
-                Generator.generate model
+                Generator.generate data
             )
 
-        DownloadJson ->
+        ( GenerateC, Nothing ) ->
+            ( model, Cmd.none )
+
+        ( DownloadJson, Just data ) ->
             ( model
             , File.Download.string "data.json" "application/json" <|
-                Codec.encodeToString 0 Model.dataCodec model
+                Codec.encodeToString 0 Model.dataCodec data
             )
 
-
-clean : Data -> Data
-clean =
-    Dict.filter (\k v -> not (String.isEmpty k) || not (v == emptyScene))
-        >> Dict.map (always cleanNext)
+        ( DownloadJson, Nothing ) ->
+            ( model, Cmd.none )
 
 
-cleanNext : Scene -> Scene
-cleanNext scene =
-    { scene
-        | next =
-            scene.next
-                |> List.filter
-                    (\( k, v ) -> not (String.isEmpty k) || not (String.isEmpty v))
-    }
-
-
-view : Model -> Element Msg
+view : Model -> Element FrontendMsg
 view model =
-    let
-        scenes =
-            model
-                |> dfsSort "main"
-                |> (\l -> l ++ [ ( "", emptyScene ) ])
-                |> List.map (\( k, v ) -> viewScene model k v)
-    in
-    column [ width fill, spacing rythm, padding rythm ]
-        (fileControls :: scenes)
+    case model.data of
+        Nothing ->
+            el [ Font.size 40, centerX, centerY, Font.center ] <| text "Loading..."
+
+        Just data ->
+            let
+                scenes =
+                    data
+                        |> dfsSort "main"
+                        |> (\l -> l ++ [ ( "", emptyScene ) ])
+                        |> List.map (\( k, v ) -> viewScene data k v)
+            in
+            column [ width fill, spacing rythm, padding rythm ]
+                (fileControls :: scenes)
 
 
-fileControls : Element Msg
+fileControls : Element FrontendMsg
 fileControls =
     row [ spacing rythm ]
         [ Input.button [ Border.width 1, padding rythm ]
@@ -161,8 +176,8 @@ rythm =
     10
 
 
-viewScene : Model -> String -> Scene -> Element Msg
-viewScene model name scene =
+viewScene : Data -> String -> Scene -> Element FrontendMsg
+viewScene data name scene =
     let
         toOption selected key =
             Html.option
@@ -204,7 +219,7 @@ viewScene model name scene =
                                 )
                             ]
                         <|
-                            List.map (toOption v) ("" :: Dict.keys model ++ [ "end" ])
+                            List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
                 , link [ Font.color <| Element.rgb 0 0 1 ]
                     { label = text "Scroll to"
                     , url = "#" ++ v
@@ -232,7 +247,7 @@ viewScene model name scene =
                 none
 
             else
-                image []
+                image [ width <| px 300 ]
                     { src = "art/" ++ scene.image ++ ".png"
                     , description = "Image for the scene " ++ name
                     }
@@ -283,11 +298,3 @@ multiline attrs label value setter =
         , placeholder = Nothing
         , spellcheck = True
         }
-
-
-emptyScene : Scene
-emptyScene =
-    { text = ""
-    , image = ""
-    , next = []
-    }

@@ -1,7 +1,8 @@
 module Generator exposing (generate)
 
 import Dict exposing (Dict)
-import Model exposing (Data, Scene, dfsSort)
+import Model exposing (dfsSort)
+import Types exposing (Data, Scene)
 
 
 generate : Data -> String
@@ -35,7 +36,7 @@ sceneToInclude ( _, { image } ) =
         ""
 
     else
-        "\n    #include \"" ++ image ++ ".h\""
+        "\n    #include \"art/" ++ image ++ ".h\""
 
 
 sceneToCase : Dict String Int -> Int -> ( String, Scene ) -> String
