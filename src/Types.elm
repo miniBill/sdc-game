@@ -14,10 +14,6 @@ type alias FrontendModel =
     }
 
 
-type alias Model =
-    FrontendModel
-
-
 type alias Data =
     Dict String Scene
 
@@ -33,6 +29,7 @@ type FrontendMsg
     | FileSelected File
     | ReadFile String
     | Replace String ( String, Scene )
+    | ReplaceNext String (Maybe Int) ( String, String )
     | GenerateC
     | DownloadJson
     | UrlClicked UrlRequest

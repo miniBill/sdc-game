@@ -4,7 +4,8 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Attribute, Element, alignTop, centerX, centerY, column, el, fill, height, image, link, none, padding, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, px, rgba, row, spacing, text, width)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -19,18 +20,26 @@ import Lamdera exposing (Key, Url)
 import List.Extra as List
 import Model exposing (dfsSort, emptyScene, replaceScene)
 import Task
-import Types exposing (Data, FrontendMsg(..), Model, Scene, ToBackend(..), ToFrontend(..))
+import Types exposing (Data, FrontendModel, FrontendMsg(..), Scene, ToBackend(..), ToFrontend(..))
 import Url
 
 
+type alias Model =
+    FrontendModel
+
+
+type alias Msg =
+    FrontendMsg
+
+
 app :
-    { init : Url -> Key -> ( Model, Cmd FrontendMsg )
-    , view : Model -> Browser.Document FrontendMsg
-    , update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
-    , updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
-    , subscriptions : Model -> Sub FrontendMsg
-    , onUrlRequest : UrlRequest -> FrontendMsg
-    , onUrlChange : Url -> FrontendMsg
+    { init : Url -> Key -> ( Model, Cmd Msg )
+    , view : Model -> Browser.Document Msg
+    , update : Msg -> Model -> ( Model, Cmd Msg )
+    , updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
+    , subscriptions : Model -> Sub Msg
+    , onUrlRequest : UrlRequest -> Msg
+    , onUrlChange : Url -> Msg
     }
 app =
     Lamdera.frontend
@@ -48,7 +57,7 @@ app =
         }
 
 
-updateFromBackend : ToFrontend -> Model -> ( Model, Cmd FrontendMsg )
+updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
 updateFromBackend msg model =
     case msg of
         TFReplace oldKey ( newKey, newValue ) ->
@@ -58,7 +67,7 @@ updateFromBackend msg model =
             ( { model | data = Just data }, Cmd.none )
 
 
-init : Url -> Key -> ( Model, Cmd FrontendMsg )
+init : Url -> Key -> ( Model, Cmd Msg )
 init _ key =
     ( { key = key
       , data = Nothing
@@ -67,14 +76,17 @@ init _ key =
     )
 
 
-subscriptions : Model -> Sub FrontendMsg
+subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
 
 
-update : FrontendMsg -> Model -> ( Model, Cmd FrontendMsg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.data ) of
+        ( _, Nothing ) ->
+            ( model, Cmd.none )
+
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
@@ -98,8 +110,27 @@ update msg model =
             , Lamdera.sendToBackend <| TBReplace oldKey ( newKey, newValue )
             )
 
-        ( Replace _ _, _ ) ->
-            ( model, Cmd.none )
+        ( ReplaceNext sceneName index newNext, Just data ) ->
+            case Dict.get sceneName data of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just scene ->
+                    let
+                        newValue =
+                            { scene
+                                | next =
+                                    case index of
+                                        Just i ->
+                                            List.setAt i newNext scene.next
+
+                                        Nothing ->
+                                            scene.next ++ [ newNext ]
+                            }
+                    in
+                    ( { model | data = Just <| replaceScene sceneName sceneName newValue data }
+                    , Lamdera.sendToBackend <| TBReplace sceneName ( sceneName, newValue )
+                    )
 
         ( FileSelected file, _ ) ->
             ( model, Task.perform ReadFile <| File.toString file )
@@ -122,20 +153,14 @@ update msg model =
                 Generator.generate data
             )
 
-        ( GenerateC, Nothing ) ->
-            ( model, Cmd.none )
-
         ( DownloadJson, Just data ) ->
             ( model
             , File.Download.string "data.json" "application/json" <|
                 Codec.encodeToString 0 Model.dataCodec data
             )
 
-        ( DownloadJson, Nothing ) ->
-            ( model, Cmd.none )
 
-
-view : Model -> Element FrontendMsg
+view : Model -> Element Msg
 view model =
     case model.data of
         Nothing ->
@@ -153,7 +178,7 @@ view model =
                 (fileControls :: scenes)
 
 
-fileControls : Element FrontendMsg
+fileControls : Element Msg
 fileControls =
     row [ spacing rythm ]
         [ Input.button [ Border.width 1, padding rythm ]
@@ -176,8 +201,72 @@ rythm =
     10
 
 
-viewScene : Data -> String -> Scene -> Element FrontendMsg
+style : String -> String -> Attribute msg
+style k v =
+    Element.htmlAttribute <| Html.Attributes.style k v
+
+
+viewScene : Data -> String -> Scene -> Element Msg
 viewScene data name scene =
+    let
+        viewNext_ i d =
+            row segmentAttrs <| viewNext name data i d
+
+        elems =
+            if String.isEmpty name && scene == emptyScene then
+                [ el segmentAttrs <| input [] "Name" name <| \newName -> Replace name ( newName, scene ) ]
+
+            else
+                fixed
+                    :: List.indexedMap (Just >> viewNext_) scene.next
+                    ++ (if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
+                            [ viewNext_ Nothing ( "", "" ) ]
+
+                        else
+                            []
+                       )
+
+        fixed =
+            column segmentAttrs
+                [ input [] "Name" name <| \newName -> Replace name ( newName, scene )
+                , input [] "Image" scene.image <| \newImage -> Replace name ( name, { scene | image = newImage } )
+                , multiline [ width <| px 400 ] "Text" scene.text <| \newText -> Replace name ( name, { scene | text = newText } )
+                ]
+
+        segmentAttrs =
+            [ spacing rythm
+            , padding rythm
+            , Border.width 1
+            , width fill
+            , height fill
+            ]
+
+        backgroundImage =
+            if String.isEmpty scene.image then
+                none
+
+            else
+                el
+                    [ style "background-image" <| "url(art/" ++ scene.image ++ ".png)"
+                    , style "background-repeat" "no-repeat"
+                    , style "background-size" "contain"
+                    , style "background-position" "right"
+                    , width fill
+                    , height fill
+                    ]
+                    none
+    in
+    elems
+        |> column
+            [ Element.htmlAttribute <| Html.Attributes.id name
+            , Border.width 1
+            , width fill
+            , behindContent backgroundImage
+            ]
+
+
+viewNext : String -> Data -> Maybe Int -> ( String, String ) -> List (Element Msg)
+viewNext sceneName data i ( k, v ) =
     let
         toOption selected key =
             Html.option
@@ -185,113 +274,60 @@ viewScene data name scene =
                 , Html.Attributes.selected <| key == selected
                 ]
                 [ Html.text key ]
-
-        viewNext i ( k, v ) =
-            [ Input.multiline [ alignTop, width <| Element.minimum 240 fill ]
-                { label = Input.labelAbove [] <| text "Label"
-                , text = k
-                , onChange =
-                    \newValue ->
-                        if i < 0 then
-                            { scene | next = scene.next ++ [ ( newValue, v ) ] }
-
-                        else
-                            { scene
-                                | next = List.setAt i ( newValue, v ) scene.next
-                            }
-                , placeholder = Nothing
-                , spellcheck = True
-                }
-            , column [ alignTop, spacing (rythm - 4) ]
-                [ text "Go to"
-                , el [] <|
-                    Element.html <|
-                        Html.select
-                            [ Html.Events.onInput
-                                (\newValue ->
-                                    if i < 0 then
-                                        { scene | next = scene.next ++ [ ( k, newValue ) ] }
-
-                                    else
-                                        { scene
-                                            | next = List.setAt i ( k, newValue ) scene.next
-                                        }
-                                )
-                            ]
-                        <|
-                            List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
-                , link [ Font.color <| Element.rgb 0 0 1 ]
-                    { label = text "Scroll to"
-                    , url = "#" ++ v
-                    }
-                ]
-            ]
-                |> List.map (Element.map (Tuple.pair name))
-
-        elems =
-            if String.isEmpty name && scene == emptyScene then
-                [ [ input [] "Name" name <| \newName -> ( newName, scene ) ] ]
-
-            else
-                fixed
-                    :: List.indexedMap viewNext scene.next
-                    ++ (if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
-                            [ viewNext -1 ( "", "" ) ]
-
-                        else
-                            []
-                       )
-
-        maybeImage =
-            if String.isEmpty scene.image then
-                none
-
-            else
-                image [ width <| px 300 ]
-                    { src = "art/" ++ scene.image ++ ".png"
-                    , description = "Image for the scene " ++ name
-                    }
-
-        fixed =
-            [ input [] "Name" name <| \newName -> ( newName, scene )
-            , column [ spacing rythm ]
-                [ input [] "Image" scene.image <| \newImage -> ( name, { scene | image = newImage } )
-                , maybeImage
-                ]
-            , multiline [ width <| px 400 ] "Text" scene.text <| \newText -> ( name, { scene | text = newText } )
-            ]
     in
-    elems
-        |> List.map
-            (wrappedRow
-                [ spacing rythm
-                , padding rythm
-                , Border.width 1
-                , width fill
-                , height fill
-                ]
-            )
-        |> wrappedRow
-            [ Element.htmlAttribute <| Html.Attributes.id name
-            , Border.width 1
-            , width fill
-            ]
-        |> Element.map (Replace name)
+    [ Input.multiline [ alignTop, width <| Element.minimum 240 fill ]
+        { label = Input.labelHidden "Label"
+        , text = k
+        , onChange = \newValue -> ReplaceNext sceneName i ( newValue, v )
+        , placeholder = Just <| Input.placeholder [] <| text "Label"
+        , spellcheck = True
+        }
+    , column [ alignTop, spacing (rythm - 4) ]
+        [ text "Go to"
+        , el [] <|
+            Element.html <|
+                Html.select
+                    [ Html.Events.onInput
+                        (\newValue ->
+                            ReplaceNext sceneName i ( k, newValue )
+                        )
+                    ]
+                <|
+                    List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
+        , link [ Font.color <| Element.rgb 0 0 1 ]
+            { label = text "Scroll to"
+            , url = "#" ++ v
+            }
+        ]
+    ]
 
 
-input : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
-input attrs label value setter =
-    Input.text ([ alignTop, width <| Element.minimum 240 fill ] ++ List.map (Element.mapAttribute never) attrs)
+input : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
+input attrs label value toMsg =
+    Input.text
+        ([ alignTop
+         , width fill
+         , Background.color <| rgba 1 1 1 0.7
+         ]
+            ++ List.map (Element.mapAttribute never) attrs
+        )
         { label = Input.labelAbove [] <| text label
         , text = value
-        , onChange = setter
+        , onChange = toMsg
         , placeholder = Nothing
         }
 
 
-multiline : List (Attribute Never) -> String -> String -> (String -> ( String, Scene )) -> Element ( String, Scene )
+multiline : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
 multiline attrs label value setter =
-    Input.multiline ([ alignTop, width <| Element.minimum 240 fill, height fill ] ++ List.map (Element.mapAttribute never) attrs)
+    Input.multiline
+        ([ alignTop
+         , width fill
+         , height fill
+         , Background.color <| rgba 1 1 1 0.7
+         ]
+            ++ List.map (Element.mapAttribute never) attrs
+        )
         { label = Input.labelAbove [] <| text label
         , text = value
         , onChange = setter
