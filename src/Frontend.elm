@@ -138,10 +138,6 @@ update msg model =
         ( ReadFile str, _ ) ->
             case Codec.decodeString Model.dataCodec str of
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "Err" err
-                    in
                     ( model, Cmd.none )
 
                 Ok newData ->
