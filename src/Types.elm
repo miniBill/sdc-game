@@ -4,6 +4,7 @@ import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
 import File exposing (File)
+import Http
 import Lamdera exposing (ClientId, SessionId, Url)
 import Set exposing (Set)
 
@@ -11,6 +12,7 @@ import Set exposing (Set)
 type alias FrontendModel =
     { key : Key
     , data : Maybe Data
+    , images : List String
     }
 
 
@@ -34,6 +36,7 @@ type FrontendMsg
     | DownloadJson
     | UrlClicked UrlRequest
     | UrlChanged Url
+    | GotImageList (Result Http.Error (List String))
 
 
 type ToBackend

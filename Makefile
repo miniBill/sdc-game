@@ -15,8 +15,8 @@ all: out/game.gba public/art/list.json
 
 COMMA := ,
 
-public/art/list.json: $(wildcard public/art/*.png)
-	echo > $@ '[$(patsubst public/art/%.png,"%"$(COMMA),$(wildcard public/art/*.png))]'
+public/art/list.json: $(wildcard public/art/*.png) Makefile
+	python3 -c 'import glob, os, json; os.chdir("public/art"); print(json.dumps(glob.glob("*.png")))' > $@
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
@@ -60,4 +60,4 @@ out/dump_ppm: src-gba/dump_ppm.c
 
 .PHONY: clean
 clean:
-	rm -rf out
+	rm -rf out public/art/list.json

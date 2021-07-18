@@ -10,6 +10,7 @@ generate model =
     let
         scenes =
             dfsSort "main" model
+                |> List.concatMap Model.treeToList
 
         map =
             scenes

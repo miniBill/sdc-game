@@ -1,4 +1,4 @@
-module Model exposing (dataCodec, dfsSort, emptyScene, replaceScene)
+module Model exposing (Tree(..), dataCodec, dfsSort, emptyScene, replaceScene, treeToList)
 
 import Codec exposing (Codec)
 import Dict
@@ -31,7 +31,16 @@ justIfNot empty value =
         Just value
 
 
-dfsSort : String -> Data -> List ( String, Scene )
+type Tree
+    = Node String Scene (List Tree)
+
+
+treeToList : Tree -> List ( String, Scene )
+treeToList (Node name scene children) =
+    ( name, scene ) :: List.concatMap treeToList children
+
+
+dfsSort : String -> Data -> List Tree
 dfsSort root scenes =
     case Dict.get root scenes of
         Nothing ->
@@ -47,18 +56,20 @@ dfsSort root scenes =
                                     dfsSort v queue
 
                                 newQueue =
-                                    List.foldl (\( k, _ ) -> Dict.remove k) queue found
+                                    found
+                                        |> List.concatMap treeToList
+                                        |> List.foldl (\( k, _ ) -> Dict.remove k) queue
                             in
                             ( res ++ found, newQueue )
                         )
-                        ( [ ( root, scene ) ], Dict.remove root scenes )
+                        ( [], Dict.remove root scenes )
                         scene.next
             in
             if root == "main" then
-                visible ++ Dict.toList nonvisible
+                Node root scene visible :: List.map (\( n, s ) -> Node n s []) (Dict.toList nonvisible)
 
             else
-                visible
+                [ Node root scene visible ]
 
 
 replaceScene : String -> String -> Scene -> Data -> Data

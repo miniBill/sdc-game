@@ -4,7 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, px, rgb, rgba, row, shrink, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, rgba, row, shrink, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -16,11 +16,12 @@ import Generator
 import Html
 import Html.Attributes
 import Html.Events
+import Http
 import Lamdera exposing (Key, Url)
 import List.Extra as List
-import Model exposing (dfsSort, emptyScene, replaceScene)
+import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
 import Task
-import Types exposing (Data, FrontendModel, FrontendMsg(..), Scene, ToBackend(..), ToFrontend(..))
+import Types exposing (Data, FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
 import Url
 
 
@@ -30,6 +31,11 @@ type alias Model =
 
 type alias Msg =
     FrontendMsg
+
+
+fontSize : number
+fontSize =
+    16
 
 
 app :
@@ -49,12 +55,31 @@ app =
         , view =
             \model ->
                 { title = "SDC Game"
-                , body = [ Element.layout [] <| view model ]
+                , body =
+                    [ css
+                    , Element.layout [ Font.size fontSize ] <| view model
+                    ]
                 }
         , update = update
         , subscriptions = subscriptions
         , updateFromBackend = updateFromBackend
         }
+
+
+css : Html.Html Msg
+css =
+    let
+        content =
+            """
+            select {
+                font-size: """ ++ String.fromInt fontSize ++ """px;
+            }
+            """
+    in
+    Html.node "style"
+        []
+        [ Html.text content
+        ]
 
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
@@ -71,8 +96,14 @@ init : Url -> Key -> ( Model, Cmd Msg )
 init _ key =
     ( { key = key
       , data = Nothing
+      , images = []
       }
-    , Cmd.none
+    , Http.get
+        { url = "art/list.json"
+        , expect =
+            Http.expectJson GotImageList
+                (Codec.decoder <| Codec.list Codec.string)
+        }
     )
 
 
@@ -84,6 +115,16 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.data ) of
+        ( GotImageList (Err err), _ ) ->
+            let
+                _ =
+                    log "Error in reading image list" err
+            in
+            ( model, Cmd.none )
+
+        ( GotImageList (Ok images), _ ) ->
+            ( { model | images = images }, Cmd.none )
+
         ( _, Nothing ) ->
             ( model, Cmd.none )
 
@@ -138,6 +179,10 @@ update msg model =
         ( ReadFile str, _ ) ->
             case Codec.decodeString Model.dataCodec str of
                 Err err ->
+                    let
+                        _ =
+                            log "Error in reading file" err
+                    in
                     ( model, Cmd.none )
 
                 Ok newData ->
@@ -156,6 +201,15 @@ update msg model =
             )
 
 
+log : String -> a -> a
+log =
+    if True then
+        Debug.log
+
+    else
+        always identity
+
+
 view : Model -> Element Msg
 view model =
     case model.data of
@@ -165,13 +219,17 @@ view model =
         Just data ->
             let
                 scenes =
-                    data
-                        |> dfsSort "main"
-                        |> (\l -> l ++ [ ( "", emptyScene ) ])
-                        |> List.map (\( k, v ) -> viewScene data k v)
+                    dfsSort "main" data ++ [ Node "" emptyScene [] ]
+
+                sceneViews =
+                    List.map
+                        (viewScene data model.images)
+                        scenes
             in
             column [ width fill, spacing rythm, padding rythm ]
-                [ fileControls, wrappedRow [ spacing rythm ] scenes ]
+                [ fileControls
+                , wrappedRow [ spacing rythm ] sceneViews
+                ]
 
 
 fileControls : Element Msg
@@ -207,8 +265,8 @@ widthWithMinimum =
     width << Element.minimum 240
 
 
-viewScene : Data -> String -> Scene -> Element Msg
-viewScene data name scene =
+viewScene : Data -> List String -> Tree -> Element Msg
+viewScene data images (Node name scene children) =
     let
         viewNext_ i d =
             row segmentAttrs <| viewNext name data i d
@@ -237,8 +295,16 @@ viewScene data name scene =
                 [ row [ spacing rythm, width fill ]
                     [ input [] "Name" name <|
                         \newName -> Replace name ( newName, scene )
-                    , input [ widthWithMinimum shrink ] "Image" scene.image <|
-                        \newImage -> Replace name ( name, { scene | image = newImage } )
+                    , if List.isEmpty images then
+                        input [ widthWithMinimum shrink ] "Image" scene.image <|
+                            \newImage -> Replace name ( name, { scene | image = newImage } )
+
+                      else
+                        select []
+                            { onInput = \newImage -> Replace name ( name, { scene | image = newImage } )
+                            , selected = scene.image
+                            , options = "" :: List.map (String.replace ".png" "") images
+                            }
                     ]
                 , multiline [ widthWithMinimum fill ] "Text" scene.text <|
                     \newText -> Replace name ( name, { scene | text = newText } )
@@ -267,26 +333,22 @@ viewScene data name scene =
                     ]
                     none
     in
-    column
-        [ Element.htmlAttribute <| Html.Attributes.id name
-        , Border.width 1
-        , width <| Element.minimum 510 fill
-        , behindContent backgroundImage
-        , alignTop
+    column [ Border.width 1, padding rythm, spacing rythm ]
+        [ column
+            [ Element.htmlAttribute <| Html.Attributes.id name
+            , Border.width 1
+            , width <| Element.minimum 510 fill
+            , behindContent backgroundImage
+            , alignTop
+            ]
+            elems
+        , row [ spacing rythm ]
+            (List.map (viewScene data images) children)
         ]
-        elems
 
 
 viewNext : String -> Data -> Maybe Int -> ( String, String ) -> List (Element Msg)
 viewNext sceneName data i ( k, v ) =
-    let
-        toOption selected key =
-            Html.option
-                [ Html.Attributes.value key
-                , Html.Attributes.selected <| key == selected
-                ]
-                [ Html.text key ]
-    in
     [ Input.multiline
         [ alignTop
         , widthWithMinimum fill
@@ -298,17 +360,11 @@ viewNext sceneName data i ( k, v ) =
         , placeholder = Just <| Input.placeholder [] <| text "Label"
         , spellcheck = True
         }
-    , el [] <|
-        Element.html <|
-            Html.select
-                [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
-                , Html.Events.onInput
-                    (\newValue ->
-                        ReplaceNext sceneName i ( k, newValue )
-                    )
-                ]
-            <|
-                List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
+    , select []
+        { onInput = \newValue -> ReplaceNext sceneName i ( k, newValue )
+        , selected = v
+        , options = "" :: Dict.keys data ++ [ "end" ]
+        }
     , link
         [ Border.width 1
         , padding rythm
@@ -318,6 +374,32 @@ viewNext sceneName data i ( k, v ) =
         , url = "#" ++ v
         }
     ]
+
+
+select :
+    List (Attribute msg)
+    ->
+        { onInput : String -> msg
+        , selected : String
+        , options : List String
+        }
+    -> Element msg
+select attrs { onInput, selected, options } =
+    let
+        toOption key =
+            Html.option
+                [ Html.Attributes.value key
+                , Html.Attributes.selected <| key == selected
+                ]
+                [ Html.text key ]
+    in
+    el attrs <|
+        Element.html <|
+            Html.select
+                [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
+                , Html.Events.onInput onInput
+                ]
+                (List.map toOption options)
 
 
 input : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
