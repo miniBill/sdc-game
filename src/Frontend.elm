@@ -4,7 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Attribute, Element, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, px, rgba, row, spacing, text, width)
+import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, px, rgb, rgba, row, shrink, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -175,7 +175,7 @@ view model =
                         |> List.map (\( k, v ) -> viewScene data k v)
             in
             column [ width fill, spacing rythm, padding rythm ]
-                (fileControls :: scenes)
+                [ fileControls, wrappedRow [ spacing rythm ] scenes ]
 
 
 fileControls : Element Msg
@@ -206,31 +206,46 @@ style k v =
     Element.htmlAttribute <| Html.Attributes.style k v
 
 
+widthWithMinimum : Length -> Attribute msg
+widthWithMinimum =
+    width << Element.minimum 240
+
+
 viewScene : Data -> String -> Scene -> Element Msg
 viewScene data name scene =
     let
         viewNext_ i d =
             row segmentAttrs <| viewNext name data i d
 
+        nexts =
+            List.indexedMap (Just >> viewNext_) scene.next
+                ++ (if
+                        List.isEmpty scene.next
+                            || List.any (not << String.isEmpty << Tuple.first) scene.next
+                    then
+                        [ viewNext_ Nothing ( "", "" ) ]
+
+                    else
+                        []
+                   )
+
         elems =
             if String.isEmpty name && scene == emptyScene then
                 [ el segmentAttrs <| input [] "Name" name <| \newName -> Replace name ( newName, scene ) ]
 
             else
-                fixed
-                    :: List.indexedMap (Just >> viewNext_) scene.next
-                    ++ (if List.isEmpty scene.next || List.any (not << String.isEmpty << Tuple.first) scene.next then
-                            [ viewNext_ Nothing ( "", "" ) ]
-
-                        else
-                            []
-                       )
+                fixed :: nexts
 
         fixed =
             column segmentAttrs
-                [ input [] "Name" name <| \newName -> Replace name ( newName, scene )
-                , input [] "Image" scene.image <| \newImage -> Replace name ( name, { scene | image = newImage } )
-                , multiline [ width <| px 400 ] "Text" scene.text <| \newText -> Replace name ( name, { scene | text = newText } )
+                [ row [ spacing rythm, width fill ]
+                    [ input [] "Name" name <|
+                        \newName -> Replace name ( newName, scene )
+                    , input [ widthWithMinimum shrink ] "Image" scene.image <|
+                        \newImage -> Replace name ( name, { scene | image = newImage } )
+                    ]
+                , multiline [ widthWithMinimum fill ] "Text" scene.text <|
+                    \newText -> Replace name ( name, { scene | text = newText } )
                 ]
 
         segmentAttrs =
@@ -256,13 +271,14 @@ viewScene data name scene =
                     ]
                     none
     in
-    elems
-        |> column
-            [ Element.htmlAttribute <| Html.Attributes.id name
-            , Border.width 1
-            , width fill
-            , behindContent backgroundImage
-            ]
+    column
+        [ Element.htmlAttribute <| Html.Attributes.id name
+        , Border.width 1
+        , width <| Element.minimum 510 fill
+        , behindContent backgroundImage
+        , alignTop
+        ]
+        elems
 
 
 viewNext : String -> Data -> Maybe Int -> ( String, String ) -> List (Element Msg)
@@ -275,30 +291,36 @@ viewNext sceneName data i ( k, v ) =
                 ]
                 [ Html.text key ]
     in
-    [ Input.multiline [ alignTop, width <| Element.minimum 240 fill ]
+    [ Input.multiline
+        [ alignTop
+        , widthWithMinimum fill
+        , Background.color semitransparent
+        ]
         { label = Input.labelHidden "Label"
         , text = k
         , onChange = \newValue -> ReplaceNext sceneName i ( newValue, v )
         , placeholder = Just <| Input.placeholder [] <| text "Label"
         , spellcheck = True
         }
-    , column [ alignTop, spacing (rythm - 4) ]
-        [ text "Go to"
-        , el [] <|
-            Element.html <|
-                Html.select
-                    [ Html.Events.onInput
-                        (\newValue ->
-                            ReplaceNext sceneName i ( k, newValue )
-                        )
-                    ]
-                <|
-                    List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
-        , link [ Font.color <| Element.rgb 0 0 1 ]
-            { label = text "Scroll to"
-            , url = "#" ++ v
-            }
+    , el [] <|
+        Element.html <|
+            Html.select
+                [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
+                , Html.Events.onInput
+                    (\newValue ->
+                        ReplaceNext sceneName i ( k, newValue )
+                    )
+                ]
+            <|
+                List.map (toOption v) ("" :: Dict.keys data ++ [ "end" ])
+    , link
+        [ Border.width 1
+        , padding rythm
+        , Background.color semitransparent
         ]
+        { label = text "Scroll to"
+        , url = "#" ++ v
+        }
     ]
 
 
@@ -307,15 +329,20 @@ input attrs label value toMsg =
     Input.text
         ([ alignTop
          , width fill
-         , Background.color <| rgba 1 1 1 0.7
+         , Background.color semitransparent
          ]
             ++ List.map (Element.mapAttribute never) attrs
         )
-        { label = Input.labelAbove [] <| text label
+        { label = Input.labelHidden label
         , text = value
         , onChange = toMsg
-        , placeholder = Nothing
+        , placeholder = Just <| Input.placeholder [] <| text label
         }
+
+
+semitransparent : Element.Color
+semitransparent =
+    rgba 1 1 1 0.7
 
 
 multiline : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
@@ -324,13 +351,13 @@ multiline attrs label value setter =
         ([ alignTop
          , width fill
          , height fill
-         , Background.color <| rgba 1 1 1 0.7
+         , Background.color semitransparent
          ]
             ++ List.map (Element.mapAttribute never) attrs
         )
-        { label = Input.labelAbove [] <| text label
+        { label = Input.labelHidden label
         , text = value
         , onChange = setter
-        , placeholder = Nothing
+        , placeholder = Just <| Input.placeholder [] <| text label
         , spellcheck = True
         }
