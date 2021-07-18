@@ -4,7 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, rgba, row, shrink, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, row, shrink, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -15,12 +15,12 @@ import File.Select
 import Generator
 import Html
 import Html.Attributes
-import Html.Events
 import Http
 import Lamdera exposing (Key, Url)
 import List.Extra as List
 import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
 import Task
+import Theme exposing (input, multiline, rythm, select)
 import Types exposing (Data, FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
 import Url
 
@@ -250,11 +250,6 @@ fileControls =
         ]
 
 
-rythm : number
-rythm =
-    10
-
-
 style : String -> String -> Attribute msg
 style k v =
     Element.htmlAttribute <| Html.Attributes.style k v
@@ -285,7 +280,16 @@ viewScene data images (Node name scene children) =
 
         elems =
             if String.isEmpty name && scene == emptyScene then
-                [ el segmentAttrs <| input [] "Name" name <| \newName -> Replace name ( newName, scene ) ]
+                [ el segmentAttrs <|
+                    input
+                        [ alignTop
+                        , width fill
+                        ]
+                        { label = "Name"
+                        , text = name
+                        , onChange = \newName -> Replace name ( newName, scene )
+                        }
+                ]
 
             else
                 fixed :: nexts
@@ -293,11 +297,17 @@ viewScene data images (Node name scene children) =
         fixed =
             column segmentAttrs
                 [ row [ spacing rythm, width fill ]
-                    [ input [] "Name" name <|
-                        \newName -> Replace name ( newName, scene )
+                    [ input [ alignTop, width fill ]
+                        { label = "Name"
+                        , text = name
+                        , onChange = \newName -> Replace name ( newName, scene )
+                        }
                     , if List.isEmpty images then
-                        input [ widthWithMinimum shrink ] "Image" scene.image <|
-                            \newImage -> Replace name ( name, { scene | image = newImage } )
+                        input [ alignTop, widthWithMinimum shrink ]
+                            { label = "Image"
+                            , text = scene.image
+                            , onChange = \newImage -> Replace name ( name, { scene | image = newImage } )
+                            }
 
                       else
                         select []
@@ -306,8 +316,15 @@ viewScene data images (Node name scene children) =
                             , options = "" :: List.map (String.replace ".png" "") images
                             }
                     ]
-                , multiline [ widthWithMinimum fill ] "Text" scene.text <|
-                    \newText -> Replace name ( name, { scene | text = newText } )
+                , multiline
+                    [ alignTop
+                    , height fill
+                    , widthWithMinimum fill
+                    ]
+                    { label = "Text"
+                    , text = scene.text
+                    , onChange = \newText -> Replace name ( name, { scene | text = newText } )
+                    }
                 ]
 
         segmentAttrs =
@@ -333,7 +350,7 @@ viewScene data images (Node name scene children) =
                     ]
                     none
     in
-    column [ Border.width 1, padding rythm, spacing rythm ]
+    column [ spacing rythm, alignTop ]
         [ column
             [ Element.htmlAttribute <| Html.Attributes.id name
             , Border.width 1
@@ -349,16 +366,14 @@ viewScene data images (Node name scene children) =
 
 viewNext : String -> Data -> Maybe Int -> ( String, String ) -> List (Element Msg)
 viewNext sceneName data i ( k, v ) =
-    [ Input.multiline
+    [ multiline
         [ alignTop
+        , height fill
         , widthWithMinimum fill
-        , Background.color semitransparent
         ]
-        { label = Input.labelHidden "Label"
+        { label = "Label"
         , text = k
         , onChange = \newValue -> ReplaceNext sceneName i ( newValue, v )
-        , placeholder = Just <| Input.placeholder [] <| text "Label"
-        , spellcheck = True
         }
     , select []
         { onInput = \newValue -> ReplaceNext sceneName i ( k, newValue )
@@ -368,74 +383,9 @@ viewNext sceneName data i ( k, v ) =
     , link
         [ Border.width 1
         , padding rythm
-        , Background.color semitransparent
+        , Background.color Theme.colors.semitransparent
         ]
         { label = text "Scroll to"
         , url = "#" ++ v
         }
     ]
-
-
-select :
-    List (Attribute msg)
-    ->
-        { onInput : String -> msg
-        , selected : String
-        , options : List String
-        }
-    -> Element msg
-select attrs { onInput, selected, options } =
-    let
-        toOption key =
-            Html.option
-                [ Html.Attributes.value key
-                , Html.Attributes.selected <| key == selected
-                ]
-                [ Html.text key ]
-    in
-    el attrs <|
-        Element.html <|
-            Html.select
-                [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
-                , Html.Events.onInput onInput
-                ]
-                (List.map toOption options)
-
-
-input : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
-input attrs label value toMsg =
-    Input.text
-        ([ alignTop
-         , width fill
-         , Background.color semitransparent
-         ]
-            ++ List.map (Element.mapAttribute never) attrs
-        )
-        { label = Input.labelHidden label
-        , text = value
-        , onChange = toMsg
-        , placeholder = Just <| Input.placeholder [] <| text label
-        }
-
-
-semitransparent : Element.Color
-semitransparent =
-    rgba 1 1 1 0.7
-
-
-multiline : List (Attribute Never) -> String -> String -> (String -> Msg) -> Element Msg
-multiline attrs label value setter =
-    Input.multiline
-        ([ alignTop
-         , width fill
-         , height fill
-         , Background.color semitransparent
-         ]
-            ++ List.map (Element.mapAttribute never) attrs
-        )
-        { label = Input.labelHidden label
-        , text = value
-        , onChange = setter
-        , placeholder = Just <| Input.placeholder [] <| text label
-        , spellcheck = True
-        }
