@@ -278,17 +278,19 @@ viewScene data images (Node name scene children) =
                         []
                    )
 
+        nameInput =
+            input [ alignTop, width fill ]
+                { label = "Name"
+                , text = name
+                , onChange = \newName -> Replace name ( newName, scene )
+                }
+
         elems =
             if String.isEmpty name && scene == emptyScene then
-                [ el segmentAttrs <|
-                    input
-                        [ alignTop
-                        , width fill
-                        ]
-                        { label = "Name"
-                        , text = name
-                        , onChange = \newName -> Replace name ( newName, scene )
-                        }
+                [ column segmentAttrs
+                    [ row [ spacing rythm, width fill ]
+                        [ nameInput ]
+                    ]
                 ]
 
             else
@@ -297,11 +299,7 @@ viewScene data images (Node name scene children) =
         fixed =
             column segmentAttrs
                 [ row [ spacing rythm, width fill ]
-                    [ input [ alignTop, width fill ]
-                        { label = "Name"
-                        , text = name
-                        , onChange = \newName -> Replace name ( newName, scene )
-                        }
+                    [ nameInput
                     , if List.isEmpty images then
                         input [ alignTop, widthWithMinimum shrink ]
                             { label = "Image"
@@ -357,6 +355,7 @@ viewScene data images (Node name scene children) =
             , width <| Element.minimum 510 fill
             , behindContent backgroundImage
             , alignTop
+            , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
             ]
             elems
         , row [ spacing rythm ]
