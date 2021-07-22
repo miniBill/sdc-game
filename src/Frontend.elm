@@ -263,16 +263,14 @@ style k v =
     Element.htmlAttribute <| Html.Attributes.style k v
 
 
-widthWithMinimum : Length -> Attribute msg
-widthWithMinimum =
-    width << Element.minimum 240
-
-
 viewScene : Data -> Dict String Bytes -> Tree -> Element Msg
 viewScene data images (Node name scene children) =
     let
+        keys =
+            Dict.keys data
+
         viewNext_ i d =
-            row segmentAttrs <| viewNext name data i d
+            row segmentAttrs <| viewNext { keys = keys, toMsg = ReplaceNext name i } d
 
         nexts =
             List.indexedMap (Just >> viewNext_) scene.next
@@ -309,14 +307,14 @@ viewScene data images (Node name scene children) =
                 [ row [ spacing rythm, width fill ]
                     [ nameInput
                     , if Dict.isEmpty images then
-                        input [ alignTop, widthWithMinimum shrink ]
+                        input [ width fill ]
                             { label = "Image"
                             , text = scene.image
                             , onChange = \newImage -> Replace name ( name, { scene | image = newImage } )
                             }
 
                       else
-                        select []
+                        select [ width fill ]
                             { onInput = \newImage -> Replace name ( name, { scene | image = newImage } )
                             , selected = scene.image
                             , options = "" :: Dict.keys images
@@ -325,7 +323,7 @@ viewScene data images (Node name scene children) =
                 , multiline
                     [ alignTop
                     , height fill
-                    , widthWithMinimum fill
+                    , width fill
                     ]
                     { label = "Text"
                     , text = scene.text
@@ -380,21 +378,21 @@ viewScene data images (Node name scene children) =
         ]
 
 
-viewNext : String -> Data -> Maybe Int -> ( String, String ) -> List (Element Msg)
-viewNext sceneName data i ( k, v ) =
+viewNext : { keys : List String, toMsg : ( String, String ) -> msg } -> ( String, String ) -> List (Element msg)
+viewNext { keys, toMsg } ( k, v ) =
     [ multiline
         [ alignTop
         , height fill
-        , widthWithMinimum fill
+        , width fill
         ]
         { label = "Label"
         , text = k
-        , onChange = \newValue -> ReplaceNext sceneName i ( newValue, v )
+        , onChange = \newValue -> toMsg ( newValue, v )
         }
     , select []
-        { onInput = \newValue -> ReplaceNext sceneName i ( k, newValue )
+        { onInput = \newValue -> toMsg ( k, newValue )
         , selected = v
-        , options = "" :: Dict.keys data ++ [ "end" ]
+        , options = "" :: keys ++ [ "end" ]
         }
     , link
         [ Border.width 1
