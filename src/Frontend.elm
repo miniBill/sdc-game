@@ -6,7 +6,7 @@ import Browser.Navigation as Nav
 import Bytes exposing (Bytes)
 import Codec
 import Dict exposing (Dict)
-import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, row, shrink, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, row, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -22,7 +22,7 @@ import List.Extra as List
 import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
 import Task
 import Theme exposing (input, multiline, rythm, select)
-import Types exposing (Data, FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
 import Url
 
 
@@ -225,9 +225,12 @@ view model =
                 scenes =
                     dfsSort "main" data ++ [ Node "" emptyScene [] ]
 
+                keys =
+                    Dict.keys data
+
                 sceneViews =
                     List.map
-                        (viewScene data model.images)
+                        (viewScene keys model.images)
                         scenes
             in
             column [ width fill, spacing rythm, padding rythm ]
@@ -263,12 +266,9 @@ style k v =
     Element.htmlAttribute <| Html.Attributes.style k v
 
 
-viewScene : Data -> Dict String Bytes -> Tree -> Element Msg
-viewScene data images (Node name scene children) =
+viewScene : List String -> Dict String Bytes -> Tree -> Element Msg
+viewScene keys images (Node name scene children) =
     let
-        keys =
-            Dict.keys data
-
         viewNext_ i d =
             row segmentAttrs <| viewNext { keys = keys, toMsg = ReplaceNext name i } d
 
@@ -374,7 +374,7 @@ viewScene data images (Node name scene children) =
             ]
             elems
         , row [ spacing rythm ]
-            (List.map (viewScene data images) children)
+            (List.map (viewScene keys images) children)
         ]
 
 
