@@ -33,7 +33,7 @@ type alias BackendModel =
 
 type FrontendMsg
     = FileSelect
-    | FileSelected File
+    | FileSelected File.File
     | ReadFile String
     | Replace String ( String, Scene )
     | ReplaceNext String (Maybe Int) ( String, String )

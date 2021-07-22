@@ -1,9 +1,11 @@
 module Frontend exposing (app)
 
+import Base64
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
+import Bytes exposing (Bytes)
 import Codec
-import Dict
+import Dict exposing (Dict)
 import Element exposing (Attribute, Element, Length, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, row, shrink, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
@@ -15,7 +17,6 @@ import File.Select
 import Generator
 import Html
 import Html.Attributes
-import Http
 import Lamdera exposing (Key, Url)
 import List.Extra as List
 import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
@@ -76,10 +77,7 @@ css =
             }
             """
     in
-    Html.node "style"
-        []
-        [ Html.text content
-        ]
+    Html.node "style" [] [ Html.text content ]
 
 
 updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
@@ -91,19 +89,20 @@ updateFromBackend msg model =
         TFData data ->
             ( { model | data = Just data }, Cmd.none )
 
+        TFGotImageList images ->
+            ( { model | images = images }, Cmd.none )
+
+        TFImage name image ->
+            ( { model | images = Dict.insert name image model.images }, Cmd.none )
+
 
 init : Url -> Key -> ( Model, Cmd Msg )
 init _ key =
     ( { key = key
       , data = Nothing
-      , images = []
+      , images = Dict.empty
       }
-    , Http.get
-        { url = "art/list.json"
-        , expect =
-            Http.expectJson GotImageList
-                (Codec.decoder <| Codec.list Codec.string)
-        }
+    , Lamdera.sendToBackend TBGetImageList
     )
 
 
@@ -115,16 +114,6 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.data ) of
-        ( GotImageList (Err err), _ ) ->
-            let
-                _ =
-                    log "Error in reading image list" err
-            in
-            ( model, Cmd.none )
-
-        ( GotImageList (Ok images), _ ) ->
-            ( { model | images = images }, Cmd.none )
-
         ( _, Nothing ) ->
             ( model, Cmd.none )
 
@@ -145,6 +134,24 @@ update msg model =
 
         ( FileSelect, _ ) ->
             ( model, File.Select.file [ "application/json" ] FileSelected )
+
+        ( FileSelected file, _ ) ->
+            ( model, Task.perform ReadFile <| File.toString file )
+
+        ( ImageSelect, _ ) ->
+            ( model, File.Select.file [ "image/png" ] ImageSelected )
+
+        ( ImageSelected file, _ ) ->
+            ( model, Task.perform (ReadImage <| File.name file) <| File.toBytes file )
+
+        ( ReadImage filename image, _ ) ->
+            let
+                name =
+                    String.replace ".png" "" filename
+            in
+            ( { model | images = Dict.insert name image model.images }
+            , Lamdera.sendToBackend <| TBImage name image
+            )
 
         ( Replace oldKey ( newKey, newValue ), Just data ) ->
             ( { model | data = Just <| replaceScene oldKey newKey newValue data }
@@ -172,9 +179,6 @@ update msg model =
                     ( { model | data = Just <| replaceScene sceneName sceneName newValue data }
                     , Lamdera.sendToBackend <| TBReplace sceneName ( sceneName, newValue )
                     )
-
-        ( FileSelected file, _ ) ->
-            ( model, Task.perform ReadFile <| File.toString file )
 
         ( ReadFile str, _ ) ->
             case Codec.decodeString Model.dataCodec str of
@@ -240,6 +244,10 @@ fileControls =
             , label = text "Upload JSON"
             }
         , Input.button [ Border.width 1, padding rythm ]
+            { onPress = Just ImageSelect
+            , label = text "Upload Image"
+            }
+        , Input.button [ Border.width 1, padding rythm ]
             { onPress = Just DownloadJson
             , label = text "Save as JSON"
             }
@@ -260,7 +268,7 @@ widthWithMinimum =
     width << Element.minimum 240
 
 
-viewScene : Data -> List String -> Tree -> Element Msg
+viewScene : Data -> Dict String Bytes -> Tree -> Element Msg
 viewScene data images (Node name scene children) =
     let
         viewNext_ i d =
@@ -300,7 +308,7 @@ viewScene data images (Node name scene children) =
             column segmentAttrs
                 [ row [ spacing rythm, width fill ]
                     [ nameInput
-                    , if List.isEmpty images then
+                    , if Dict.isEmpty images then
                         input [ alignTop, widthWithMinimum shrink ]
                             { label = "Image"
                             , text = scene.image
@@ -311,7 +319,7 @@ viewScene data images (Node name scene children) =
                         select []
                             { onInput = \newImage -> Replace name ( name, { scene | image = newImage } )
                             , selected = scene.image
-                            , options = "" :: List.map (String.replace ".png" "") images
+                            , options = "" :: Dict.keys images
                             }
                     ]
                 , multiline
@@ -334,19 +342,28 @@ viewScene data images (Node name scene children) =
             ]
 
         backgroundImage =
-            if String.isEmpty scene.image then
-                none
-
-            else
-                el
-                    [ style "background-image" <| "url(art/" ++ scene.image ++ ".png)"
-                    , style "background-repeat" "no-repeat"
-                    , style "background-size" "contain"
-                    , style "background-position" "right"
-                    , width fill
-                    , height fill
-                    ]
+            case Dict.get scene.image images of
+                Nothing ->
                     none
+
+                Just img ->
+                    el
+                        [ style "background-image" <|
+                            "url(\""
+                                ++ (img
+                                        |> Base64.fromBytes
+                                        |> Maybe.withDefault ""
+                                        |> (++) "data:image/png;base64,"
+                                   )
+                                ++ "\")"
+                        , style "background-repeat" "no-repeat"
+                        , style "background-size" "contain"
+                        , style "background-position" "right"
+                        , style "image-rendering" "pixelated"
+                        , width fill
+                        , height fill
+                        ]
+                        none
     in
     column [ spacing rythm, alignTop ]
         [ column

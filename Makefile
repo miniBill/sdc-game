@@ -10,15 +10,10 @@ IMAGES_OBJECTS := $(patsubst art/%.png,out/art/%.o,$(wildcard art/*.png))
 LIB_HEADERS := $(wildcard src-gba/lib/*.h)
 LIB_OBJECTS := $(patsubst src-gba/lib/%.c,out/%.o,$(wildcard src-gba/lib/*.c))
 
-PUBLIC_IMAGES := $(patsubst art/%.png,public/art/%.png,$(wildcard art/*.png))
+SMOL_IMAGES := $(patsubst art/%.png,out/art/%.png,$(wildcard art/*.png))
 
 .PHONY: all
-all: out/game.gba public/art/list.json
-
-COMMA := ,
-
-public/art/list.json: Makefile $(PUBLIC_IMAGES)
-	python3 -c 'import glob, os, json; os.chdir("public/art"); print(json.dumps(glob.glob("*.png")))' > $@
+all: out/game.gba $(SMOL_IMAGES)
 
 out/%.gba: out/%.elf
 	$(OBJCOPY) -O binary out/$*.elf $@
@@ -51,14 +46,14 @@ out/art/font.ppm: art/font.png
 	mkdir -p out/art
 	convert $^ -compress none $@
 
-.PRECIOUS: out/%.ppm
+.PRECIOUS: out/art/%.ppm
 out/art/%.ppm: art/%.png Makefile
 	mkdir -p out/art
 	convert $< -resize 240x160 -dither FloydSteinberg -colors 125 -compress none $@
 
-public/art/%.png: out/art/%.ppm
-	mkdir -p public/art
-	convert $< $@
+.PRECIOUS: out/art/%.png
+out/art/%.png: out/art/%.ppm
+	convert $^ $@
 
 out/dump_ppm: src-gba/dump_ppm.c
 	mkdir -p out
@@ -66,4 +61,4 @@ out/dump_ppm: src-gba/dump_ppm.c
 
 .PHONY: clean
 clean:
-	rm -rf out public/art elm-stuff
+	rm -rf out elm-stuff

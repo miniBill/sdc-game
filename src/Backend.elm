@@ -30,6 +30,7 @@ init : ( Model, Cmd BackendMsg )
 init =
     ( { connectedClients = Set.empty
       , data = Dict.empty
+      , images = Dict.empty
       }
     , Cmd.none
     )
@@ -40,7 +41,10 @@ update msg model =
     case msg of
         Connected _ clientId ->
             ( { model | connectedClients = Set.insert clientId model.connectedClients }
-            , Lamdera.sendToFrontend clientId <| TFData model.data
+            , Cmd.batch
+                [ Lamdera.sendToFrontend clientId <| TFData model.data
+                , Lamdera.sendToFrontend clientId <| TFGotImageList model.images
+                ]
             )
 
         Disconnected _ clientId ->
@@ -58,6 +62,16 @@ updateFromFrontend _ clientId msg model =
         TBData data ->
             ( { model | data = data }
             , almostBroadcast model clientId <| TFData data
+            )
+
+        TBGetImageList ->
+            ( model
+            , Lamdera.sendToFrontend clientId <| TFGotImageList model.images
+            )
+
+        TBImage name image ->
+            ( { model | images = Dict.insert name image model.images }
+            , almostBroadcast model clientId <| TFImage name image
             )
 
 
