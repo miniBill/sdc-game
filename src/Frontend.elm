@@ -6,7 +6,7 @@ import Browser.Navigation as Nav
 import Bytes exposing (Bytes)
 import Codec
 import Dict exposing (Dict)
-import Element exposing (Attribute, Element, alignTop, behindContent, centerX, centerY, column, el, fill, height, link, none, padding, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignBottom, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, inFront, link, none, padding, paddingEach, px, row, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -22,7 +22,7 @@ import List.Extra as List
 import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
 import Task
 import Theme exposing (input, multiline, rythm, select)
-import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), Scene, ToBackend(..), ToFrontend(..))
 import Url
 
 
@@ -74,6 +74,21 @@ css =
             """
             select {
                 font-size: """ ++ String.fromInt fontSize ++ """px;
+            }
+
+            .preview {
+                visibility: hidden;
+            }
+
+            .scene:hover .preview {
+                visibility: visible;
+            }
+
+            .pixelated {
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -webkit-crisp-edges;
+                image-rendering: pixelated;
+                image-rendering: crisp-edges;
             }
             """
     in
@@ -266,6 +281,11 @@ style k v =
     Element.htmlAttribute <| Html.Attributes.style k v
 
 
+class : String -> Attribute msg
+class c =
+    Element.htmlAttribute <| Html.Attributes.class c
+
+
 viewScene : List String -> Dict String Bytes -> Tree -> Element Msg
 viewScene keys images (Node name scene children) =
     let
@@ -339,43 +359,107 @@ viewScene keys images (Node name scene children) =
             , height fill
             ]
 
-        backgroundImage =
-            case Dict.get scene.image images of
-                Nothing ->
-                    none
+        imageUrl =
+            Dict.get scene.image images
+                |> Maybe.map
+                    (\image ->
+                        image
+                            |> Base64.fromBytes
+                            |> Maybe.withDefault ""
+                            |> (++) "data:image/png;base64,"
+                    )
 
-                Just img ->
-                    el
-                        [ style "background-image" <|
-                            "url(\""
-                                ++ (img
-                                        |> Base64.fromBytes
-                                        |> Maybe.withDefault ""
-                                        |> (++) "data:image/png;base64,"
-                                   )
-                                ++ "\")"
-                        , style "background-repeat" "no-repeat"
-                        , style "background-size" "contain"
-                        , style "background-position" "right"
-                        , style "image-rendering" "pixelated"
-                        , width fill
-                        , height fill
-                        ]
+        rendering =
+            Element.onRight <|
+                case imageUrl of
+                    Nothing ->
                         none
+
+                    Just _ ->
+                        render scene imageUrl
     in
     column [ spacing rythm, alignTop ]
         [ column
             [ Element.htmlAttribute <| Html.Attributes.id name
+            , class "scene"
             , Border.width 1
             , width <| Element.minimum 510 fill
-            , behindContent backgroundImage
+            , behindContent <| pixelatedImage imageUrl
             , alignTop
             , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
+            , rendering
             ]
             elems
         , row [ spacing rythm ]
             (List.map (viewScene keys images) children)
         ]
+
+
+pixelatedImage : Maybe String -> Element msg
+pixelatedImage maybeUrl =
+    case maybeUrl of
+        Nothing ->
+            none
+
+        Just url ->
+            el
+                [ class "pixelated"
+                , style "background-image" <| "url(\"" ++ url ++ "\")"
+                , style "background-repeat" "no-repeat"
+                , style "background-size" "contain"
+                , style "background-position" "right"
+                , width fill
+                , height fill
+                ]
+                none
+
+
+render : Scene -> Maybe String -> Element msg
+render scene imageUrl =
+    let
+        scale =
+            3
+
+        width =
+            240
+
+        height =
+            160
+
+        ( leftLabel, rightLabel ) =
+            case scene.next of
+                [ ( "", _ ) ] ->
+                    ( "", "A/B: Next" )
+
+                [ ( label, _ ) ] ->
+                    ( "", "A/B: " ++ label )
+
+                [ ( l, _ ), ( r, _ ) ] ->
+                    ( "B: " ++ l, "A: " ++ r )
+
+                _ ->
+                    ( "", "" )
+    in
+    el
+        [ paddingEach { left = rythm, top = 0, bottom = 0, right = 0 }
+        , class "preview"
+        ]
+    <|
+        el
+            [ Font.color <| Element.rgb 1 1 1
+            , Font.shadow
+                { offset = ( 0, 1 )
+                , blur = 0
+                , color = Element.rgb 0.6 0.6 0.6
+                }
+            , Element.width <| px <| scale * width
+            , Element.height <| px <| scale * height
+            , inFront <| el [ alignBottom ] <| text leftLabel
+            , inFront <| el [ alignBottom, alignRight ] <| text rightLabel
+            , inFront <| el [ centerX ] <| text scene.text
+            ]
+        <|
+            pixelatedImage imageUrl
 
 
 viewNext : { keys : List String, toMsg : ( String, String ) -> msg } -> ( String, String ) -> List (Element msg)
