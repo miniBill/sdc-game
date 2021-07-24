@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
   for (int y = 0, i = 0; y < height; y++)
     for (int x = 0; x < width; x++, i++) {
-      uint32_t r, g, b;
+      int r, g, b;
       scanf("%d %d %d", &r, &g, &b);
 
       uint16_t color = (b >> 3) << 10 | (g >> 3) << 5 | (r >> 3);
