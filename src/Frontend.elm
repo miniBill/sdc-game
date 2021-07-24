@@ -80,7 +80,7 @@ css =
                 visibility: hidden;
             }
 
-            .scene:hover .preview {
+            .scene:hover + div .preview {
                 visibility: visible;
             }
 
@@ -394,17 +394,21 @@ viewScene scale keys images (Node name scene children) =
                         el [ Element.moveUp 56 ] <| render scale scene imageUrl
     in
     column [ spacing rythm, alignTop ]
-        [ column
-            [ Element.htmlAttribute <| Html.Attributes.id name
-            , class "scene"
-            , Border.width 1
-            , width <| Element.minimum 510 fill
-            , behindContent <| pixelatedImage imageUrl
+        [ el
+            [ width <| Element.minimum 510 fill
             , alignTop
-            , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
             , rendering
             ]
-            elems
+            (column
+                [ Element.htmlAttribute <| Html.Attributes.id name
+                , class "scene"
+                , Border.width 1
+                , width fill
+                , behindContent <| pixelatedImage imageUrl
+                , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
+                ]
+                elems
+            )
         , row [ spacing rythm ]
             (List.map (viewScene scale keys images) children)
         ]
