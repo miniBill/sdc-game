@@ -391,7 +391,7 @@ viewScene scale keys images (Node name scene children) =
                         none
 
                     Just _ ->
-                        render scale scene imageUrl
+                        el [ Element.moveUp 56 ] <| render scale scene imageUrl
     in
     column [ spacing rythm, alignTop ]
         [ column
