@@ -2,7 +2,7 @@ CC := arm-none-eabi-gcc
 AS := arm-none-eabi-as
 OBJCOPY := arm-none-eabi-objcopy
 
-CFLAGS := -I out -O3 -fomit-frame-pointer -marm -mcpu=arm7tdmi -std=c11 -pedantic -Wall -Werror
+CFLAGS := -I out -O3 -fomit-frame-pointer -std=c11 -pedantic -Wall -Werror
 
 ART_FILES := $(filter-out art/font.png, $(wildcard art/*.png))
 
@@ -13,12 +13,13 @@ LIB_HEADERS := $(wildcard src-gba/lib/*.h)
 LIB_OBJECTS := $(patsubst src-gba/lib/%.c,out/%.o,$(wildcard src-gba/lib/*.c))
 
 SMOL_IMAGES := $(patsubst art/%.png,out/art/%.png,$(ART_FILES))
+FONT_IMAGES := $(addsuffix .png,$(addprefix public/font/,$(shell seq 32 126)))
 
 OBJS := out/crt0.o out/game.o out/logic.o out/font.o $(LIB_OBJECTS) $(IMAGES_OBJECTS)
 
 
 .PHONY: all
-all: out/game.gba $(SMOL_IMAGES)
+all: out/game.gba $(FONT_IMAGES) $(SMOL_IMAGES)
 
 
 out/%.gba: out/%.elf
@@ -31,7 +32,7 @@ out/game.elf: $(OBJS)
 
 out/%.o: src-gba/%.c
 	mkdir -p out
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -marm -mcpu=arm7tdmi -o $@ $<
 
 
 out/%.o: src-gba/%.s
@@ -41,7 +42,7 @@ out/%.o: src-gba/%.s
 
 out/%.o: src-gba/lib/%.c
 	mkdir -p out
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -marm -mcpu=arm7tdmi -o $@ $<
 
 
 out/font.c out/font.h: out/font.ppm out/dump_font
@@ -74,20 +75,36 @@ out/art/%.png: out/art/%.ppm
 .PRECIOUS: out/%
 out/%: src-gba/%.c
 	mkdir -p out
-	gcc -o $@ $^
+	gcc -o $@ $(CFLAGS) $^
 
+
+.PRECIOUS: out/dump_char
+out/dump_char: src-gba/dump_char.c
+	mkdir -p out
+	gcc -o $@ $(CFLAGS) $^ out/font.c
+
+
+.PRECIOUS: out/font/%.ppm
+out/font/%.ppm: out/dump_char out/font.h
+	mkdir -p out/font
+	./out/dump_char $* > $@
+
+public/font/%.png: out/font/%.ppm
+	mkdir -p public/font
+	convert $^ $@
 
 .PHONY: clean
 clean:
 	rm -rf out elm-stuff
 
+
 # Automatic dependencies
 .PRECIOUS: %.d
 %.d: %.c Makefile
-	$(CC) -MM -MT"$@ $(@:.d=.o)" -MF$@ $(CFLAGS) $<
+	$(CC) -MM -MT"$@ $(@:.d=.o)" -MF$@ $(CFLAGS) -marm -mcpu=arm7tdmi $<
 
 out/%.d: src-gba/%.c Makefile
-	$(CC) -MM -MT"$@ $(@:.d=.o)" -MF$@ $(CFLAGS) $<
+	$(CC) -MM -MT"$@ $(@:.d=.o)" -MF$@ $(CFLAGS) -marm -mcpu=arm7tdmi $<
 
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(MAKECMDGOALS),distclean)

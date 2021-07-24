@@ -4,4 +4,4 @@ node_modules
 dist
 src-gba/logic.c
 out
-public/art
+public/font
