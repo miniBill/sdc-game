@@ -14,6 +14,7 @@ type alias FrontendModel =
     , data : Maybe Data
     , images : Dict String Bytes
     , scale : Int
+    , hoveredScene : Maybe String
     }
 
 
@@ -42,6 +43,7 @@ type FrontendMsg
     | UrlClicked UrlRequest
     | UrlChanged Url
     | Scale Int
+    | SelectScene (Maybe String)
 
 
 type ToBackend

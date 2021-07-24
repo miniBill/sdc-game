@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 import Element exposing (Attribute, Element, alignBottom, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, inFront, link, none, padding, paddingEach, px, row, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events
 import Element.Font as Font
 import Element.Input as Input
 import File
@@ -76,14 +77,6 @@ css =
                 font-size: """ ++ String.fromInt fontSize ++ """px;
             }
 
-            .preview {
-                visibility: hidden;
-            }
-
-            .scene:hover + div .preview {
-                visibility: visible;
-            }
-
             .pixelated {
                 image-rendering: -moz-crisp-edges;
                 image-rendering: -webkit-crisp-edges;
@@ -117,6 +110,7 @@ init _ key =
       , data = Nothing
       , images = Dict.empty
       , scale = 2
+      , hoveredScene = Nothing
       }
     , Lamdera.sendToBackend TBGetImageList
     )
@@ -223,6 +217,9 @@ update msg model =
         ( Scale scale, Just _ ) ->
             ( { model | scale = scale }, Cmd.none )
 
+        ( SelectScene scene, Just _ ) ->
+            ( { model | hoveredScene = scene }, Cmd.none )
+
 
 log : String -> a -> a
 log =
@@ -249,7 +246,7 @@ view model =
 
                 sceneViews =
                     List.map
-                        (viewScene model.scale keys model.images)
+                        (viewScene model.hoveredScene model.scale keys model.images)
                         scenes
             in
             column [ width fill, spacing rythm, padding rythm ]
@@ -301,8 +298,8 @@ class c =
     Element.htmlAttribute <| Html.Attributes.class c
 
 
-viewScene : Int -> List String -> Dict String Bytes -> Tree -> Element Msg
-viewScene scale keys images (Node name scene children) =
+viewScene : Maybe String -> Int -> List String -> Dict String Bytes -> Tree -> Element Msg
+viewScene hoveredScene scale keys images (Node name scene children) =
     let
         viewNext_ i d =
             row segmentAttrs <| viewNext { keys = keys, toMsg = ReplaceNext name i } d
@@ -391,7 +388,11 @@ viewScene scale keys images (Node name scene children) =
                         none
 
                     Just _ ->
-                        el [ Element.moveUp 56 ] <| render scale scene imageUrl
+                        if hoveredScene == Just name then
+                            render scale scene imageUrl
+
+                        else
+                            none
     in
     column [ spacing rythm, alignTop ]
         [ el
@@ -406,11 +407,13 @@ viewScene scale keys images (Node name scene children) =
                 , width fill
                 , behindContent <| pixelatedImage imageUrl
                 , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
+                , Element.Events.onMouseEnter <| SelectScene <| Just name
+                , Element.Events.onMouseLeave <| SelectScene Nothing
                 ]
                 elems
             )
         , row [ spacing rythm ]
-            (List.map (viewScene scale keys images) children)
+            (List.map (viewScene hoveredScene scale keys images) children)
         ]
 
 
