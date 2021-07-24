@@ -465,18 +465,24 @@ render scale scene imageUrl =
 
             else
                 text
-                    |> String.toList
-                    |> List.intersperse ' '
-                    |> (\s -> ' ' :: s ++ [ ' ' ])
-                    |> List.map (Char.toCode >> String.fromInt)
+                    |> String.split "\n"
                     |> List.map
-                        (\n ->
-                            image [ Element.height <| px <| 13 * scale, class "pixelated" ]
-                                { src = "font/" ++ n ++ ".png"
-                                , description = n
-                                }
+                        (\line ->
+                            line
+                                |> String.toList
+                                |> List.intersperse ' '
+                                |> (\s -> ' ' :: s ++ [ ' ' ])
+                                |> List.map (Char.toCode >> String.fromInt)
+                                |> List.map
+                                    (\n ->
+                                        image [ Element.height <| px <| 13 * scale, class "pixelated" ]
+                                            { src = "font/" ++ n ++ ".png"
+                                            , description = n
+                                            }
+                                    )
+                                |> row attrs
                         )
-                    |> row attrs
+                    |> column attrs
     in
     el
         [ paddingEach { left = rythm, top = 0, bottom = 0, right = 0 }
