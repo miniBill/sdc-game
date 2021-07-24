@@ -1,66 +1,31 @@
 #include "text.h"
-#include "art/font.h"
+#include "font.h"
 #include "graphics.h"
 #include "utils.h"
 #include <stdint.h>
 #include <string.h>
 
-#define font_string_length 94
-
-const char *font_string = " !\"#$%&'()*+,-./"
-                          "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
-                          "abcdefghijklmnopqrstuvwxyz{|}~";
-
-int fontl_cached[font_string_length] = {0};
-int fontr_cached[font_string_length] = {0};
-
 uint8_t font_color_index[3] = {0};
 
-uint8_t find_fontl_fontr(int index, int *fontl, int *fontr) {
-  int font_index = 0;
-  while (*fontr < font_indexed_width) {
-    (*fontr)++;
-    if (font_indexed[*fontr] == 1) {
-      font_index++;
-      if (font_index == index)
-        *fontl = *fontr;
-      if (font_index == index + 1)
-        return 1;
-    }
-  }
-  return 0;
-}
-
-void fill_fontl_fontr_cache() {
-  for (int i = 0; i < font_string_length; i++)
-    find_fontl_fontr(i, &fontl_cached[i], &fontr_cached[i]);
-}
-
-int find_font_index(char curr) {
-  int index = -1;
-  while (++index < strlen(font_string))
-    if (font_string[index] == curr)
-      return index;
-  return -1;
-}
+bool is_printable(char curr) { return curr >= ' ' && curr <= '~'; }
 
 int print_char(volatile uint16_t *buffer, char curr, int x, int y) {
-  int index = find_font_index(curr);
-  if (index < 0)
+  if (!is_printable(curr))
     return 0;
 
-  int fontl = fontl_cached[index];
-  int fontr = fontr_cached[index];
+  int index = curr - ' ';
 
-  for (int fy = 1; fy < font_indexed_height; fy++) {
-    for (int fx = fontl; fx < fontr; fx++) {
-      uint8_t pixel = font_indexed[fy * font_indexed_width + fx];
+  int char_width = font_width[index];
+
+  for (int fy = 0; fy < font_height; fy++) {
+    for (int fx = 0; fx < char_width; fx++) {
+      uint8_t pixel = font_indexed[index][fy * char_width + fx];
       uint8_t indexed_color = font_color_index[pixel];
-      put_pixel(buffer, y + fy - 1, x + fx - fontl, indexed_color);
+      put_pixel(buffer, y + fy, x + fx, indexed_color);
     }
   }
 
-  return fontr - fontl;
+  return char_width;
 }
 
 int count_lines(const char *text) {
@@ -72,9 +37,6 @@ int count_lines(const char *text) {
 }
 
 int measure_first_line_width(const char *text) {
-  if (!fontr_cached[0])
-    fill_fontl_fontr_cache();
-
   int len = strlen(text);
   int current_row_width = 1;
   for (int i = 0; i < len; i++) {
@@ -82,26 +44,22 @@ int measure_first_line_width(const char *text) {
     if (curr == '\n')
       return current_row_width;
 
-    int index = find_font_index(curr);
-    if (index < 0)
+    if (!is_printable(curr))
       continue;
 
-    int fontl = fontl_cached[index];
-    int fontr = fontr_cached[index];
-    current_row_width += fontr - fontl;
+    int index = curr - ' ';
+
+    current_row_width += font_width[index] + 1;
   }
   return current_row_width;
 }
 
 void print_text(volatile uint16_t *buffer, const char *text, int x, int y,
                 enum Align halign, enum Align valign) {
-  if (!fontr_cached[0])
-    fill_fontl_fontr_cache();
-
   int ox = x;
-  if (halign != ALIGN_BEGIN || y != ALIGN_BEGIN) {
+  if (valign != ALIGN_BEGIN) {
     int lines = count_lines(text);
-    int height = (font_indexed_height - 1) * lines;
+    int height = font_height * lines;
     switch (valign) {
     case ALIGN_BEGIN:
       break;
@@ -123,7 +81,7 @@ void print_text(volatile uint16_t *buffer, const char *text, int x, int y,
 
     if (curr == '\n') {
       start_of_line = true;
-      y += font_indexed_height - 1;
+      y += font_height;
       x = ox;
       continue;
     }
@@ -147,8 +105,8 @@ void print_text(volatile uint16_t *buffer, const char *text, int x, int y,
       x++;
     }
 
-    int curr_width = print_char(buffer, curr, x, y);
-    x += curr_width;
+    x += print_char(buffer, curr, x, y);
+    x += print_char(buffer, ' ', x, y);
   }
 }
 

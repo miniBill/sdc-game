@@ -1,3 +1,4 @@
+#include "dump_utils.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,30 +10,13 @@ uint8_t palette_inverse[256 * 256 * 256] = {0};
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s image_name < input.ppm > output.c\n");
+    fprintf(stderr, "Usage: %s image_name < input.ppm > output.c\n", argv[0]);
     return 1;
   }
 
-  char *image_name = argv[1];
-
-  char p, three;
-  scanf("%c%c", &p, &three);
-
-  if (p != 'P' || three != '3') {
-    fprintf(stderr, "Input image must be in 'P3' Netpbm format\n");
-    return 2;
-  }
-
   int width, height;
-  scanf("%d %d", &width, &height);
-
-  int bit_depth;
-  scanf("%d", &bit_depth);
-
-  if (bit_depth != 255) {
-    fprintf(stderr, "Input image must have bit depth 255, found %d\n",
-            bit_depth);
-    return 3;
+  if (!read_ppm_header(&width, &height)) {
+    return 2;
   }
 
   int next_free_palette = 1;
@@ -58,6 +42,7 @@ int main(int argc, char *argv[]) {
     }
 
   // Print header
+  char *image_name = argv[1];
   char *output_h_name = calloc(
       strlen("out/art/") + strlen(image_name) + strlen(".h") + 1, sizeof(char));
   sprintf(output_h_name, "out/art/%s.h", image_name);

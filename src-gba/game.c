@@ -1,4 +1,4 @@
-#include "art/font.h"
+#include "font.h"
 #include "lib/graphics.h"
 #include "lib/text.h"
 #include "lib/utils.h"
