@@ -6,7 +6,7 @@ import Browser.Navigation as Nav
 import Bytes exposing (Bytes)
 import Codec
 import Dict exposing (Dict)
-import Element exposing (Attribute, Element, alignBottom, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, inFront, link, none, padding, paddingEach, px, row, spacing, text, width, wrappedRow)
+import Element exposing (Attribute, Element, alignBottom, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, inFront, link, none, padding, paddingEach, px, row, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -116,6 +116,7 @@ init _ key =
     ( { key = key
       , data = Nothing
       , images = Dict.empty
+      , scale = 2
       }
     , Lamdera.sendToBackend TBGetImageList
     )
@@ -219,6 +220,9 @@ update msg model =
                 Codec.encodeToString 0 Model.dataCodec data
             )
 
+        ( Scale scale, Just _ ) ->
+            ( { model | scale = scale }, Cmd.none )
+
 
 log : String -> a -> a
 log =
@@ -245,7 +249,7 @@ view model =
 
                 sceneViews =
                     List.map
-                        (viewScene keys model.images)
+                        (viewScene model.scale keys model.images)
                         scenes
             in
             column [ width fill, spacing rythm, padding rythm ]
@@ -256,23 +260,34 @@ view model =
 
 fileControls : Element Msg
 fileControls =
-    row [ spacing rythm ]
-        [ Input.button [ Border.width 1, padding rythm ]
-            { onPress = Just FileSelect
-            , label = text "Upload JSON"
-            }
-        , Input.button [ Border.width 1, padding rythm ]
-            { onPress = Just ImageSelect
-            , label = text "Upload Image"
-            }
-        , Input.button [ Border.width 1, padding rythm ]
-            { onPress = Just DownloadJson
-            , label = text "Save as JSON"
-            }
-        , Input.button [ Border.width 1, padding rythm ]
-            { onPress = Just GenerateC
-            , label = text "Generate C"
-            }
+    column [ spacing rythm ]
+        [ row [ spacing rythm ] <|
+            [ Input.button [ Border.width 1, padding rythm ]
+                { onPress = Just FileSelect
+                , label = text "Upload JSON"
+                }
+            , Input.button [ Border.width 1, padding rythm ]
+                { onPress = Just ImageSelect
+                , label = text "Upload Image"
+                }
+            , Input.button [ Border.width 1, padding rythm ]
+                { onPress = Just DownloadJson
+                , label = text "Save as JSON"
+                }
+            , Input.button [ Border.width 1, padding rythm ]
+                { onPress = Just GenerateC
+                , label = text "Generate C"
+                }
+            ]
+        , row [ spacing rythm ] <|
+            List.map
+                (\i ->
+                    Input.button [ Border.width 1, padding rythm ]
+                        { onPress = Just <| Scale i
+                        , label = text <| "Preview scale: " ++ String.fromInt i ++ "x"
+                        }
+                )
+                (List.range 1 5)
         ]
 
 
@@ -286,8 +301,8 @@ class c =
     Element.htmlAttribute <| Html.Attributes.class c
 
 
-viewScene : List String -> Dict String Bytes -> Tree -> Element Msg
-viewScene keys images (Node name scene children) =
+viewScene : Int -> List String -> Dict String Bytes -> Tree -> Element Msg
+viewScene scale keys images (Node name scene children) =
     let
         viewNext_ i d =
             row segmentAttrs <| viewNext { keys = keys, toMsg = ReplaceNext name i } d
@@ -376,7 +391,7 @@ viewScene keys images (Node name scene children) =
                         none
 
                     Just _ ->
-                        render scene imageUrl
+                        render scale scene imageUrl
     in
     column [ spacing rythm, alignTop ]
         [ column
@@ -391,7 +406,7 @@ viewScene keys images (Node name scene children) =
             ]
             elems
         , row [ spacing rythm ]
-            (List.map (viewScene keys images) children)
+            (List.map (viewScene scale keys images) children)
         ]
 
 
@@ -414,12 +429,9 @@ pixelatedImage maybeUrl =
                 none
 
 
-render : Scene -> Maybe String -> Element msg
-render scene imageUrl =
+render : Int -> Scene -> Maybe String -> Element msg
+render scale scene imageUrl =
     let
-        scale =
-            3
-
         width =
             240
 
@@ -439,27 +451,42 @@ render scene imageUrl =
 
                 _ ->
                     ( "", "" )
+
+        showText attrs text =
+            if String.isEmpty text then
+                none
+
+            else
+                text
+                    |> String.toList
+                    |> List.intersperse ' '
+                    |> (\s -> ' ' :: s ++ [ ' ' ])
+                    |> List.map (Char.toCode >> String.fromInt)
+                    |> List.map
+                        (\n ->
+                            image [ Element.height <| px <| 13 * scale, class "pixelated" ]
+                                { src = "font/" ++ n ++ ".png"
+                                , description = n
+                                }
+                        )
+                    |> row attrs
     in
     el
         [ paddingEach { left = rythm, top = 0, bottom = 0, right = 0 }
         , class "preview"
         ]
     <|
-        el
-            [ Font.color <| Element.rgb 1 1 1
-            , Font.shadow
-                { offset = ( 0, 1 )
-                , blur = 0
-                , color = Element.rgb 0.6 0.6 0.6
-                }
-            , Element.width <| px <| scale * width
+        image
+            [ Element.width <| px <| scale * width
             , Element.height <| px <| scale * height
-            , inFront <| el [ alignBottom ] <| text leftLabel
-            , inFront <| el [ alignBottom, alignRight ] <| text rightLabel
-            , inFront <| el [ centerX ] <| text scene.text
+            , inFront <| showText [ alignBottom ] leftLabel
+            , inFront <| showText [ alignBottom, alignRight ] rightLabel
+            , inFront <| showText [ centerX ] scene.text
+            , class "pixelated"
             ]
-        <|
-            pixelatedImage imageUrl
+            { src = Maybe.withDefault "" imageUrl
+            , description = "background"
+            }
 
 
 viewNext : { keys : List String, toMsg : ( String, String ) -> msg } -> ( String, String ) -> List (Element msg)

@@ -13,6 +13,7 @@ type alias FrontendModel =
     { key : Key
     , data : Maybe Data
     , images : Dict String Bytes
+    , scale : Int
     }
 
 
@@ -40,6 +41,7 @@ type FrontendMsg
     | DownloadJson
     | UrlClicked UrlRequest
     | UrlChanged Url
+    | Scale Int
 
 
 type ToBackend
