@@ -458,48 +458,50 @@ render scale scene imageUrl =
 
                 _ ->
                     ( "", "" )
-
-        showText attrs text =
-            if String.isEmpty text then
-                none
-
-            else
-                text
-                    |> String.split "\n"
-                    |> List.map
-                        (\line ->
-                            line
-                                |> String.toList
-                                |> List.intersperse ' '
-                                |> (\s -> ' ' :: s ++ [ ' ' ])
-                                |> List.map (Char.toCode >> String.fromInt)
-                                |> List.map
-                                    (\n ->
-                                        image [ Element.height <| px <| 13 * scale, class "pixelated" ]
-                                            { src = "font/" ++ n ++ ".png"
-                                            , description = n
-                                            }
-                                    )
-                                |> row attrs
-                        )
-                    |> column attrs
     in
     el
         [ paddingEach { left = rythm, top = 0, bottom = 0, right = 0 }
         , class "preview"
         ]
-    <|
-        image
+        (image
             [ Element.width <| px <| scale * width
             , Element.height <| px <| scale * height
-            , inFront <| showText [ alignBottom ] leftLabel
-            , inFront <| showText [ alignBottom, alignRight ] rightLabel
-            , inFront <| showText [ centerX ] scene.text
+            , inFront <| showText scale [ alignBottom ] leftLabel
+            , inFront <| showText scale [ alignBottom, alignRight ] rightLabel
+            , inFront <| showText scale [ centerX ] scene.text
             , class "pixelated"
             ]
             { src = Maybe.withDefault "" imageUrl
             , description = "background"
             }
+        )
+
+
+showText : Int -> List (Attribute msg) -> String -> Element msg
+showText scale attrs text =
+    if String.isEmpty text then
+        none
+
+    else
+        text
+            |> String.split "\n"
+            |> List.map
+                (\line ->
+                    line
+                        |> String.toList
+                        |> List.intersperse ' '
+                        |> (\s -> ' ' :: s ++ [ ' ' ])
+                        |> List.map (Char.toCode >> String.fromInt)
+                        |> List.map
+                            (\n ->
+                                image [ Element.height <| px <| 13 * scale, class "pixelated" ]
+                                    { src = "font/" ++ n ++ ".png"
+                                    , description = n
+                                    }
+                            )
+                        |> row attrs
+                )
+            |> column attrs
 
 
 viewNext : { keys : List String, toMsg : ( String, String ) -> msg } -> ( String, String ) -> List (Element msg)
