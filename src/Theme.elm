@@ -52,8 +52,21 @@ select attrs { onInput, selected, options } =
             Html.select
                 [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
                 , Html.Events.onInput onInput
+                , Html.Attributes.style "background-color" <| toCssString colors.semitransparent
                 ]
                 (List.map toOption options)
+
+
+toCssString : Color -> String
+toCssString color =
+    let
+        { red, green, blue, alpha } =
+            Element.toRgb color
+
+        channel c =
+            String.fromInt <| floor <| 255 * c
+    in
+    "rgba(" ++ String.join "," [ channel red, channel green, channel blue, String.fromFloat alpha ] ++ ")"
 
 
 input :
