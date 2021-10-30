@@ -6,96 +6,15 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
+import Model exposing (City, Data, Id)
 import Set exposing (Set)
 
 
 type alias FrontendModel =
     { key : Key
     , data : Maybe Data
-    , images : Dict String Bytes
     , lastError : String
     }
-
-
-type alias Data =
-    List City
-
-
-type alias CityName =
-    String
-
-
-type alias City =
-    { name : CityName
-    , image : String
-    , people : List Person
-    }
-
-
-type alias Person =
-    { name : String
-    , image : String
-    , dialog : Dialog
-    }
-
-
-type Dialog
-    = Dialog
-        { text : String
-        , choices :
-            List
-                { text : String
-                , next : Dialog
-                , consequences : List Consequence
-                , condition : Maybe Condition
-                }
-        }
-
-
-type Condition
-    = ConditionNot Condition
-    | ConditionAnd (List Condition)
-    | ConditionOr (List Condition)
-    | HasItem ItemName
-
-
-type Consequence
-    = ConsequenceGetMoney Int
-    | ConsequenceLoseMoney Int
-    | ConsequenceGetItem Item
-    | ConsequenceLoseItem String
-
-
-type ItemName
-    = GenericItemName String
-    | TicketName
-        { from : CityName
-        , to : CityName
-        , kind : TransportKind
-        }
-
-
-type Item
-    = GenericItem
-        { name : String
-        , image : String
-        }
-    | Ticket
-        { from : CityName
-        , to : CityName
-        , kind : TransportKind
-        , consequences : List Consequence
-        }
-
-
-type TransportKind
-    = Plane
-    | Train
-    | Coach
-    | Bike
-    | Boat
-    | Ferry
-    | DuckWalk
 
 
 type alias BackendModel =
@@ -109,21 +28,15 @@ type FrontendMsg
     = FileSelect
     | FileSelected File
     | ReadFile String
-    | ImageSelect
-    | ImageSelected File
-    | ReadImage String Bytes
-    | Replace String ( String, Scene )
-    | ReplaceNext String (Maybe Int) ( String, String )
+    | UpdateCity Id (Maybe City)
     | DownloadJson
     | UrlClicked UrlRequest
     | UrlChanged Url
 
 
 type ToBackend
-    = TBReplace String ( String, Scene )
+    = TBUpdateCity Id (Maybe City)
     | TBData Data
-    | TBGetImageList
-    | TBImage String Bytes
 
 
 type BackendMsg
@@ -132,7 +45,5 @@ type BackendMsg
 
 
 type ToFrontend
-    = TFReplace String ( String, Scene )
+    = TFUpdateCity Id (Maybe City)
     | TFData Data
-    | TFGotImageList (Dict String Bytes)
-    | TFImage String Bytes

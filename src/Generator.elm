@@ -1,38 +1,36 @@
 module Generator exposing (generate)
 
 import Dict exposing (Dict)
-import Model exposing (dfsSort)
-import Types exposing (Data, Scene)
+import Model exposing (City, Data)
 
 
 generate : Data -> String
 generate model =
     let
-        scenes =
-            dfsSort "main" model
-                |> List.concatMap Model.treeToList
+        citys =
+            model
 
         map =
-            scenes
+            citys
                 |> List.indexedMap (\i ( name, _ ) -> ( name, i ))
                 |> Dict.fromList
     in
     """
-    #include "logic.h\"""" ++ String.concat (List.map sceneToInclude scenes) ++ String.concat (List.map sceneToDeclarations scenes) ++ """
+    #include "logic.h\"""" ++ String.concat (List.map cityToInclude citys) ++ String.concat (List.map cityToDeclarations citys) ++ """
 
-    const scene end_scene = { "THE END", 0, 0, 0 };
+    const city end_city = { "THE END", 0, 0, 0 };
 
-    scene step(int *current_scene, int choice) {
-        switch(*current_scene) {""" ++ String.concat (List.indexedMap (sceneToCase map) scenes) ++ """
+    city step(int *current_city, int choice) {
+        switch(*current_city) {""" ++ String.concat (List.indexedMap (cityToCase map) citys) ++ """
             default:
-                return end_scene;
+                return end_city;
         }
     } 
     """ |> deindent
 
 
-sceneToInclude : ( String, Scene ) -> String
-sceneToInclude ( _, { image } ) =
+cityToInclude : ( String, City ) -> String
+cityToInclude ( _, { image } ) =
     if String.isEmpty image then
         ""
 
@@ -40,30 +38,30 @@ sceneToInclude ( _, { image } ) =
         "\n    #include \"art/" ++ image ++ ".h\""
 
 
-sceneToCase : Dict String Int -> Int -> ( String, Scene ) -> String
-sceneToCase map index ( name, scene ) =
-    case scene.next of
+cityToCase : Dict String Int -> Int -> ( String, City ) -> String
+cityToCase map index ( name, city ) =
+    case city.next of
         [] ->
             """
             case """ ++ String.fromInt index ++ """: // """ ++ name ++ """
-                *current_scene = -1;
-                return end_scene;
+                *current_city = -1;
+                return end_city;
 """
 
         [ ( _, key ) ] ->
             """
             case """ ++ String.fromInt index ++ """: // """ ++ name ++ """
-                *current_scene = """ ++ String.fromInt (Maybe.withDefault -1 (Dict.get key map)) ++ """;
-                return """ ++ key ++ """_scene;
+                *current_city = """ ++ String.fromInt (Maybe.withDefault -1 (Dict.get key map)) ++ """;
+                return """ ++ key ++ """_city;
 """
 
         _ ->
             """
             case """ ++ String.fromInt index ++ """: // """ ++ name ++ """
-                switch(choice) {""" ++ String.concat (List.indexedMap (nextToCase map) scene.next) ++ """
+                switch(choice) {""" ++ String.concat (List.indexedMap (nextToCase map) city.next) ++ """
                     default:
-                        *current_scene = -1;
-                        return end_scene;
+                        *current_city = -1;
+                        return end_city;
                 }
 """
 
@@ -77,36 +75,36 @@ nextToCase map choice ( _, key ) =
         Just index ->
             """
                     case """ ++ String.fromInt choice ++ """:
-                        *current_scene = """ ++ String.fromInt index ++ """;
-                        return """ ++ key ++ """_scene;"""
+                        *current_city = """ ++ String.fromInt index ++ """;
+                        return """ ++ key ++ """_city;"""
 
 
-sceneToDeclarations : ( String, Scene ) -> String
-sceneToDeclarations ( name, scene ) =
+cityToDeclarations : ( String, City ) -> String
+cityToDeclarations ( name, city ) =
     let
         nextCount =
-            List.length scene.next
+            List.length city.next
 
         ( labelsDeclaration, labels ) =
             if nextCount == 0 then
                 ( "", "" )
 
             else
-                ( "    const char * const " ++ name ++ "_labels[" ++ String.fromInt nextCount ++ "] = {" ++ String.join ", " (List.map (Tuple.first >> escape) scene.next) ++ "};\n"
+                ( "    const char * const " ++ name ++ "_labels[" ++ String.fromInt nextCount ++ "] = {" ++ String.join ", " (List.map (Tuple.first >> escape) city.next) ++ "};\n"
                 , ", " ++ name ++ "_labels"
                 )
 
         image =
-            if String.isEmpty scene.image then
+            if String.isEmpty city.image then
                 "0"
 
             else
-                "&" ++ scene.image ++ "_image"
+                "&" ++ city.image ++ "_image"
 
-        sceneDeclaration =
-            "    const scene " ++ name ++ "_scene = {" ++ escape scene.text ++ ", " ++ image ++ ", " ++ String.fromInt nextCount ++ labels ++ "};"
+        cityDeclaration =
+            "    const city " ++ name ++ "_city = {" ++ escape city.text ++ ", " ++ image ++ ", " ++ String.fromInt nextCount ++ labels ++ "};"
     in
-    "\n\n" ++ labelsDeclaration ++ sceneDeclaration
+    "\n\n" ++ labelsDeclaration ++ cityDeclaration
 
 
 escape : String -> String

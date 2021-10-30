@@ -2,7 +2,6 @@ module Backend exposing (..)
 
 import Dict
 import Lamdera exposing (ClientId, SessionId)
-import Model exposing (replaceScene)
 import Set
 import Types exposing (..)
 
@@ -41,10 +40,7 @@ update msg model =
     case msg of
         Connected _ clientId ->
             ( { model | connectedClients = Set.insert clientId model.connectedClients }
-            , Cmd.batch
-                [ Lamdera.sendToFrontend clientId <| TFData model.data
-                , Lamdera.sendToFrontend clientId <| TFGotImageList model.images
-                ]
+            , Lamdera.sendToFrontend clientId <| TFData model.data
             )
 
         Disconnected _ clientId ->
@@ -54,24 +50,14 @@ update msg model =
 updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
 updateFromFrontend _ clientId msg model =
     case msg of
-        TBReplace oldKey ( newKey, newValue ) ->
-            ( { model | data = replaceScene oldKey newKey newValue model.data }
-            , almostBroadcast model clientId <| TFReplace oldKey ( newKey, newValue )
+        TBUpdateCity id city ->
+            ( { model | data = Dict.update id (always city) model.data }
+            , almostBroadcast model clientId <| TFUpdateCity id city
             )
 
         TBData data ->
             ( { model | data = data }
             , almostBroadcast model clientId <| TFData data
-            )
-
-        TBGetImageList ->
-            ( model
-            , Lamdera.sendToFrontend clientId <| TFGotImageList model.images
-            )
-
-        TBImage name image ->
-            ( { model | images = Dict.insert name image model.images }
-            , almostBroadcast model clientId <| TFImage name image
             )
 
 
