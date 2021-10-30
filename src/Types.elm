@@ -13,13 +13,89 @@ type alias FrontendModel =
     { key : Key
     , data : Maybe Data
     , images : Dict String Bytes
-    , scale : Int
-    , hoveredScene : Maybe String
+    , lastError : String
     }
 
 
 type alias Data =
-    Dict String Scene
+    List City
+
+
+type alias CityName =
+    String
+
+
+type alias City =
+    { name : CityName
+    , image : String
+    , people : List Person
+    }
+
+
+type alias Person =
+    { name : String
+    , image : String
+    , dialog : Dialog
+    }
+
+
+type Dialog
+    = Dialog
+        { text : String
+        , choices :
+            List
+                { text : String
+                , next : Dialog
+                , consequences : List Consequence
+                , condition : Maybe Condition
+                }
+        }
+
+
+type Condition
+    = ConditionNot Condition
+    | ConditionAnd (List Condition)
+    | ConditionOr (List Condition)
+    | HasItem ItemName
+
+
+type Consequence
+    = ConsequenceGetMoney Int
+    | ConsequenceLoseMoney Int
+    | ConsequenceGetItem Item
+    | ConsequenceLoseItem String
+
+
+type ItemName
+    = GenericItemName String
+    | TicketName
+        { from : CityName
+        , to : CityName
+        , kind : TransportKind
+        }
+
+
+type Item
+    = GenericItem
+        { name : String
+        , image : String
+        }
+    | Ticket
+        { from : CityName
+        , to : CityName
+        , kind : TransportKind
+        , consequences : List Consequence
+        }
+
+
+type TransportKind
+    = Plane
+    | Train
+    | Coach
+    | Bike
+    | Boat
+    | Ferry
+    | DuckWalk
 
 
 type alias BackendModel =
@@ -38,12 +114,9 @@ type FrontendMsg
     | ReadImage String Bytes
     | Replace String ( String, Scene )
     | ReplaceNext String (Maybe Int) ( String, String )
-    | GenerateC
     | DownloadJson
     | UrlClicked UrlRequest
     | UrlChanged Url
-    | Scale Int
-    | SelectScene (Maybe String)
 
 
 type ToBackend
@@ -63,10 +136,3 @@ type ToFrontend
     | TFData Data
     | TFGotImageList (Dict String Bytes)
     | TFImage String Bytes
-
-
-type alias Scene =
-    { text : String
-    , next : List ( String, String )
-    , image : String
-    }

@@ -9,18 +9,16 @@ import Dict exposing (Dict)
 import Element exposing (Attribute, Element, alignBottom, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, inFront, link, none, padding, paddingEach, px, row, spacing, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Events
 import Element.Font as Font
 import Element.Input as Input
 import File
 import File.Download
 import File.Select
-import Generator
 import Html
 import Html.Attributes
 import Lamdera exposing (Key, Url)
 import List.Extra as List
-import Model exposing (Tree(..), dfsSort, emptyScene, replaceScene)
+import Model exposing (emptyScene, replaceScene)
 import Task
 import Theme exposing (input, multiline, rythm, select)
 import Types exposing (FrontendModel, FrontendMsg(..), Scene, ToBackend(..), ToFrontend(..))
@@ -109,8 +107,7 @@ init _ key =
     ( { key = key
       , data = Nothing
       , images = Dict.empty
-      , scale = 2
-      , hoveredScene = Nothing
+      , lastError = ""
       }
     , Lamdera.sendToBackend TBGetImageList
     )
@@ -194,40 +191,19 @@ update msg model =
             case Codec.decodeString Model.dataCodec str of
                 Err err ->
                     let
-                        _ =
-                            log "Error in reading file" err
+                        errString =
+                            Debug.toString err
                     in
-                    ( model, Cmd.none )
+                    ( { model | lastError = errString }, Cmd.none )
 
                 Ok newData ->
                     ( { model | data = Just newData }, Lamdera.sendToBackend <| TBData newData )
-
-        ( GenerateC, Just data ) ->
-            ( model
-            , File.Download.string "logic.c" "text/x-c" <|
-                Generator.generate data
-            )
 
         ( DownloadJson, Just data ) ->
             ( model
             , File.Download.string "data.json" "application/json" <|
                 Codec.encodeToString 0 Model.dataCodec data
             )
-
-        ( Scale scale, Just _ ) ->
-            ( { model | scale = scale }, Cmd.none )
-
-        ( SelectScene scene, Just _ ) ->
-            ( { model | hoveredScene = scene }, Cmd.none )
-
-
-log : String -> a -> a
-log =
-    if True then
-        Debug.log
-
-    else
-        always identity
 
 
 view : Model -> Element Msg
@@ -238,15 +214,12 @@ view model =
 
         Just data ->
             let
-                scenes =
-                    dfsSort "main" data ++ [ Node "" emptyScene [] ]
-
                 keys =
                     Dict.keys data
 
                 sceneViews =
                     List.map
-                        (viewScene model.hoveredScene model.scale keys model.images)
+                        (viewScene keys model.images)
                         scenes
             in
             column [ width fill, spacing rythm, padding rythm ]
@@ -257,34 +230,19 @@ view model =
 
 fileControls : Element Msg
 fileControls =
+    let
+        btn msg label =
+            Input.button [ Border.width 1, Theme.padding ]
+                { onPress = Just msg
+                , label = text label
+                }
+    in
     column [ spacing rythm ]
         [ row [ spacing rythm ] <|
-            [ Input.button [ Border.width 1, padding rythm ]
-                { onPress = Just FileSelect
-                , label = text "Upload JSON"
-                }
-            , Input.button [ Border.width 1, padding rythm ]
-                { onPress = Just ImageSelect
-                , label = text "Upload Image"
-                }
-            , Input.button [ Border.width 1, padding rythm ]
-                { onPress = Just DownloadJson
-                , label = text "Save as JSON"
-                }
-            , Input.button [ Border.width 1, padding rythm ]
-                { onPress = Just GenerateC
-                , label = text "Generate C"
-                }
+            [ btn FileSelect "Upload JSON"
+            , btn ImageSelect "Upload Image"
+            , btn DownloadJson "Save as JSON"
             ]
-        , row [ spacing rythm ] <|
-            List.map
-                (\i ->
-                    Input.button [ Border.width 1, padding rythm ]
-                        { onPress = Just <| Scale i
-                        , label = text <| "Preview scale: " ++ String.fromInt i ++ "x"
-                        }
-                )
-                (List.range 1 5)
         ]
 
 
@@ -298,8 +256,8 @@ class c =
     Element.htmlAttribute <| Html.Attributes.class c
 
 
-viewScene : Maybe String -> Int -> List String -> Dict String Bytes -> Tree -> Element Msg
-viewScene hoveredScene scale keys images (Node name scene children) =
+viewScene : List String -> Dict String Bytes -> ( String, Scene ) -> Element Msg
+viewScene keys images ( name, scene ) =
     let
         viewNext_ i d =
             row segmentAttrs <| viewNext { keys = keys, toMsg = ReplaceNext name i } d
@@ -380,25 +338,11 @@ viewScene hoveredScene scale keys images (Node name scene children) =
                             |> Maybe.withDefault ""
                             |> (++) "data:image/png;base64,"
                     )
-
-        rendering =
-            Element.onRight <|
-                case imageUrl of
-                    Nothing ->
-                        none
-
-                    Just _ ->
-                        if hoveredScene == Just name then
-                            render scale scene imageUrl
-
-                        else
-                            none
     in
     column [ spacing rythm, alignTop ]
         [ el
             [ width <| Element.minimum 510 fill
             , alignTop
-            , rendering
             ]
             (column
                 [ Element.htmlAttribute <| Html.Attributes.id name
@@ -407,13 +351,11 @@ viewScene hoveredScene scale keys images (Node name scene children) =
                 , width fill
                 , behindContent <| pixelatedImage imageUrl
                 , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
-                , Element.Events.onMouseEnter <| SelectScene <| Just name
-                , Element.Events.onMouseLeave <| SelectScene Nothing
                 ]
                 elems
             )
         , row [ spacing rythm ]
-            (List.map (viewScene hoveredScene scale keys images) children)
+            (List.map (viewScene keys images) children)
         ]
 
 

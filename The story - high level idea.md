@@ -9,3 +9,47 @@ Ideas for the SDC game:
    1. Could be collecting things
    2. Could be limited traveling options
    3. Could be narrative (you get kidnapped)
+7. Cheat code for Orla demo - TECHQUEEN - makes travel free
+
+# Possible locations
+
+1. Munich
+   - Liv
+2. Nijmegen
+   - Emily
+3. Amsterdam
+   - Wouter
+   - Lotte
+4. London
+   - Orla
+     - Ethernet Cable
+     - Shoes
+     - WOTI
+   - Sara
+     - Drumstick
+   - Skylar
+5. Other places in England
+   - Cassie
+   - Matt
+6. Avalon
+   - Houseplant in the corner
+   - Striped scrunchie
+7. Dublin
+   - Mick
+8. Milan/Monza
+   - Greta
+     - Patata
+     - Orla Shrine
+9. Venice/Udine
+   - Leonardo
+10. Australia
+    - Upside down Josh
+11. Mexico
+    - Iván
+12. Norway
+    - Mina
+13. Sweden
+    - Gabriel
+14. US
+    - Gerrit
+    - sledj
