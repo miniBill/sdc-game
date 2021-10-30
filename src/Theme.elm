@@ -1,6 +1,6 @@
 module Theme exposing (colors, input, multiline, padding, rythm, select, spacing)
 
-import Element exposing (Attribute, Color, Element, el, rgba, text)
+import Element exposing (Attribute, Color, Element, el, rgba)
 import Element.Background as Background
 import Element.Input as Input
 import Html

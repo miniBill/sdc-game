@@ -1,4 +1,4 @@
-module Model exposing (City, Data, Id, dataCodec, emptyCity)
+module Model exposing (City, Data, Id, dataCodec)
 
 import Codec exposing (Codec)
 import Dict exposing (Dict)
@@ -327,12 +327,3 @@ itemNameCodec =
                 |> Codec.buildObject
             )
         |> Codec.buildCustom
-
-
-emptyCity : City
-emptyCity =
-    { name = ""
-    , text = ""
-    , image = ""
-    , people = []
-    }

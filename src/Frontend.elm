@@ -4,7 +4,7 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
 import Dict
-import Element exposing (Element, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, padding, row, spacing, text, width, wrappedRow)
+import Element exposing (Element, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, row, text, width, wrappedRow)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -14,10 +14,9 @@ import File.Download
 import File.Select
 import Html
 import Lamdera exposing (Key, Url)
-import List.Extra as List
 import Model exposing (City)
 import Task
-import Theme exposing (input, multiline, rythm)
+import Theme exposing (input, multiline)
 import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
 import Url
 
@@ -164,9 +163,9 @@ view model =
                     data
                         |> Dict.toList
                         |> List.map (\( id, city ) -> Element.map (UpdateCity id) <| viewCity city)
-                        |> wrappedRow [ spacing rythm ]
+                        |> wrappedRow [ Theme.spacing ]
             in
-            column [ width fill, spacing rythm, padding rythm ]
+            column [ width fill, Theme.spacing, Theme.padding ]
                 [ fileControls
                 , citiesViews
                 ]
@@ -181,8 +180,8 @@ fileControls =
                 , label = text label
                 }
     in
-    column [ spacing rythm ]
-        [ row [ spacing rythm ] <|
+    column [ Theme.spacing ]
+        [ row [ Theme.spacing ] <|
             [ btn FileSelect "Upload JSON"
             , btn DownloadJson "Save as JSON"
             ]
@@ -194,8 +193,8 @@ viewCity city =
     column
         [ Border.width 1
         , width fill
-        , spacing rythm
-        , padding rythm
+        , Theme.spacing
+        , Theme.padding
         , behindContent <|
             image [ width fill, height fill ]
                 { src = city.image
@@ -203,7 +202,7 @@ viewCity city =
                 }
         , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
         ]
-        [ row [ spacing rythm, width fill ]
+        [ row [ Theme.spacing, width fill ]
             [ input [ width fill ]
                 { label = "Name"
                 , text = city.name
