@@ -1,4 +1,4 @@
-module Codecs exposing (..)
+module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, personCodec, transportKindCodec)
 
 import Codec exposing (Codec)
 import Model exposing (..)
@@ -12,13 +12,7 @@ dataCodec =
 cityCodec : Codec City
 cityCodec =
     Codec.object
-        (\name text image people ->
-            { name = name
-            , text = text
-            , image = image
-            , people = people
-            }
-        )
+        (\name text image people -> { name = name, text = text, image = image, people = people })
         |> Codec.field "name" .name cityNameCodec
         |> Codec.field "text" .text Codec.string
         |> Codec.field "image" .image Codec.string
@@ -33,13 +27,7 @@ cityNameCodec =
 
 personCodec : Codec Person
 personCodec =
-    Codec.object
-        (\name image dialog ->
-            { name = name
-            , image = image
-            , dialog = dialog
-            }
-        )
+    Codec.object (\name image dialog -> { name = name, image = image, dialog = dialog })
         |> Codec.field "name" .name Codec.string
         |> Codec.field "image" .image Codec.string
         |> Codec.field "dialog" .dialog (Codec.list (Codec.tuple idCodec dialogCodec))
@@ -53,12 +41,7 @@ idCodec =
 
 dialogCodec : Codec Dialog
 dialogCodec =
-    Codec.object
-        (\text choices ->
-            { text = text
-            , choices = choices
-            }
-        )
+    Codec.object (\text choices -> { text = text, choices = choices })
         |> Codec.field "text" .text Codec.string
         |> Codec.field "choices" .choices (Codec.list choiceCodec)
         |> Codec.buildObject
@@ -68,11 +51,7 @@ choiceCodec : Codec Choice
 choiceCodec =
     Codec.object
         (\text next consequences condition ->
-            { text = text
-            , next = next
-            , consequences = consequences
-            , condition = condition
-            }
+            { text = text, next = next, consequences = consequences, condition = condition }
         )
         |> Codec.field "text" .text Codec.string
         |> Codec.field "next" .next idCodec
@@ -120,27 +99,20 @@ itemCodec =
                 Ticket arg0 ->
                     fticket arg0
         )
-        |> Codec.variant1 "GenericItem"
+        |> Codec.variant1
+            "GenericItem"
             GenericItem
-            (Codec.object
-                (\name image ->
-                    { name = name
-                    , image = image
-                    }
-                )
+            (Codec.object (\name image -> { name = name, image = image })
                 |> Codec.field "name" .name Codec.string
                 |> Codec.field "image" .image Codec.string
                 |> Codec.buildObject
             )
-        |> Codec.variant1 "Ticket"
+        |> Codec.variant1
+            "Ticket"
             Ticket
             (Codec.object
                 (\from to kind consequences ->
-                    { from = from
-                    , to = to
-                    , kind = kind
-                    , consequences = consequences
-                    }
+                    { from = from, to = to, kind = kind, consequences = consequences }
                 )
                 |> Codec.field "from" .from cityNameCodec
                 |> Codec.field "to" .to cityNameCodec
@@ -230,15 +202,10 @@ itemNameCodec =
                     fticketName arg0
         )
         |> Codec.variant1 "GenericItemName" GenericItemName Codec.string
-        |> Codec.variant1 "TicketName"
+        |> Codec.variant1
+            "TicketName"
             TicketName
-            (Codec.object
-                (\from to kind ->
-                    { from = from
-                    , to = to
-                    , kind = kind
-                    }
-                )
+            (Codec.object (\from to kind -> { from = from, to = to, kind = kind })
                 |> Codec.field "from" .from cityNameCodec
                 |> Codec.field "to" .to cityNameCodec
                 |> Codec.field "kind" .kind transportKindCodec
