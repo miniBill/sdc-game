@@ -3,6 +3,7 @@ module Frontend exposing (app)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation as Nav
 import Codec
+import Codecs
 import Dict
 import Element exposing (Element, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, row, text, width, wrappedRow)
 import Element.Background as Background
@@ -133,7 +134,7 @@ update msg model =
             )
 
         ( ReadFile str, _ ) ->
-            case Codec.decodeString Model.dataCodec str of
+            case Codec.decodeString Codecs.dataCodec str of
                 Err err ->
                     let
                         errString =
@@ -147,7 +148,7 @@ update msg model =
         ( DownloadJson, Just data ) ->
             ( model
             , File.Download.string "data.json" "application/json" <|
-                Codec.encodeToString 0 Model.dataCodec data
+                Codec.encodeToString 0 Codecs.dataCodec data
             )
 
 

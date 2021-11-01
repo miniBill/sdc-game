@@ -1,4 +1,17 @@
-module Model exposing (City, Data, Id)
+module Model exposing
+    ( Choice
+    , City
+    , CityName
+    , Condition(..)
+    , Consequence(..)
+    , Data
+    , Dialog
+    , Id
+    , Item(..)
+    , ItemName(..)
+    , Person
+    , TransportKind(..)
+    )
 
 import Dict exposing (Dict)
 
