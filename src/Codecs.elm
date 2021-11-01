@@ -83,7 +83,7 @@ choiceCodec =
 
 consequenceCodec : Codec Consequence
 consequenceCodec =
-        Codec.custom
+    Codec.custom
         (\fconsequenceGetMoney fconsequenceLoseMoney fconsequenceGetItem fconsequenceLoseItem fconsequenceSetLocalFlag value ->
             case value of
                 ConsequenceGetMoney arg0 ->
@@ -111,7 +111,7 @@ consequenceCodec =
 
 itemCodec : Codec Item
 itemCodec =
-        Codec.custom
+    Codec.custom
         (\fgenericItem fticket value ->
             case value of
                 GenericItem arg0 ->
@@ -120,34 +120,40 @@ itemCodec =
                 Ticket arg0 ->
                     fticket arg0
         )
-        |> Codec.variant1 "GenericItem" GenericItem (Codec.object
-        (\name image ->
-            { name = name
-            , image = image
-            }
-        )
-        |> Codec.field "name" .name Codec.string
-        |> Codec.field "image" .image Codec.string
-        |> Codec.buildObject)
-        |> Codec.variant1 "Ticket" Ticket (Codec.object
-        (\from to kind consequences ->
-            { from = from
-            , to = to
-            , kind = kind
-            , consequences = consequences
-            }
-        )
-        |> Codec.field "from" .from cityNameCodec
-        |> Codec.field "to" .to cityNameCodec
-        |> Codec.field "kind" .kind transportKindCodec
-        |> Codec.field "consequences" .consequences (Codec.list consequenceCodec)
-        |> Codec.buildObject)
+        |> Codec.variant1 "GenericItem"
+            GenericItem
+            (Codec.object
+                (\name image ->
+                    { name = name
+                    , image = image
+                    }
+                )
+                |> Codec.field "name" .name Codec.string
+                |> Codec.field "image" .image Codec.string
+                |> Codec.buildObject
+            )
+        |> Codec.variant1 "Ticket"
+            Ticket
+            (Codec.object
+                (\from to kind consequences ->
+                    { from = from
+                    , to = to
+                    , kind = kind
+                    , consequences = consequences
+                    }
+                )
+                |> Codec.field "from" .from cityNameCodec
+                |> Codec.field "to" .to cityNameCodec
+                |> Codec.field "kind" .kind transportKindCodec
+                |> Codec.field "consequences" .consequences (Codec.list consequenceCodec)
+                |> Codec.buildObject
+            )
         |> Codec.buildCustom
 
 
 transportKindCodec : Codec TransportKind
 transportKindCodec =
-        Codec.custom
+    Codec.custom
         (\fplane ftrain fcoach fbike fboat fferry fduckWalk value ->
             case value of
                 Plane ->
@@ -183,36 +189,38 @@ transportKindCodec =
 
 conditionCodec : Codec Condition
 conditionCodec =
-    Codec.recursive (\conditionRecursiveCodec ->
+    Codec.recursive
+        (\conditionRecursiveCodec ->
             Codec.custom
-        (\fconditionNot fconditionAnd fconditionOr fhasItem flocalFlag value ->
-            case value of
-                ConditionNot arg0 ->
-                    fconditionNot arg0
+                (\fconditionNot fconditionAnd fconditionOr fhasItem flocalFlag value ->
+                    case value of
+                        ConditionNot arg0 ->
+                            fconditionNot arg0
 
-                ConditionAnd arg0 ->
-                    fconditionAnd arg0
+                        ConditionAnd arg0 ->
+                            fconditionAnd arg0
 
-                ConditionOr arg0 ->
-                    fconditionOr arg0
+                        ConditionOr arg0 ->
+                            fconditionOr arg0
 
-                HasItem arg0 ->
-                    fhasItem arg0
+                        HasItem arg0 ->
+                            fhasItem arg0
 
-                LocalFlag arg0 ->
-                    flocalFlag arg0
+                        LocalFlag arg0 ->
+                            flocalFlag arg0
+                )
+                |> Codec.variant1 "ConditionNot" ConditionNot conditionRecursiveCodec
+                |> Codec.variant1 "ConditionAnd" ConditionAnd (Codec.list conditionRecursiveCodec)
+                |> Codec.variant1 "ConditionOr" ConditionOr (Codec.list conditionRecursiveCodec)
+                |> Codec.variant1 "HasItem" HasItem itemNameCodec
+                |> Codec.variant1 "LocalFlag" LocalFlag Codec.string
+                |> Codec.buildCustom
         )
-        |> Codec.variant1 "ConditionNot" ConditionNot conditionRecursiveCodec
-        |> Codec.variant1 "ConditionAnd" ConditionAnd (Codec.list conditionRecursiveCodec)
-        |> Codec.variant1 "ConditionOr" ConditionOr (Codec.list conditionRecursiveCodec)
-        |> Codec.variant1 "HasItem" HasItem itemNameCodec
-        |> Codec.variant1 "LocalFlag" LocalFlag Codec.string
-        |> Codec.buildCustom    )
 
 
 itemNameCodec : Codec ItemName
 itemNameCodec =
-        Codec.custom
+    Codec.custom
         (\fgenericItemName fticketName value ->
             case value of
                 GenericItemName arg0 ->
@@ -222,15 +230,18 @@ itemNameCodec =
                     fticketName arg0
         )
         |> Codec.variant1 "GenericItemName" GenericItemName Codec.string
-        |> Codec.variant1 "TicketName" TicketName (Codec.object
-        (\from to kind ->
-            { from = from
-            , to = to
-            , kind = kind
-            }
-        )
-        |> Codec.field "from" .from cityNameCodec
-        |> Codec.field "to" .to cityNameCodec
-        |> Codec.field "kind" .kind transportKindCodec
-        |> Codec.buildObject)
+        |> Codec.variant1 "TicketName"
+            TicketName
+            (Codec.object
+                (\from to kind ->
+                    { from = from
+                    , to = to
+                    , kind = kind
+                    }
+                )
+                |> Codec.field "from" .from cityNameCodec
+                |> Codec.field "to" .to cityNameCodec
+                |> Codec.field "kind" .kind transportKindCodec
+                |> Codec.buildObject
+            )
         |> Codec.buildCustom
