@@ -357,39 +357,28 @@ consequenceEditor value =
         inputsRow =
             case value of
                 Model.ConsequenceGetMoney int ->
-                    [ Element.map
-                        (\newValue -> Model.ConsequenceGetMoney newValue)
-                        (intEditor int)
-                    ]
+                    [ Element.map Model.ConsequenceGetMoney (intEditor int) ]
 
                 Model.ConsequenceLoseMoney int ->
-                    [ Element.map
-                        (\newValue -> Model.ConsequenceLoseMoney newValue)
-                        (intEditor int)
-                    ]
+                    [ Element.map Model.ConsequenceLoseMoney (intEditor int) ]
 
                 Model.ConsequenceGetItem item ->
-                    [ Element.map
-                        (\newValue -> Model.ConsequenceGetItem newValue)
-                        (itemEditor item)
-                    ]
+                    [ Element.map Model.ConsequenceGetItem (itemEditor item) ]
 
                 Model.ConsequenceLoseItem string ->
                     [ Element.map
-                        (\newValue -> Model.ConsequenceLoseItem newValue)
+                        Model.ConsequenceLoseItem
                         (stringEditor string)
                     ]
 
                 Model.ConsequenceSetLocalFlag string bool ->
                     [ Element.map
-                        (\newValue ->
-                            Model.ConsequenceSetLocalFlag newValue bool
+                        (\lambdaArg0 ->
+                            Model.ConsequenceSetLocalFlag lambdaArg0 bool
                         )
                         (stringEditor string)
                     , Element.map
-                        (\newValue ->
-                            Model.ConsequenceSetLocalFlag string newValue
-                        )
+                        (Model.ConsequenceSetLocalFlag string)
                         (boolEditor bool)
                     ]
     in
@@ -446,7 +435,7 @@ itemEditor value =
             case value of
                 Model.GenericItem nameStringimageString ->
                     [ Element.map
-                        (\newValue -> Model.GenericItem newValue)
+                        Model.GenericItem
                         (Element.table
                             [ Element.width Element.fill
                             , spacing
@@ -501,7 +490,7 @@ itemEditor value =
 
                 Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
                     [ Element.map
-                        (\newValue -> Model.Ticket newValue)
+                        Model.Ticket
                         (Element.table
                             [ Element.width Element.fill
                             , spacing
@@ -672,14 +661,12 @@ conditionEditor value =
         inputsRow =
             case value of
                 Model.ConditionNot condition ->
-                    [ Element.map
-                        (\newValue -> Model.ConditionNot newValue)
-                        (conditionEditor condition)
+                    [ Element.map Model.ConditionNot (conditionEditor condition)
                     ]
 
                 Model.ConditionAnd listCondition ->
                     [ Element.map
-                        (\newValue -> Model.ConditionAnd newValue)
+                        Model.ConditionAnd
                         (listEditor
                             conditionEditor
                             conditionDefault
@@ -689,7 +676,7 @@ conditionEditor value =
 
                 Model.ConditionOr listCondition ->
                     [ Element.map
-                        (\newValue -> Model.ConditionOr newValue)
+                        Model.ConditionOr
                         (listEditor
                             conditionEditor
                             conditionDefault
@@ -698,16 +685,10 @@ conditionEditor value =
                     ]
 
                 Model.HasItem itemName ->
-                    [ Element.map
-                        (\newValue -> Model.HasItem newValue)
-                        (itemNameEditor itemName)
-                    ]
+                    [ Element.map Model.HasItem (itemNameEditor itemName) ]
 
                 Model.LocalFlag string ->
-                    [ Element.map
-                        (\newValue -> Model.LocalFlag newValue)
-                        (stringEditor string)
-                    ]
+                    [ Element.map Model.LocalFlag (stringEditor string) ]
     in
     Element.column
         [ spacing, padding, Element.alignTop, Border.width 1 ]
@@ -758,14 +739,11 @@ itemNameEditor value =
         inputsRow =
             case value of
                 Model.GenericItemName string ->
-                    [ Element.map
-                        (\newValue -> Model.GenericItemName newValue)
-                        (stringEditor string)
-                    ]
+                    [ Element.map Model.GenericItemName (stringEditor string) ]
 
                 Model.TicketName fromCityNametoCityNamekindTransportKind ->
                     [ Element.map
-                        (\newValue -> Model.TicketName newValue)
+                        Model.TicketName
                         (Element.table
                             [ Element.width Element.fill
                             , spacing
@@ -919,7 +897,7 @@ padding =
 intEditor : Int -> Element.Element Basics.Int
 intEditor value =
     Element.map
-        (\newValue -> newValue |> String.toInt |> Maybe.withDefault value)
+        (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
         (Input.text
             [ Element.width Element.fill, Element.alignTop ]
             { onChange = Basics.identity
@@ -945,8 +923,8 @@ tupleEditor leftEditor _ rightEditor _ ( left, right ) =
         , Element.alignTop
         , Border.width 1
         ]
-        [ Element.map (\newValue -> ( newValue, right )) (leftEditor left)
-        , Element.map (\newValue -> ( left, newValue )) (rightEditor right)
+        [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) (leftEditor left)
+        , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) (rightEditor right)
         ]
 
 
@@ -968,7 +946,7 @@ maybeEditor valueEditor valueDefault value =
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Nothing (Element.text "Nothing")
-                    , Input.option (Just extracted) (Element.text "Just")
+                    , Input.option (Maybe.Just extracted) (Element.text "Just")
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -1019,12 +997,12 @@ listEditor valueEditor valueDefault value =
             List.indexedMap
                 (\i row ->
                     Element.map
-                        (\newValue ->
-                            if newValue == valueDefault then
+                        (\lambdaArg0 ->
+                            if lambdaArg0 == valueDefault then
                                 List.Extra.removeAt i value
 
                             else
-                                List.Extra.setAt i newValue value
+                                List.Extra.setAt i lambdaArg0 value
                         )
                         (Element.row
                             [ spacing, Element.width Element.fill ]
@@ -1083,9 +1061,9 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
             , view =
                 \( key, memberValue ) ->
                     Element.map
-                        (\newKey ->
+                        (\lambdaArg0 ->
                             if
-                                newKey
+                                lambdaArg0
                                     == keyDefault
                                     && memberValue
                                     == valueDefault
@@ -1094,7 +1072,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
 
                             else
                                 Dict.insert
-                                    newKey
+                                    lambdaArg0
                                     memberValue
                                     (Dict.remove key value)
                         )
@@ -1107,13 +1085,13 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
             , view =
                 \( key, memberValue ) ->
                     Element.map
-                        (\newValue ->
-                            if key == keyDefault && newValue == valueDefault
+                        (\lambdaArg0 ->
+                            if key == keyDefault && lambdaArg0 == valueDefault
                             then
                                 Dict.remove key value
 
                             else
-                                Dict.insert key newValue value
+                                Dict.insert key lambdaArg0 value
                         )
                         (valueEditor memberValue)
             }
