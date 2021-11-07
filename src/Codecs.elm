@@ -1,18 +1,27 @@
-module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, personCodec, transportKindCodec)
+module Codecs exposing (dataCodec, cityCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec)
 
-import Codec exposing (Codec)
-import Model exposing (..)
+{-|
+
+@docs dataCodec, cityCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+
+-}
+
+import Codec
+import Dict
+import Model
 
 
-dataCodec : Codec Data
+dataCodec : Codec.Codec Model.Data
 dataCodec =
     Codec.dict cityCodec
 
 
-cityCodec : Codec City
+cityCodec : Codec.Codec Model.City
 cityCodec =
     Codec.object
-        (\name text image people -> { name = name, text = text, image = image, people = people })
+        (\name text image people ->
+            { name = name, text = text, image = image, people = people }
+        )
         |> Codec.field "name" .name cityNameCodec
         |> Codec.field "text" .text Codec.string
         |> Codec.field "image" .image Codec.string
@@ -20,26 +29,30 @@ cityCodec =
         |> Codec.buildObject
 
 
-cityNameCodec : Codec CityName
+cityNameCodec : Codec.Codec Model.CityName
 cityNameCodec =
     Codec.string
 
 
-personCodec : Codec Person
+personCodec : Codec.Codec Model.Person
 personCodec =
-    Codec.object (\name image dialog -> { name = name, image = image, dialog = dialog })
+    Codec.object
+        (\name image dialog -> { name = name, image = image, dialog = dialog })
         |> Codec.field "name" .name Codec.string
         |> Codec.field "image" .image Codec.string
-        |> Codec.field "dialog" .dialog (Codec.list (Codec.tuple idCodec dialogCodec))
+        |> Codec.field
+            "dialog"
+            .dialog
+            (Codec.list (Codec.tuple idCodec dialogCodec))
         |> Codec.buildObject
 
 
-idCodec : Codec Id
+idCodec : Codec.Codec Model.Id
 idCodec =
     Codec.string
 
 
-dialogCodec : Codec Dialog
+dialogCodec : Codec.Codec Model.Dialog
 dialogCodec =
     Codec.object (\text choices -> { text = text, choices = choices })
         |> Codec.field "text" .text Codec.string
@@ -47,61 +60,85 @@ dialogCodec =
         |> Codec.buildObject
 
 
-choiceCodec : Codec Choice
+choiceCodec : Codec.Codec Model.Choice
 choiceCodec =
     Codec.object
         (\text next consequences condition ->
-            { text = text, next = next, consequences = consequences, condition = condition }
+            { text = text
+            , next = next
+            , consequences = consequences
+            , condition = condition
+            }
         )
         |> Codec.field "text" .text Codec.string
         |> Codec.field "next" .next idCodec
-        |> Codec.field "consequences" .consequences (Codec.list consequenceCodec)
+        |> Codec.field
+            "consequences"
+            .consequences
+            (Codec.list consequenceCodec)
         |> Codec.maybeField "condition" .condition conditionCodec
         |> Codec.buildObject
 
 
-consequenceCodec : Codec Consequence
+consequenceCodec : Codec.Codec Model.Consequence
 consequenceCodec =
     Codec.custom
         (\fconsequenceGetMoney fconsequenceLoseMoney fconsequenceGetItem fconsequenceLoseItem fconsequenceSetLocalFlag value ->
             case value of
-                ConsequenceGetMoney arg0 ->
+                Model.ConsequenceGetMoney arg0 ->
                     fconsequenceGetMoney arg0
 
-                ConsequenceLoseMoney arg0 ->
+                Model.ConsequenceLoseMoney arg0 ->
                     fconsequenceLoseMoney arg0
 
-                ConsequenceGetItem arg0 ->
+                Model.ConsequenceGetItem arg0 ->
                     fconsequenceGetItem arg0
 
-                ConsequenceLoseItem arg0 ->
+                Model.ConsequenceLoseItem arg0 ->
                     fconsequenceLoseItem arg0
 
-                ConsequenceSetLocalFlag arg0 arg1 ->
+                Model.ConsequenceSetLocalFlag arg0 arg1 ->
                     fconsequenceSetLocalFlag arg0 arg1
         )
-        |> Codec.variant1 "ConsequenceGetMoney" ConsequenceGetMoney Codec.int
-        |> Codec.variant1 "ConsequenceLoseMoney" ConsequenceLoseMoney Codec.int
-        |> Codec.variant1 "ConsequenceGetItem" ConsequenceGetItem itemCodec
-        |> Codec.variant1 "ConsequenceLoseItem" ConsequenceLoseItem Codec.string
-        |> Codec.variant2 "ConsequenceSetLocalFlag" ConsequenceSetLocalFlag Codec.string Codec.bool
+        |> Codec.variant1
+            "ConsequenceGetMoney"
+            Model.ConsequenceGetMoney
+            Codec.int
+        |> Codec.variant1
+            "ConsequenceLoseMoney"
+            Model.ConsequenceLoseMoney
+            Codec.int
+        |> Codec.variant1
+            "ConsequenceGetItem"
+            Model.ConsequenceGetItem
+            itemCodec
+        |> Codec.variant1
+            "ConsequenceLoseItem"
+            Model.ConsequenceLoseItem
+            Codec.string
+        |> Codec.variant2
+            "ConsequenceSetLocalFlag"
+            Model.ConsequenceSetLocalFlag
+            Codec.string
+            Codec.bool
         |> Codec.buildCustom
 
 
-itemCodec : Codec Item
+itemCodec : Codec.Codec Model.Item
 itemCodec =
+    Codec.lazy <| \() ->
     Codec.custom
         (\fgenericItem fticket value ->
             case value of
-                GenericItem arg0 ->
+                Model.GenericItem arg0 ->
                     fgenericItem arg0
 
-                Ticket arg0 ->
+                Model.Ticket arg0 ->
                     fticket arg0
         )
         |> Codec.variant1
             "GenericItem"
-            GenericItem
+            Model.GenericItem
             (Codec.object (\name image -> { name = name, image = image })
                 |> Codec.field "name" .name Codec.string
                 |> Codec.field "image" .image Codec.string
@@ -109,103 +146,117 @@ itemCodec =
             )
         |> Codec.variant1
             "Ticket"
-            Ticket
+            Model.Ticket
             (Codec.object
                 (\from to kind consequences ->
-                    { from = from, to = to, kind = kind, consequences = consequences }
+                    { from = from
+                    , to = to
+                    , kind = kind
+                    , consequences = consequences
+                    }
                 )
                 |> Codec.field "from" .from cityNameCodec
                 |> Codec.field "to" .to cityNameCodec
                 |> Codec.field "kind" .kind transportKindCodec
-                |> Codec.field "consequences" .consequences (Codec.list consequenceCodec)
+                |> Codec.field
+                    "consequences"
+                    .consequences
+                    (Codec.list consequenceCodec)
                 |> Codec.buildObject
             )
         |> Codec.buildCustom
 
 
-transportKindCodec : Codec TransportKind
+transportKindCodec : Codec.Codec Model.TransportKind
 transportKindCodec =
     Codec.custom
         (\fplane ftrain fcoach fbike fboat fferry fduckWalk value ->
             case value of
-                Plane ->
+                Model.Plane ->
                     fplane
 
-                Train ->
+                Model.Train ->
                     ftrain
 
-                Coach ->
+                Model.Coach ->
                     fcoach
 
-                Bike ->
+                Model.Bike ->
                     fbike
 
-                Boat ->
+                Model.Boat ->
                     fboat
 
-                Ferry ->
+                Model.Ferry ->
                     fferry
 
-                DuckWalk ->
+                Model.DuckWalk ->
                     fduckWalk
         )
-        |> Codec.variant0 "Plane" Plane
-        |> Codec.variant0 "Train" Train
-        |> Codec.variant0 "Coach" Coach
-        |> Codec.variant0 "Bike" Bike
-        |> Codec.variant0 "Boat" Boat
-        |> Codec.variant0 "Ferry" Ferry
-        |> Codec.variant0 "DuckWalk" DuckWalk
+        |> Codec.variant0 "Plane" Model.Plane
+        |> Codec.variant0 "Train" Model.Train
+        |> Codec.variant0 "Coach" Model.Coach
+        |> Codec.variant0 "Bike" Model.Bike
+        |> Codec.variant0 "Boat" Model.Boat
+        |> Codec.variant0 "Ferry" Model.Ferry
+        |> Codec.variant0 "DuckWalk" Model.DuckWalk
         |> Codec.buildCustom
 
 
-conditionCodec : Codec Condition
+conditionCodec : Codec.Codec Model.Condition
 conditionCodec =
     Codec.recursive
-        (\conditionRecursiveCodec ->
+        (\lambdaArg0 ->
             Codec.custom
                 (\fconditionNot fconditionAnd fconditionOr fhasItem flocalFlag value ->
                     case value of
-                        ConditionNot arg0 ->
+                        Model.ConditionNot arg0 ->
                             fconditionNot arg0
 
-                        ConditionAnd arg0 ->
+                        Model.ConditionAnd arg0 ->
                             fconditionAnd arg0
 
-                        ConditionOr arg0 ->
+                        Model.ConditionOr arg0 ->
                             fconditionOr arg0
 
-                        HasItem arg0 ->
+                        Model.HasItem arg0 ->
                             fhasItem arg0
 
-                        LocalFlag arg0 ->
+                        Model.LocalFlag arg0 ->
                             flocalFlag arg0
                 )
-                |> Codec.variant1 "ConditionNot" ConditionNot conditionRecursiveCodec
-                |> Codec.variant1 "ConditionAnd" ConditionAnd (Codec.list conditionRecursiveCodec)
-                |> Codec.variant1 "ConditionOr" ConditionOr (Codec.list conditionRecursiveCodec)
-                |> Codec.variant1 "HasItem" HasItem itemNameCodec
-                |> Codec.variant1 "LocalFlag" LocalFlag Codec.string
+                |> Codec.variant1 "ConditionNot" Model.ConditionNot lambdaArg0
+                |> Codec.variant1
+                    "ConditionAnd"
+                    Model.ConditionAnd
+                    (Codec.list lambdaArg0)
+                |> Codec.variant1
+                    "ConditionOr"
+                    Model.ConditionOr
+                    (Codec.list lambdaArg0)
+                |> Codec.variant1 "HasItem" Model.HasItem itemNameCodec
+                |> Codec.variant1 "LocalFlag" Model.LocalFlag Codec.string
                 |> Codec.buildCustom
         )
 
 
-itemNameCodec : Codec ItemName
+itemNameCodec : Codec.Codec Model.ItemName
 itemNameCodec =
     Codec.custom
         (\fgenericItemName fticketName value ->
             case value of
-                GenericItemName arg0 ->
+                Model.GenericItemName arg0 ->
                     fgenericItemName arg0
 
-                TicketName arg0 ->
+                Model.TicketName arg0 ->
                     fticketName arg0
         )
-        |> Codec.variant1 "GenericItemName" GenericItemName Codec.string
+        |> Codec.variant1 "GenericItemName" Model.GenericItemName Codec.string
         |> Codec.variant1
             "TicketName"
-            TicketName
-            (Codec.object (\from to kind -> { from = from, to = to, kind = kind })
+            Model.TicketName
+            (Codec.object
+                (\from to kind -> { from = from, to = to, kind = kind })
                 |> Codec.field "from" .from cityNameCodec
                 |> Codec.field "to" .to cityNameCodec
                 |> Codec.field "kind" .kind transportKindCodec

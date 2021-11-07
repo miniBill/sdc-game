@@ -5,19 +5,20 @@ import Browser.Navigation as Nav
 import Codec
 import Codecs
 import Dict
-import Element exposing (Element, alignRight, alignTop, behindContent, centerX, centerY, column, el, fill, height, image, row, text, width, wrappedRow)
-import Element.Background as Background
+import Editors
+import Element exposing (Element, alignRight, centerX, centerY, column, el, fill, row, text, width, wrappedRow)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import File
 import File.Download
 import File.Select
+import Hex
 import Html
 import Lamdera exposing (Key, Url)
-import Model exposing (City)
+import Random
 import Task
-import Theme exposing (input, multiline)
+import Theme
 import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
 import Url
 
@@ -151,6 +152,13 @@ update msg model =
                 Codec.encodeToString 0 Codecs.dataCodec data
             )
 
+        ( AddCity, Just _ ) ->
+            ( model
+            , Random.int 0 Random.maxInt
+                |> Random.map Hex.toString
+                |> Random.generate (\newId -> UpdateCity newId (Just Editors.cityDefault))
+            )
+
 
 view : Model -> Element Msg
 view model =
@@ -163,17 +171,31 @@ view model =
                 citiesViews =
                     data
                         |> Dict.toList
-                        |> List.map (\( id, city ) -> Element.map (UpdateCity id) <| viewCity city)
+                        |> List.map
+                            (\( id, city ) ->
+                                Element.map (UpdateCity id) <|
+                                    Element.column [ Theme.spacing, width fill ]
+                                        [ Input.button
+                                            [ Border.width 1
+                                            , Theme.padding
+                                            , alignRight
+                                            ]
+                                            { onPress = Just Nothing
+                                            , label = text "Delete"
+                                            }
+                                        , Element.map Just <| Editors.cityEditor city
+                                        ]
+                            )
                         |> wrappedRow [ Theme.spacing ]
             in
             column [ width fill, Theme.spacing, Theme.padding ]
-                [ fileControls
+                [ controls
                 , citiesViews
                 ]
 
 
-fileControls : Element Msg
-fileControls =
+controls : Element Msg
+controls =
     let
         btn msg label =
             Input.button [ Border.width 1, Theme.padding ]
@@ -185,47 +207,6 @@ fileControls =
         [ row [ Theme.spacing ] <|
             [ btn FileSelect "Upload JSON"
             , btn DownloadJson "Save as JSON"
+            , btn AddCity "Add City"
             ]
-        ]
-
-
-viewCity : City -> Element (Maybe City)
-viewCity city =
-    column
-        [ Border.width 1
-        , width fill
-        , Theme.spacing
-        , Theme.padding
-        , behindContent <|
-            image [ width fill, height fill ]
-                { src = city.image
-                , description = ""
-                }
-        , Background.color <| Element.rgba 0.2 0.2 0.2 0.2
-        ]
-        [ row [ Theme.spacing, width fill ]
-            [ input [ width fill ]
-                { label = "Name"
-                , text = city.name
-                , onChange = \newName -> Just { city | name = newName }
-                }
-            , Input.button [ alignRight, Border.width 1 ]
-                { onPress = Just Nothing
-                , label = text "X"
-                }
-            ]
-        , input [ width fill ]
-            { label = "Image"
-            , text = city.image
-            , onChange = \newImage -> Just { city | image = newImage }
-            }
-        , multiline
-            [ alignTop
-            , height fill
-            , width fill
-            ]
-            { label = "Text"
-            , text = city.text
-            , onChange = \newText -> Just { city | text = newText }
-            }
         ]

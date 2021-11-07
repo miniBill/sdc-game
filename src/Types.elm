@@ -32,6 +32,7 @@ type FrontendMsg
     | DownloadJson
     | UrlClicked UrlRequest
     | UrlChanged Url
+    | AddCity
 
 
 type ToBackend

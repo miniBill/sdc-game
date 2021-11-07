@@ -74,7 +74,9 @@ cityEditor value =
         , columns =
             [ { header = Element.none
               , width = Element.shrink
-              , view = \( name, _ ) -> Element.text name
+              , view =
+                  \( name, _ ) ->
+                      Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -140,7 +142,9 @@ personEditor value =
         , columns =
             [ { header = Element.none
               , width = Element.shrink
-              , view = \( name, _ ) -> Element.text name
+              , view =
+                  \( name, _ ) ->
+                      Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -186,7 +190,9 @@ dialogEditor value =
         , columns =
             [ { header = Element.none
               , width = Element.shrink
-              , view = \( name, _ ) -> Element.text name
+              , view =
+                  \( name, _ ) ->
+                      Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -257,7 +263,9 @@ choiceEditor value =
         , columns =
             [ { header = Element.none
               , width = Element.shrink
-              , view = \( name, _ ) -> Element.text name
+              , view =
+                  \( name, _ ) ->
+                      Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -454,7 +462,11 @@ itemEditor value =
                             , columns =
                                 [ { header = Element.none
                                   , width = Element.shrink
-                                  , view = \( name, _ ) -> Element.text name
+                                  , view =
+                                      \( name, _ ) ->
+                                          Element.el
+                                              [ Element.centerY ]
+                                              (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -535,7 +547,11 @@ itemEditor value =
                             , columns =
                                 [ { header = Element.none
                                   , width = Element.shrink
-                                  , view = \( name, _ ) -> Element.text name
+                                  , view =
+                                      \( name, _ ) ->
+                                          Element.el
+                                              [ Element.centerY ]
+                                              (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -777,7 +793,11 @@ itemNameEditor value =
                             , columns =
                                 [ { header = Element.none
                                   , width = Element.shrink
-                                  , view = \( name, _ ) -> Element.text name
+                                  , view =
+                                      \( name, _ ) ->
+                                          Element.el
+                                              [ Element.centerY ]
+                                              (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -970,13 +990,34 @@ listEditor valueEditor valueDefault value =
             List.indexedMap
                 (\i row ->
                     Element.map
-                        (\newValue -> List.Extra.setAt i newValue value)
-                        (valueEditor row)
+                        (\newValue ->
+                            if newValue == valueDefault then
+                                List.Extra.removeAt i value
+
+                            else
+                                List.Extra.setAt i newValue value
+                        )
+                        (Element.row
+                            [ spacing ]
+                            [ valueEditor row
+                            , Input.button
+                                [ spacing
+                                , padding
+                                , Element.alignTop
+                                , Border.width 1
+                                ]
+                                { onPress = Maybe.Just valueDefault
+                                , label = Element.text "Delete"
+                                }
+                            ]
+                        )
                 )
                 value
-                ++ [ Element.map
-                        (\newValue -> value ++ [ newValue ])
-                        (valueEditor valueDefault)
+                ++ [ Input.button
+                        [ spacing, padding, Element.alignTop, Border.width 1 ]
+                        { onPress = Maybe.Just (value ++ [ valueDefault ])
+                        , label = Element.text "Add new"
+                        }
                    ]
     in
     Element.column [ spacing, padding, Element.alignTop, Border.width 1 ] rows
