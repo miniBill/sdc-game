@@ -25,7 +25,7 @@ dataEditor level value =
 
 cityEditor : Int -> Model.City -> Element.Element Model.City
 cityEditor level value =
-    Element.table
+    Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
@@ -33,72 +33,55 @@ cityEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        { data =
-            [ ( "Name"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | name = lambdaArg0 }
-                    )
-                    (cityNameEditor (level + 1) value.name)
-              )
-            , ( "Text"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | text = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.text)
-              )
-            , ( "Image"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | image = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.image)
-              )
-            , ( "People"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | people = lambdaArg0 }
-                    )
-                    (listEditor
-                        "Person"
-                        personEditor
-                        personDefault
-                        (level + 1)
-                        value.people
-                    )
-              )
-            ]
-        , columns =
-            [ { header = Element.none
-              , width = Element.shrink
-              , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
-              }
-            , { header = Element.none
-              , width = Element.fill
-              , view = \( _, view ) -> view
-              }
-            ]
-        }
+        [ Element.text "Name"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | name = lambdaArg0 }
+            )
+            (cityNameEditor (level + 1) value.name)
+        , Element.text "Text"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | text = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.text)
+        , Element.text "Image"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | image = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.image)
+        , Element.text "People"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | people = lambdaArg0 }
+            )
+            (listEditor
+                "Person"
+                personEditor
+                personDefault
+                (level + 1)
+                value.people
+            )
+        ]
 
 
 cityNameEditor : Int -> Model.CityName -> Element.Element Model.CityName
@@ -108,7 +91,7 @@ cityNameEditor level value =
 
 personEditor : Int -> Model.Person -> Element.Element Model.Person
 personEditor level value =
-    Element.table
+    Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
@@ -116,66 +99,45 @@ personEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        { data =
-            [ ( "Name"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | name = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.name)
-              )
-            , ( "Image"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | image = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.image)
-              )
-            , ( "Dialog"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | dialog = lambdaArg0 }
-                    )
-                    (listEditor
-                        "(Id, Dialog)"
-                        (tupleEditor
-                            idEditor
-                            idDefault
-                            dialogEditor
-                            dialogDefault
-                        )
-                        ( idDefault, dialogDefault )
-                        (level + 1)
-                        value.dialog
-                    )
-              )
-            ]
-        , columns =
-            [ { header = Element.none
-              , width = Element.shrink
-              , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
-              }
-            , { header = Element.none
-              , width = Element.fill
-              , view = \( _, view ) -> view
-              }
-            ]
-        }
+        [ Element.text "Name"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | name = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.name)
+        , Element.text "Image"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | image = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.image)
+        , Element.text "Dialog"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | dialog = lambdaArg0 }
+            )
+            (listEditor
+                "(Id, Dialog)"
+                (tupleEditor idEditor idDefault dialogEditor dialogDefault)
+                ( idDefault, dialogDefault )
+                (level + 1)
+                value.dialog
+            )
+        ]
 
 
 idEditor : Int -> Model.Id -> Element.Element Model.Id
@@ -185,7 +147,7 @@ idEditor level value =
 
 dialogEditor : Int -> Model.Dialog -> Element.Element Model.Dialog
 dialogEditor level value =
-    Element.table
+    Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
@@ -193,55 +155,40 @@ dialogEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        { data =
-            [ ( "Text"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | text = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.text)
-              )
-            , ( "Choices"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | choices = lambdaArg0 }
-                    )
-                    (listEditor
-                        "Choice"
-                        choiceEditor
-                        choiceDefault
-                        (level + 1)
-                        value.choices
-                    )
-              )
-            ]
-        , columns =
-            [ { header = Element.none
-              , width = Element.shrink
-              , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
-              }
-            , { header = Element.none
-              , width = Element.fill
-              , view = \( _, view ) -> view
-              }
-            ]
-        }
+        [ Element.text "Text"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | text = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.text)
+        , Element.text "Choices"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | choices = lambdaArg0 }
+            )
+            (listEditor
+                "Choice"
+                choiceEditor
+                choiceDefault
+                (level + 1)
+                value.choices
+            )
+        ]
 
 
 choiceEditor : Int -> Model.Choice -> Element.Element Model.Choice
 choiceEditor level value =
-    Element.table
+    Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
@@ -249,78 +196,61 @@ choiceEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        { data =
-            [ ( "Text"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | text = lambdaArg0 }
-                    )
-                    (stringEditor (level + 1) value.text)
-              )
-            , ( "Next"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | next = lambdaArg0 }
-                    )
-                    (idEditor (level + 1) value.next)
-              )
-            , ( "Consequences"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | consequences = lambdaArg0 }
-                    )
-                    (listEditor
-                        "Consequence"
-                        consequenceEditor
-                        consequenceDefault
-                        (level + 1)
-                        value.consequences
-                    )
-              )
-            , ( "Condition"
-              , Element.map
-                    (\lambdaArg0 ->
-                        let
-                            updating =
-                                value
-                        in
-                        { updating | condition = lambdaArg0 }
-                    )
-                    (maybeEditor
-                        "Condition"
-                        conditionEditor
-                        conditionDefault
-                        (level + 1)
-                        value.condition
-                    )
-              )
-            ]
-        , columns =
-            [ { header = Element.none
-              , width = Element.shrink
-              , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
-              }
-            , { header = Element.none
-              , width = Element.fill
-              , view = \( _, view ) -> view
-              }
-            ]
-        }
+        [ Element.text "Text"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | text = lambdaArg0 }
+            )
+            (stringEditor (level + 1) value.text)
+        , Element.text "Next"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | next = lambdaArg0 }
+            )
+            (idEditor (level + 1) value.next)
+        , Element.text "Consequences"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | consequences = lambdaArg0 }
+            )
+            (listEditor
+                "Consequence"
+                consequenceEditor
+                consequenceDefault
+                (level + 1)
+                value.consequences
+            )
+        , Element.text "Condition"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | condition = lambdaArg0 }
+            )
+            (maybeEditor
+                "Condition"
+                conditionEditor
+                conditionDefault
+                (level + 1)
+                value.condition
+            )
+        ]
 
 
 consequenceEditor :
@@ -426,8 +356,11 @@ consequenceEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
 
 
 itemEditor : Int -> Model.Item -> Element.Element Model.Item
@@ -479,7 +412,7 @@ itemEditor level value =
                 Model.GenericItem nameStringimageString ->
                     [ Element.map
                         Model.GenericItem
-                        (Element.table
+                        (Element.column
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
@@ -487,59 +420,42 @@ itemEditor level value =
                             , Theme.padding
                             , Element.alignTop
                             , Border.width 1
+                            , Border.rounded Theme.rythm
                             ]
-                            { data =
-                                [ ( "Name"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    nameStringimageString
-                                            in
-                                            { updating | name = lambdaArg0 }
-                                        )
-                                        (stringEditor
-                                            (level + 1 + 1)
-                                            nameStringimageString.name
-                                        )
-                                  )
-                                , ( "Image"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    nameStringimageString
-                                            in
-                                            { updating | image = lambdaArg0 }
-                                        )
-                                        (stringEditor
-                                            (level + 1 + 1)
-                                            nameStringimageString.image
-                                        )
-                                  )
-                                ]
-                            , columns =
-                                [ { header = Element.none
-                                  , width = Element.shrink
-                                  , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
-                                  }
-                                , { header = Element.none
-                                  , width = Element.fill
-                                  , view = \( _, view ) -> view
-                                  }
-                                ]
-                            }
+                            [ Element.text "Name"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            nameStringimageString
+                                    in
+                                    { updating | name = lambdaArg0 }
+                                )
+                                (stringEditor
+                                    (level + 1 + 1)
+                                    nameStringimageString.name
+                                )
+                            , Element.text "Image"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            nameStringimageString
+                                    in
+                                    { updating | image = lambdaArg0 }
+                                )
+                                (stringEditor
+                                    (level + 1 + 1)
+                                    nameStringimageString.image
+                                )
+                            ]
                         )
                     ]
 
                 Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
                     [ Element.map
                         Model.Ticket
-                        (Element.table
+                        (Element.column
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
@@ -547,85 +463,64 @@ itemEditor level value =
                             , Theme.padding
                             , Element.alignTop
                             , Border.width 1
+                            , Border.rounded Theme.rythm
                             ]
-                            { data =
-                                [ ( "From"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                            in
-                                            { updating | from = lambdaArg0 }
-                                        )
-                                        (cityNameEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
-                                        )
-                                  )
-                                , ( "To"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                            in
-                                            { updating | to = lambdaArg0 }
-                                        )
-                                        (cityNameEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
-                                        )
-                                  )
-                                , ( "Kind"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                            in
-                                            { updating | kind = lambdaArg0 }
-                                        )
-                                        (transportKindEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
-                                        )
-                                  )
-                                , ( "Consequences"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                            in
-                                            { updating
-                                                | consequences = lambdaArg0
-                                            }
-                                        )
-                                        (listEditor
-                                            "Consequence"
-                                            consequenceEditor
-                                            consequenceDefault
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
-                                        )
-                                  )
-                                ]
-                            , columns =
-                                [ { header = Element.none
-                                  , width = Element.shrink
-                                  , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
-                                  }
-                                , { header = Element.none
-                                  , width = Element.fill
-                                  , view = \( _, view ) -> view
-                                  }
-                                ]
-                            }
+                            [ Element.text "From"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                    in
+                                    { updating | from = lambdaArg0 }
+                                )
+                                (cityNameEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
+                                )
+                            , Element.text "To"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                    in
+                                    { updating | to = lambdaArg0 }
+                                )
+                                (cityNameEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
+                                )
+                            , Element.text "Kind"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                    in
+                                    { updating | kind = lambdaArg0 }
+                                )
+                                (transportKindEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
+                                )
+                            , Element.text "Consequences"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                    in
+                                    { updating | consequences = lambdaArg0 }
+                                )
+                                (listEditor
+                                    "Consequence"
+                                    consequenceEditor
+                                    consequenceDefault
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
+                                )
+                            ]
                         )
                     ]
     in
@@ -636,8 +531,11 @@ itemEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
 
 
 transportKindEditor :
@@ -668,6 +566,7 @@ transportKindEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
         variantRow
 
@@ -779,8 +678,11 @@ conditionEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
 
 
 itemNameEditor : Int -> Model.ItemName -> Element.Element Model.ItemName
@@ -835,7 +737,7 @@ itemNameEditor level value =
                 Model.TicketName fromCityNametoCityNamekindTransportKind ->
                     [ Element.map
                         Model.TicketName
-                        (Element.table
+                        (Element.column
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
@@ -843,66 +745,48 @@ itemNameEditor level value =
                             , Theme.padding
                             , Element.alignTop
                             , Border.width 1
+                            , Border.rounded Theme.rythm
                             ]
-                            { data =
-                                [ ( "From"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKind
-                                            in
-                                            { updating | from = lambdaArg0 }
-                                        )
-                                        (cityNameEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKind.from
-                                        )
-                                  )
-                                , ( "To"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKind
-                                            in
-                                            { updating | to = lambdaArg0 }
-                                        )
-                                        (cityNameEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKind.to
-                                        )
-                                  )
-                                , ( "Kind"
-                                  , Element.map
-                                        (\lambdaArg0 ->
-                                            let
-                                                updating =
-                                                    fromCityNametoCityNamekindTransportKind
-                                            in
-                                            { updating | kind = lambdaArg0 }
-                                        )
-                                        (transportKindEditor
-                                            (level + 1 + 1)
-                                            fromCityNametoCityNamekindTransportKind.kind
-                                        )
-                                  )
-                                ]
-                            , columns =
-                                [ { header = Element.none
-                                  , width = Element.shrink
-                                  , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
-                                  }
-                                , { header = Element.none
-                                  , width = Element.fill
-                                  , view = \( _, view ) -> view
-                                  }
-                                ]
-                            }
+                            [ Element.text "From"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKind
+                                    in
+                                    { updating | from = lambdaArg0 }
+                                )
+                                (cityNameEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKind.from
+                                )
+                            , Element.text "To"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKind
+                                    in
+                                    { updating | to = lambdaArg0 }
+                                )
+                                (cityNameEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKind.to
+                                )
+                            , Element.text "Kind"
+                            , Element.map
+                                (\lambdaArg0 ->
+                                    let
+                                        updating =
+                                            fromCityNametoCityNamekindTransportKind
+                                    in
+                                    { updating | kind = lambdaArg0 }
+                                )
+                                (transportKindEditor
+                                    (level + 1 + 1)
+                                    fromCityNametoCityNamekindTransportKind.kind
+                                )
+                            ]
                         )
                     ]
     in
@@ -913,8 +797,11 @@ itemNameEditor level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
-        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
 
 
 dataDefault : Model.Data
@@ -1014,6 +901,7 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
         [ Element.map
             (\lambdaArg0 -> ( lambdaArg0, right ))
@@ -1070,6 +958,7 @@ maybeEditor typeName valueEditor valueDefault level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
         [ variantRow, inputsRow ]
 
@@ -1124,47 +1013,83 @@ listEditor typeName valueEditor valueDefault level value =
                         )
                         (Element.column
                             [ Element.width Element.fill ]
-                            [ Theme.tabButton
-                                [ Theme.spacing
-                                , Theme.padding
-                                , Element.alignTop
-                                , Border.width 1
-                                , Background.color (Element.rgb 1 0.6 0.6)
+                            [ Element.el
+                                [ Element.paddingEach
+                                    { top = 0
+                                    , right = Theme.rythm
+                                    , bottom = 0
+                                    , left = 0
+                                    }
                                 , Element.alignRight
-                                , Border.widthEach
-                                    { bottom = 0, left = 1, right = 1, top = 1 }
                                 ]
-                                { onPress = Maybe.Just valueDefault
-                                , label = Element.text "Delete"
-                                }
+                                (Theme.tabButton
+                                    [ Theme.spacing
+                                    , Theme.padding
+                                    , Element.alignTop
+                                    , Border.width 1
+                                    , Border.rounded Theme.rythm
+                                    , Background.color (Element.rgb 1 0.6 0.6)
+                                    , Border.widthEach
+                                        { bottom = 0
+                                        , left = 1
+                                        , right = 1
+                                        , top = 1
+                                        }
+                                    , Border.roundEach
+                                        { topLeft = Theme.rythm
+                                        , topRight = Theme.rythm
+                                        , bottomLeft = 0
+                                        , bottomRight = 0
+                                        }
+                                    ]
+                                    { onPress = Maybe.Just valueDefault
+                                    , label = Element.text "Delete"
+                                    }
+                                )
                             , valueEditor (level + 1) row
                             ]
                         )
                 )
                 value
-                ++ [ Theme.button
-                        [ Element.alignRight
-                        , Theme.spacing
-                        , Theme.padding
-                        , Element.alignTop
-                        , Border.width 1
-                        , Border.color (Element.rgb 0 0 0)
-                        , Background.color (Element.rgb 0.6 1 0.6)
-                        ]
-                        { onPress = Maybe.Just (value ++ [ valueDefault ])
-                        , label = Element.text ("Add new " ++ typeName)
-                        }
-                   ]
     in
     Element.column
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
+        [ Element.width Element.fill ]
+        [ Element.column
+            [ Background.color (getColor level)
+            , Element.width Element.fill
+            , Theme.spacing
+            , Theme.padding
+            , Element.alignTop
+            , Border.width 1
+            , Border.rounded Theme.rythm
+            ]
+            rows
+        , Element.el
+            [ Element.paddingEach
+                { top = 0, right = Theme.rythm, bottom = 0, left = Theme.rythm }
+            , Element.alignRight
+            ]
+            (Theme.button
+                [ Theme.spacing
+                , Theme.padding
+                , Element.alignTop
+                , Border.width 1
+                , Border.rounded Theme.rythm
+                , Border.color (Element.rgb 0 0 0)
+                , Background.color (Element.rgb 0.6 1 0.6)
+                , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
+                , Border.roundEach
+                    { topLeft = 0
+                    , topRight = 0
+                    , bottomLeft = Theme.rythm
+                    , bottomRight = Theme.rythm
+                    }
+                ]
+                { onPress = Maybe.Just (value ++ [ valueDefault ])
+                , label = Element.text ("Add new " ++ typeName)
+                }
+            )
         ]
-        rows
 
 
 dictEditor :
@@ -1225,6 +1150,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
         , Theme.padding
         , Element.alignTop
         , Border.width 1
+        , Border.rounded Theme.rythm
         ]
         { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
         , columns = [ keysColumn, valuesColumn ]

@@ -351,23 +351,25 @@ viewGame scale city =
 viewCity : Id -> City -> Element Msg
 viewCity id city =
     column [ width fill ]
-        [ row [ width fill, Theme.spacing ]
-            [ Theme.tabButton
-                [ alignRight
-                ]
+        [ row
+            [ Theme.spacing
+            , alignRight
+            , paddingEach
+                { left = 0
+                , right = Theme.rythm
+                , top = 0
+                , bottom = 0
+                }
+            ]
+            [ Theme.tabButton []
                 { onPress = Just <| Preview <| PreviewSmall id
                 , label = text "Small preview"
                 }
-            , Theme.tabButton
-                [ alignRight
-                ]
+            , Theme.tabButton []
                 { onPress = Just <| Preview <| PreviewBig id
                 , label = text "Big preview"
                 }
-            , Theme.tabButton
-                [ alignRight
-                , Background.color Theme.colors.red
-                ]
+            , Theme.tabButton [ Background.color Theme.colors.red ]
                 { onPress = Just <| UpdateCity id Nothing
                 , label = text "Delete"
                 }
