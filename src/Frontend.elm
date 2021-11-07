@@ -6,7 +6,7 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, px, row, scrollbarY, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, scrollbarY, scrollbars, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -17,6 +17,8 @@ import File.Select
 import Hex
 import Html
 import Lamdera exposing (Key, Url)
+import Markdown.Parser
+import Markdown.Renderer
 import Model exposing (City, Id)
 import Random
 import Task
@@ -57,7 +59,8 @@ app =
                 { title = "SDC Game"
                 , body =
                     [ css
-                    , Element.layout [ Font.size fontSize ] <| view model
+                    , Element.layout [ Font.size fontSize, height fill, width fill ] <|
+                        view model
                     ]
                 }
         , update = update
@@ -192,17 +195,36 @@ view model =
                     data
                         |> Dict.toList
                         |> List.map (\( id, city ) -> viewCity id city)
-                        |> column [ Theme.spacing, scrollbarY, height fill, width fill, alignTop ]
+                        |> column
+                            [ paddingEach
+                                { left = Theme.rythm
+                                , top = 2 * Theme.rythm + 1
+                                , right = 480 + Theme.rythm
+                                , bottom = Theme.rythm
+                                }
+                            , Theme.spacing
+                            , scrollbars
+                            , height fill
+                            , width fill
+                            , alignTop
+                            ]
             in
-            column [ width fill, height fill, Theme.spacing, Theme.padding ]
-                [ controls
-                , row [ width fill, height fill, Theme.spacing ] [ citiesViews, gameView data model.selectedCity ]
+            el
+                [ width fill
+                , height fill
+                , Theme.spacing
+                , inFront <|
+                    row [ width fill ]
+                        [ controls
+                        , gameView data model.selectedCity
+                        ]
                 ]
+                citiesViews
 
 
 gameView : Model.Data -> Model.Id -> Element msg
 gameView data selectedCity =
-    el [ alignTop ] <|
+    el [ alignTop, alignRight, Theme.padding ] <|
         case Dict.get selectedCity data of
             Nothing ->
                 text "Select a city to show a preview"
@@ -210,15 +232,79 @@ gameView data selectedCity =
             Just city ->
                 let
                     scale =
-                        3
+                        6
+
+                    shadow =
+                        Element.rgba 1 1 1 0.7
+
+                    shadowBox attrs =
+                        el
+                            ([ Element.padding scale
+                             , Border.rounded scale
+                             , Background.color shadow
+                             ]
+                                ++ attrs
+                            )
+
+                    viewMarked input =
+                        input
+                            |> String.split "  "
+                            |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
+                            |> List.filterMap
+                                (\g ->
+                                    g
+                                        |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
+                                        |> Result.toMaybe
+                                        |> Maybe.map
+                                            (\ls ->
+                                                paragraph [ width fill ] <|
+                                                    List.map Element.html ls
+                                            )
+                                )
+                            |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
                 in
-                el
+                column
                     [ Background.image city.image
-                    , width <| px <| scale * 160
-                    , height <| px <| scale * 90
+                    , width <| px <| scale * 80
+                    , height <| px <| scale * 45
                     , Border.width 1
+                    , Font.size <| scale * 3
                     ]
-                    (text "TODO")
+                    [ el [ padding scale, centerX ] <|
+                        shadowBox
+                            [ paddingEach
+                                { left = scale
+                                , top = scale
+                                , right = scale
+                                , bottom = scale * 5 // 2
+                                }
+                            , Font.size <| scale * 6
+                            ]
+                            (text city.name)
+                    , row [ padding scale, spacing scale, width fill, height fill ]
+                        [ shadowBox [ alignTop ] <| viewMarked city.text
+                        , case city.people |> List.head of
+                            Nothing ->
+                                Element.none
+
+                            Just person ->
+                                shadowBox
+                                    [ centerY
+                                    , alignRight
+                                    , width <| px <| scale * 22
+                                    ]
+                                    (column [ spacing scale ]
+                                        [ el [ centerX ] <| text person.name
+                                        , image
+                                            [ width <| px <| scale * 20
+                                            ]
+                                            { description = "Person avatar"
+                                            , src = person.image
+                                            }
+                                        ]
+                                    )
+                        ]
+                    ]
 
 
 viewCity : Id -> City -> Element Msg
@@ -256,10 +342,19 @@ controls =
                 , label = text label
                 }
     in
-    column [ Theme.spacing, alignTop ]
-        [ row [ Theme.spacing ] <|
-            [ btn FileSelect "Upload JSON"
-            , btn DownloadJson "Save as JSON"
-            , btn AddCity "Add City"
-            ]
+    row
+        [ Theme.spacing
+        , alignTop
+        , Border.roundEach
+            { topLeft = 0
+            , topRight = 0
+            , bottomLeft = 0
+            , bottomRight = Theme.rythm
+            }
+        , Theme.padding
+        , Background.color <| Element.rgb 1 1 1
+        ]
+        [ btn FileSelect "Upload JSON"
+        , btn DownloadJson "Save as JSON"
+        , btn AddCity "Add City"
         ]
