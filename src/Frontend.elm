@@ -7,6 +7,7 @@ import Codecs
 import Dict
 import Editors
 import Element exposing (Element, alignRight, centerX, centerY, column, el, fill, row, text, width, wrappedRow)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -179,6 +180,8 @@ view model =
                                             [ Border.width 1
                                             , Theme.padding
                                             , alignRight
+                                            , Border.color <| Element.rgb 0 0 0
+                                            , Background.color <| Element.rgb 1 0.6 0.6
                                             ]
                                             { onPress = Just Nothing
                                             , label = text "Delete"

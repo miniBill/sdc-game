@@ -10,6 +10,7 @@ module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, c
 
 import Dict
 import Element
+import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import List.Extra
@@ -24,7 +25,12 @@ dataEditor value =
 cityEditor : Model.City -> Element.Element Model.City
 cityEditor value =
     Element.table
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         { data =
             [ ( "Name"
               , Element.map
@@ -94,7 +100,12 @@ cityNameEditor value =
 personEditor : Model.Person -> Element.Element Model.Person
 personEditor value =
     Element.table
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         { data =
             [ ( "Name"
               , Element.map
@@ -162,7 +173,12 @@ idEditor value =
 dialogEditor : Model.Dialog -> Element.Element Model.Dialog
 dialogEditor value =
     Element.table
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         { data =
             [ ( "Text"
               , Element.map
@@ -205,7 +221,12 @@ dialogEditor value =
 choiceEditor : Model.Choice -> Element.Element Model.Choice
 choiceEditor value =
     Element.table
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         { data =
             [ ( "Text"
               , Element.map
@@ -312,22 +333,22 @@ consequenceEditor value =
                 , options =
                     [ Input.option
                         (Model.ConsequenceGetMoney intExtracted)
-                        (Element.text "GetMoney")
+                        (Element.text "Get money")
                     , Input.option
                         (Model.ConsequenceLoseMoney intExtracted)
-                        (Element.text "LoseMoney")
+                        (Element.text "Lose money")
                     , Input.option
                         (Model.ConsequenceGetItem itemExtracted)
-                        (Element.text "GetItem")
+                        (Element.text "Get item")
                     , Input.option
                         (Model.ConsequenceLoseItem stringExtracted)
-                        (Element.text "LoseItem")
+                        (Element.text "Lose item")
                     , Input.option
                         (Model.ConsequenceSetLocalFlag
                             stringExtracted
                             boolExtracted
                         )
-                        (Element.text "SetLocalFlag")
+                        (Element.text "Set local flag")
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -410,7 +431,7 @@ itemEditor value =
                 , options =
                     [ Input.option
                         (Model.GenericItem nameStringimageStringExtracted)
-                        (Element.text "GenericItem")
+                        (Element.text "Generic item")
                     , Input.option
                         (Model.Ticket
                             fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted
@@ -427,7 +448,8 @@ itemEditor value =
                     [ Element.map
                         (\newValue -> Model.GenericItem newValue)
                         (Element.table
-                            [ spacing
+                            [ Element.width Element.fill
+                            , spacing
                             , padding
                             , Element.alignTop
                             , Border.width 1
@@ -481,7 +503,8 @@ itemEditor value =
                     [ Element.map
                         (\newValue -> Model.Ticket newValue)
                         (Element.table
-                            [ spacing
+                            [ Element.width Element.fill
+                            , spacing
                             , padding
                             , Element.alignTop
                             , Border.width 1
@@ -581,7 +604,7 @@ transportKindEditor value =
                     , Input.option Model.Bike (Element.text "Bike")
                     , Input.option Model.Boat (Element.text "Boat")
                     , Input.option Model.Ferry (Element.text "Ferry")
-                    , Input.option Model.DuckWalk (Element.text "DuckWalk")
+                    , Input.option Model.DuckWalk (Element.text "Duck walk")
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -637,10 +660,10 @@ conditionEditor value =
                         (Element.text "Or")
                     , Input.option
                         (Model.HasItem itemNameExtracted)
-                        (Element.text "HasItem")
+                        (Element.text "Has item")
                     , Input.option
                         (Model.LocalFlag stringExtracted)
-                        (Element.text "LocalFlag")
+                        (Element.text "Local flag")
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -721,12 +744,12 @@ itemNameEditor value =
                 , options =
                     [ Input.option
                         (Model.GenericItemName stringExtracted)
-                        (Element.text "GenericItemName")
+                        (Element.text "Generic item name")
                     , Input.option
                         (Model.TicketName
                             fromCityNametoCityNamekindTransportKindExtracted
                         )
-                        (Element.text "TicketName")
+                        (Element.text "Ticket name")
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -744,7 +767,8 @@ itemNameEditor value =
                     [ Element.map
                         (\newValue -> Model.TicketName newValue)
                         (Element.table
-                            [ spacing
+                            [ Element.width Element.fill
+                            , spacing
                             , padding
                             , Element.alignTop
                             , Border.width 1
@@ -897,7 +921,7 @@ intEditor value =
     Element.map
         (\newValue -> newValue |> String.toInt |> Maybe.withDefault value)
         (Input.text
-            [ Element.alignTop ]
+            [ Element.width Element.fill, Element.alignTop ]
             { onChange = Basics.identity
             , text = String.fromInt value
             , placeholder = Maybe.Nothing
@@ -915,7 +939,12 @@ tupleEditor :
     -> Element.Element ( l, r )
 tupleEditor leftEditor _ rightEditor _ ( left, right ) =
     Element.row
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ Element.map (\newValue -> ( newValue, right )) (leftEditor left)
         , Element.map (\newValue -> ( left, newValue )) (rightEditor right)
         ]
@@ -961,7 +990,7 @@ maybeEditor valueEditor valueDefault value =
 stringEditor : String -> Element.Element String.String
 stringEditor value =
     Input.text
-        [ Element.alignTop ]
+        [ Element.width Element.fill, Element.alignTop ]
         { onChange = Basics.identity
         , text = value
         , placeholder = Maybe.Nothing
@@ -998,13 +1027,15 @@ listEditor valueEditor valueDefault value =
                                 List.Extra.setAt i newValue value
                         )
                         (Element.row
-                            [ spacing ]
+                            [ spacing, Element.width Element.fill ]
                             [ valueEditor row
                             , Input.button
                                 [ spacing
                                 , padding
                                 , Element.alignTop
                                 , Border.width 1
+                                , Border.color (Element.rgb 0 0 0)
+                                , Background.color (Element.rgb 1 0.6 0.6)
                                 ]
                                 { onPress = Maybe.Just valueDefault
                                 , label = Element.text "Delete"
@@ -1014,13 +1045,27 @@ listEditor valueEditor valueDefault value =
                 )
                 value
                 ++ [ Input.button
-                        [ spacing, padding, Element.alignTop, Border.width 1 ]
+                        [ Element.alignRight
+                        , spacing
+                        , padding
+                        , Element.alignTop
+                        , Border.width 1
+                        , Border.color (Element.rgb 0 0 0)
+                        , Background.color (Element.rgb 0.6 1 0.6)
+                        ]
                         { onPress = Maybe.Just (value ++ [ valueDefault ])
                         , label = Element.text "Add new"
                         }
                    ]
     in
-    Element.column [ spacing, padding, Element.alignTop, Border.width 1 ] rows
+    Element.column
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
+        rows
 
 
 dictEditor :
@@ -1074,7 +1119,12 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
             }
     in
     Element.table
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
         , columns = [ keysColumn, valuesColumn ]
         }
