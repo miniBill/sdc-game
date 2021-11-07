@@ -14,8 +14,14 @@ type alias FrontendModel =
     { key : Key
     , data : Maybe Data
     , lastError : String
-    , selectedCity : Id
+    , preview : Preview
     }
+
+
+type Preview
+    = PreviewNone
+    | PreviewSmall Id
+    | PreviewBig Id
 
 
 type alias BackendModel =
@@ -26,15 +32,18 @@ type alias BackendModel =
 
 
 type FrontendMsg
-    = FileSelect
+    = -- URL management
+      UrlClicked UrlRequest
+    | UrlChanged Url
+      -- File management
+    | FileSelect
     | FileSelected File
     | ReadFile String
-    | SelectCity Id
-    | UpdateCity Id (Maybe City)
     | DownloadJson
-    | UrlClicked UrlRequest
-    | UrlChanged Url
+      -- Cities editor
     | AddCity
+    | UpdateCity Id (Maybe City)
+    | Preview Preview
 
 
 type ToBackend

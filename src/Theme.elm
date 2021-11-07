@@ -1,11 +1,17 @@
-module Theme exposing (colors, input, multiline, padding, rythm, select, spacing)
+module Theme exposing (button, colors, column, fontSize, fontSizes, input, multiline, padding, row, rythm, select, spacing, tabButton)
 
 import Element exposing (Attribute, Color, Element, el, rgba)
 import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
 import Html.Events
+
+
+
+-- Attributes
 
 
 rythm : number
@@ -23,11 +29,60 @@ spacing =
     Element.spacing rythm
 
 
-colors : { semitransparent : Color }
+colors : { semitransparent : Color, red : Color }
 colors =
-    { semitransparent =
-        rgba 1 1 1 0.7
+    { semitransparent = rgba 1 1 1 0.7
+    , red = Element.rgb 1 0.6 0.6
     }
+
+
+fontSize : number
+fontSize =
+    16
+
+
+fontSizes :
+    { huge : Element.Attr decorative msg
+    , bigger : Element.Attr decorative msg
+    , big : Element.Attr decorative msg
+    , normal : Element.Attr decorative msg
+    , small : Element.Attr decorative msg
+    , smaller : Element.Attr decorative msg
+    , tiny : Element.Attr decorative msg
+    }
+fontSizes =
+    let
+        size n =
+            Font.size <|
+                round <|
+                    Element.modular fontSize 1.25 n
+    in
+    { huge = size 4
+    , bigger = size 3
+    , big = size 2
+    , normal = size 1
+    , small = size -1
+    , smaller = size -2
+    , tiny = size -3
+    }
+
+
+
+-- Containers
+
+
+row : List (Attribute msg) -> List (Element msg) -> Element msg
+row attrs =
+    Element.row ([ padding, spacing ] ++ attrs)
+
+
+column : List (Attribute msg) -> List (Element msg) -> Element msg
+column attrs =
+    Element.column ([ padding, spacing ] ++ attrs)
+
+
+
+-- Inputs
 
 
 select :
@@ -108,3 +163,41 @@ multiline attrs { label, text, onChange } =
         , placeholder = Just <| Input.placeholder [] <| Element.text label
         , spellcheck = True
         }
+
+
+button :
+    List (Attribute msg)
+    ->
+        { onPress : Maybe msg
+        , label : Element msg
+        }
+    -> Element msg
+button attrs =
+    Input.button
+        ([ Border.width 1
+         , Border.rounded rythm
+         , padding
+         ]
+            ++ attrs
+        )
+
+
+tabButton :
+    List (Element.Attribute msg)
+    ->
+        { onPress : Maybe msg
+        , label : Element msg
+        }
+    -> Element msg
+tabButton attrs =
+    button
+        ([ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
+         , Border.roundEach
+            { topLeft = rythm
+            , topRight = rythm
+            , bottomLeft = 0
+            , bottomRight = 0
+            }
+         ]
+            ++ attrs
+        )

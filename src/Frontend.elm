@@ -6,11 +6,10 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, scrollbarY, scrollbars, spacing, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input
 import File
 import File.Download
 import File.Select
@@ -23,7 +22,7 @@ import Model exposing (City, Id)
 import Random
 import Task
 import Theme
-import Types exposing (FrontendModel, FrontendMsg(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), Preview(..), ToBackend(..), ToFrontend(..))
 import Url
 
 
@@ -33,11 +32,6 @@ type alias Model =
 
 type alias Msg =
     FrontendMsg
-
-
-fontSize : number
-fontSize =
-    16
 
 
 app :
@@ -59,7 +53,7 @@ app =
                 { title = "SDC Game"
                 , body =
                     [ css
-                    , Element.layout [ Font.size fontSize, height fill, width fill ] <|
+                    , Element.layout [ Theme.fontSizes.normal, height fill, width fill ] <|
                         view model
                     ]
                 }
@@ -75,7 +69,7 @@ css =
         content =
             """
             select {
-                font-size: """ ++ String.fromInt fontSize ++ """px;
+                font-size: """ ++ String.fromInt Theme.fontSize ++ """px;
             }
             """
     in
@@ -91,7 +85,7 @@ updateFromBackend msg model =
         TFData data ->
             ( { model
                 | data = Just data
-                , selectedCity =
+                , preview =
                     let
                         _ =
                             Debug.todo
@@ -100,6 +94,7 @@ updateFromBackend msg model =
                         |> Dict.keys
                         |> List.head
                         |> Maybe.withDefault ""
+                        |> PreviewBig
               }
             , Cmd.none
             )
@@ -110,7 +105,7 @@ init _ key =
     ( { key = key
       , data = Nothing
       , lastError = ""
-      , selectedCity = ""
+      , preview = PreviewNone
       }
     , Cmd.none
     )
@@ -179,15 +174,21 @@ update msg model =
                 |> Random.generate (\newId -> UpdateCity newId (Just Editors.cityDefault))
             )
 
-        ( SelectCity id, Just _ ) ->
-            ( { model | selectedCity = id }, Cmd.none )
+        ( Preview preview, Just _ ) ->
+            ( { model | preview = preview }, Cmd.none )
 
 
 view : Model -> Element Msg
 view model =
     case model.data of
         Nothing ->
-            el [ Font.size 40, centerX, centerY, Font.center ] <| text "Loading..."
+            el
+                [ Theme.fontSizes.huge
+                , centerX
+                , centerY
+                , Font.center
+                ]
+                (text "Loading...")
 
         Just data ->
             let
@@ -199,7 +200,7 @@ view model =
                             [ paddingEach
                                 { left = Theme.rythm
                                 , top = 2 * Theme.rythm + 1
-                                , right = 480 + Theme.rythm
+                                , right = Theme.rythm
                                 , bottom = Theme.rythm
                                 }
                             , Theme.spacing
@@ -213,117 +214,158 @@ view model =
                 [ width fill
                 , height fill
                 , Theme.spacing
-                , inFront <|
-                    row [ width fill ]
-                        [ controls
-                        , gameView data model.selectedCity
-                        ]
+                , inFront controls
+                , inFront <| viewPreview data model.preview
                 ]
                 citiesViews
 
 
-gameView : Model.Data -> Model.Id -> Element msg
-gameView data selectedCity =
-    el [ alignTop, alignRight, Theme.padding ] <|
-        case Dict.get selectedCity data of
-            Nothing ->
-                text "Select a city to show a preview"
+viewPreview : Model.Data -> Preview -> Element Msg
+viewPreview data preview =
+    let
+        selected =
+            case preview of
+                PreviewNone ->
+                    Nothing
 
-            Just city ->
-                let
-                    scale =
-                        6
+                PreviewSmall id ->
+                    Just ( id, False )
 
-                    shadow =
-                        Element.rgba 1 1 1 0.7
+                PreviewBig id ->
+                    Just ( id, True )
+    in
+    case selected of
+        Nothing ->
+            Element.none
 
-                    shadowBox attrs =
-                        el
-                            ([ Element.padding scale
-                             , Border.rounded scale
-                             , Background.color shadow
-                             ]
-                                ++ attrs
-                            )
+        Just ( selectedCity, fullscreen ) ->
+            case Dict.get selectedCity data of
+                Nothing ->
+                    Element.none
 
-                    viewMarked input =
-                        input
-                            |> String.split "  "
-                            |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
-                            |> List.filterMap
-                                (\g ->
-                                    g
-                                        |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
-                                        |> Result.toMaybe
-                                        |> Maybe.map
-                                            (\ls ->
-                                                paragraph [ width fill ] <|
-                                                    List.map Element.html ls
-                                            )
-                                )
-                            |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
-                in
-                column
-                    [ Background.image city.image
-                    , width <| px <| scale * 80
-                    , height <| px <| scale * 45
-                    , Border.width 1
-                    , Font.size <| scale * 3
-                    ]
-                    [ el [ padding scale, centerX ] <|
-                        shadowBox
-                            [ paddingEach
-                                { left = scale
-                                , top = scale
-                                , right = scale
-                                , bottom = scale * 5 // 2
-                                }
-                            , Font.size <| scale * 6
-                            ]
-                            (text city.name)
-                    , row [ padding scale, spacing scale, width fill, height fill ]
-                        [ shadowBox [ alignTop ] <| viewMarked city.text
-                        , case city.people |> List.head of
-                            Nothing ->
-                                Element.none
+                Just city ->
+                    let
+                        scale =
+                            if fullscreen then
+                                18
 
-                            Just person ->
-                                shadowBox
-                                    [ centerY
-                                    , alignRight
-                                    , width <| px <| scale * 22
-                                    ]
-                                    (column [ spacing scale ]
-                                        [ el [ centerX ] <| text person.name
-                                        , image
-                                            [ width <| px <| scale * 20
-                                            ]
-                                            { description = "Person avatar"
-                                            , src = person.image
-                                            }
-                                        ]
-                                    )
+                            else
+                                6
+                    in
+                    el
+                        [ alignTop
+                        , alignRight
+                        , Theme.padding
                         ]
-                    ]
+                        (Theme.column
+                            [ Border.rounded Theme.rythm
+                            , Border.width 1
+                            , Background.color Theme.colors.semitransparent
+                            ]
+                            [ row [ width fill ]
+                                [ el [ centerX, Theme.fontSizes.big ] <| text "Preview"
+                                , Theme.button [ Background.color Theme.colors.red ]
+                                    { label = text "X"
+                                    , onPress = Just <| Preview PreviewNone
+                                    }
+                                ]
+                            , viewGame scale city
+                            ]
+                        )
+
+
+viewGame : Int -> City -> Element msg
+viewGame scale city =
+    let
+        shadowBox attrs =
+            el
+                ([ Element.padding scale
+                 , Border.rounded scale
+                 , Background.color Theme.colors.semitransparent
+                 ]
+                    ++ attrs
+                )
+
+        viewMarked input =
+            input
+                |> String.split "  "
+                |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
+                |> List.filterMap
+                    (\g ->
+                        g
+                            |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\ls ->
+                                    paragraph [ width fill ] <|
+                                        List.map (Element.el [] << Element.html) ls
+                                )
+                    )
+                |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
+    in
+    column
+        [ Background.image city.image
+        , width <| px <| scale * 80
+        , height <| px <| scale * 45
+        , Border.width 1
+        , Font.size <| scale * 3
+        ]
+        [ el [ padding scale, centerX ] <|
+            shadowBox
+                [ paddingEach
+                    { left = scale
+                    , top = scale
+                    , right = scale
+                    , bottom = scale * 5 // 2
+                    }
+                , Font.size <| scale * 6
+                ]
+                (text city.name)
+        , row [ padding scale, spacing scale, width fill, height fill ]
+            [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
+            , case city.people |> List.head of
+                Nothing ->
+                    Element.none
+
+                Just person ->
+                    shadowBox
+                        [ height fill
+                        , alignRight
+                        , width <| px <| scale * 22
+                        ]
+                        (column [ centerY, spacing scale ]
+                            [ el [ centerX ] <| text person.name
+                            , image
+                                [ width <| px <| scale * 20
+                                ]
+                                { description = "Person avatar"
+                                , src = person.image
+                                }
+                            ]
+                        )
+            ]
+        ]
 
 
 viewCity : Id -> City -> Element Msg
 viewCity id city =
     column [ width fill ]
         [ row [ width fill, Theme.spacing ]
-            [ Input.button
-                [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
-                , Theme.padding
-                , alignRight
+            [ Theme.tabButton
+                [ alignRight
                 ]
-                { onPress = Just <| SelectCity id
-                , label = text "Select"
+                { onPress = Just <| Preview <| PreviewSmall id
+                , label = text "Small preview"
                 }
-            , Input.button
-                [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
-                , Theme.padding
-                , alignRight
-                , Background.color <| Element.rgb 1 0.6 0.6
+            , Theme.tabButton
+                [ alignRight
+                ]
+                { onPress = Just <| Preview <| PreviewBig id
+                , label = text "Big preview"
+                }
+            , Theme.tabButton
+                [ alignRight
+                , Background.color Theme.colors.red
                 ]
                 { onPress = Just <| UpdateCity id Nothing
                 , label = text "Delete"
@@ -337,22 +379,20 @@ controls : Element Msg
 controls =
     let
         btn msg label =
-            Input.button [ Border.width 1, Theme.padding ]
+            Theme.button []
                 { onPress = Just msg
                 , label = text label
                 }
     in
-    row
-        [ Theme.spacing
-        , alignTop
+    Theme.row
+        [ alignTop
         , Border.roundEach
             { topLeft = 0
             , topRight = 0
             , bottomLeft = 0
             , bottomRight = Theme.rythm
             }
-        , Theme.padding
-        , Background.color <| Element.rgb 1 1 1
+        , Background.color Theme.colors.semitransparent
         ]
         [ btn FileSelect "Upload JSON"
         , btn DownloadJson "Save as JSON"
