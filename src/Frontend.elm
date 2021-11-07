@@ -6,7 +6,7 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, row, scrollbarY, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, px, row, scrollbarY, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -86,7 +86,20 @@ updateFromBackend msg model =
             ( { model | data = Maybe.map (Dict.update id <| always city) model.data }, Cmd.none )
 
         TFData data ->
-            ( { model | data = Just data }, Cmd.none )
+            ( { model
+                | data = Just data
+                , selectedCity =
+                    let
+                        _ =
+                            Debug.todo
+                    in
+                    data
+                        |> Dict.keys
+                        |> List.head
+                        |> Maybe.withDefault ""
+              }
+            , Cmd.none
+            )
 
 
 init : Url -> Key -> ( Model, Cmd Msg )
@@ -152,7 +165,7 @@ update msg model =
 
         ( DownloadJson, Just data ) ->
             ( model
-            , File.Download.string "data.json" "application/json" <|
+            , File.Download.string "sdc-game.json" "application/json" <|
                 Codec.encodeToString 0 Codecs.dataCodec data
             )
 
@@ -195,7 +208,17 @@ gameView data selectedCity =
                 text "Select a city to show a preview"
 
             Just city ->
-                el [ Background.image "" ] <| text "TODO"
+                let
+                    scale =
+                        3
+                in
+                el
+                    [ Background.image city.image
+                    , width <| px <| scale * 160
+                    , height <| px <| scale * 90
+                    , Border.width 1
+                    ]
+                    (text "TODO")
 
 
 viewCity : Id -> City -> Element Msg
@@ -220,7 +243,7 @@ viewCity id city =
                 , label = text "Delete"
                 }
             ]
-        , Element.map (\newCity -> UpdateCity id <| Just newCity) <| Editors.cityEditor city
+        , Element.map (\newCity -> UpdateCity id <| Just newCity) <| Editors.cityEditor 0 city
         ]
 
 

@@ -17,15 +17,17 @@ import List.Extra
 import Model
 
 
-dataEditor : Model.Data -> Element.Element Model.Data
-dataEditor value =
-    dictEditor idEditor idDefault cityEditor cityDefault value
+dataEditor : Int -> Model.Data -> Element.Element Model.Data
+dataEditor level value =
+    dictEditor idEditor idDefault cityEditor cityDefault level value
 
 
-cityEditor : Model.City -> Element.Element Model.City
-cityEditor value =
+cityEditor : Int -> Model.City -> Element.Element Model.City
+cityEditor level value =
     Element.table
         [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -41,7 +43,7 @@ cityEditor value =
                         in
                         { updating | name = lambdaArg0 }
                     )
-                    (cityNameEditor value.name)
+                    (cityNameEditor (level + 1) value.name)
               )
             , ( "Text"
               , Element.map
@@ -52,7 +54,7 @@ cityEditor value =
                         in
                         { updating | text = lambdaArg0 }
                     )
-                    (stringEditor value.text)
+                    (stringEditor (level + 1) value.text)
               )
             , ( "Image"
               , Element.map
@@ -63,7 +65,7 @@ cityEditor value =
                         in
                         { updating | image = lambdaArg0 }
                     )
-                    (stringEditor value.image)
+                    (stringEditor (level + 1) value.image)
               )
             , ( "People"
               , Element.map
@@ -74,7 +76,12 @@ cityEditor value =
                         in
                         { updating | people = lambdaArg0 }
                     )
-                    (listEditor personEditor personDefault value.people)
+                    (listEditor
+                        personEditor
+                        personDefault
+                        (level + 1)
+                        value.people
+                    )
               )
             ]
         , columns =
@@ -92,15 +99,17 @@ cityEditor value =
         }
 
 
-cityNameEditor : Model.CityName -> Element.Element Model.CityName
-cityNameEditor value =
-    stringEditor value
+cityNameEditor : Int -> Model.CityName -> Element.Element Model.CityName
+cityNameEditor level value =
+    stringEditor level value
 
 
-personEditor : Model.Person -> Element.Element Model.Person
-personEditor value =
+personEditor : Int -> Model.Person -> Element.Element Model.Person
+personEditor level value =
     Element.table
         [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -116,7 +125,7 @@ personEditor value =
                         in
                         { updating | name = lambdaArg0 }
                     )
-                    (stringEditor value.name)
+                    (stringEditor (level + 1) value.name)
               )
             , ( "Image"
               , Element.map
@@ -127,7 +136,7 @@ personEditor value =
                         in
                         { updating | image = lambdaArg0 }
                     )
-                    (stringEditor value.image)
+                    (stringEditor (level + 1) value.image)
               )
             , ( "Dialog"
               , Element.map
@@ -146,6 +155,7 @@ personEditor value =
                             dialogDefault
                         )
                         ( idDefault, dialogDefault )
+                        (level + 1)
                         value.dialog
                     )
               )
@@ -165,15 +175,17 @@ personEditor value =
         }
 
 
-idEditor : Model.Id -> Element.Element Model.Id
-idEditor value =
-    stringEditor value
+idEditor : Int -> Model.Id -> Element.Element Model.Id
+idEditor level value =
+    stringEditor level value
 
 
-dialogEditor : Model.Dialog -> Element.Element Model.Dialog
-dialogEditor value =
+dialogEditor : Int -> Model.Dialog -> Element.Element Model.Dialog
+dialogEditor level value =
     Element.table
         [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -189,7 +201,7 @@ dialogEditor value =
                         in
                         { updating | text = lambdaArg0 }
                     )
-                    (stringEditor value.text)
+                    (stringEditor (level + 1) value.text)
               )
             , ( "Choices"
               , Element.map
@@ -200,7 +212,12 @@ dialogEditor value =
                         in
                         { updating | choices = lambdaArg0 }
                     )
-                    (listEditor choiceEditor choiceDefault value.choices)
+                    (listEditor
+                        choiceEditor
+                        choiceDefault
+                        (level + 1)
+                        value.choices
+                    )
               )
             ]
         , columns =
@@ -218,10 +235,12 @@ dialogEditor value =
         }
 
 
-choiceEditor : Model.Choice -> Element.Element Model.Choice
-choiceEditor value =
+choiceEditor : Int -> Model.Choice -> Element.Element Model.Choice
+choiceEditor level value =
     Element.table
         [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -237,7 +256,7 @@ choiceEditor value =
                         in
                         { updating | text = lambdaArg0 }
                     )
-                    (stringEditor value.text)
+                    (stringEditor (level + 1) value.text)
               )
             , ( "Next"
               , Element.map
@@ -248,7 +267,7 @@ choiceEditor value =
                         in
                         { updating | next = lambdaArg0 }
                     )
-                    (idEditor value.next)
+                    (idEditor (level + 1) value.next)
               )
             , ( "Consequences"
               , Element.map
@@ -262,6 +281,7 @@ choiceEditor value =
                     (listEditor
                         consequenceEditor
                         consequenceDefault
+                        (level + 1)
                         value.consequences
                     )
               )
@@ -277,6 +297,7 @@ choiceEditor value =
                     (maybeEditor
                         conditionEditor
                         conditionDefault
+                        (level + 1)
                         value.condition
                     )
               )
@@ -296,8 +317,9 @@ choiceEditor value =
         }
 
 
-consequenceEditor : Model.Consequence -> Element.Element Model.Consequence
-consequenceEditor value =
+consequenceEditor :
+    Int -> Model.Consequence -> Element.Element Model.Consequence
+consequenceEditor level value =
     let
         { boolExtracted, intExtracted, itemExtracted, stringExtracted } =
             case value of
@@ -357,18 +379,27 @@ consequenceEditor value =
         inputsRow =
             case value of
                 Model.ConsequenceGetMoney int ->
-                    [ Element.map Model.ConsequenceGetMoney (intEditor int) ]
+                    [ Element.map
+                        Model.ConsequenceGetMoney
+                        (intEditor (level + 1) int)
+                    ]
 
                 Model.ConsequenceLoseMoney int ->
-                    [ Element.map Model.ConsequenceLoseMoney (intEditor int) ]
+                    [ Element.map
+                        Model.ConsequenceLoseMoney
+                        (intEditor (level + 1) int)
+                    ]
 
                 Model.ConsequenceGetItem item ->
-                    [ Element.map Model.ConsequenceGetItem (itemEditor item) ]
+                    [ Element.map
+                        Model.ConsequenceGetItem
+                        (itemEditor (level + 1) item)
+                    ]
 
                 Model.ConsequenceLoseItem string ->
                     [ Element.map
                         Model.ConsequenceLoseItem
-                        (stringEditor string)
+                        (stringEditor (level + 1) string)
                     ]
 
                 Model.ConsequenceSetLocalFlag string bool ->
@@ -376,19 +407,25 @@ consequenceEditor value =
                         (\lambdaArg0 ->
                             Model.ConsequenceSetLocalFlag lambdaArg0 bool
                         )
-                        (stringEditor string)
+                        (stringEditor (level + 1) string)
                     , Element.map
                         (Model.ConsequenceSetLocalFlag string)
-                        (boolEditor bool)
+                        (boolEditor (level + 1) bool)
                     ]
     in
     Element.column
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
-itemEditor : Model.Item -> Element.Element Model.Item
-itemEditor value =
+itemEditor : Int -> Model.Item -> Element.Element Model.Item
+itemEditor level value =
     let
         { fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted, nameStringimageStringExtracted } =
             case value of
@@ -438,6 +475,8 @@ itemEditor value =
                         Model.GenericItem
                         (Element.table
                             [ Element.width Element.fill
+                            , Background.color (getColor (level + 1))
+                            , Element.width Element.fill
                             , spacing
                             , padding
                             , Element.alignTop
@@ -453,7 +492,9 @@ itemEditor value =
                                             in
                                             { updating | name = lambdaArg0 }
                                         )
-                                        (stringEditor nameStringimageString.name
+                                        (stringEditor
+                                            (level + 1 + 1)
+                                            nameStringimageString.name
                                         )
                                   )
                                 , ( "Image"
@@ -466,6 +507,7 @@ itemEditor value =
                                             { updating | image = lambdaArg0 }
                                         )
                                         (stringEditor
+                                            (level + 1 + 1)
                                             nameStringimageString.image
                                         )
                                   )
@@ -493,6 +535,8 @@ itemEditor value =
                         Model.Ticket
                         (Element.table
                             [ Element.width Element.fill
+                            , Background.color (getColor (level + 1))
+                            , Element.width Element.fill
                             , spacing
                             , padding
                             , Element.alignTop
@@ -509,6 +553,7 @@ itemEditor value =
                                             { updating | from = lambdaArg0 }
                                         )
                                         (cityNameEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
                                         )
                                   )
@@ -522,6 +567,7 @@ itemEditor value =
                                             { updating | to = lambdaArg0 }
                                         )
                                         (cityNameEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
                                         )
                                   )
@@ -535,6 +581,7 @@ itemEditor value =
                                             { updating | kind = lambdaArg0 }
                                         )
                                         (transportKindEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
                                         )
                                   )
@@ -552,6 +599,7 @@ itemEditor value =
                                         (listEditor
                                             consequenceEditor
                                             consequenceDefault
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
                                         )
                                   )
@@ -575,12 +623,19 @@ itemEditor value =
                     ]
     in
     Element.column
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
-transportKindEditor : Model.TransportKind -> Element.Element Model.TransportKind
-transportKindEditor value =
+transportKindEditor :
+    Int -> Model.TransportKind -> Element.Element Model.TransportKind
+transportKindEditor level value =
     let
         variantRow =
             Input.radioRow
@@ -599,11 +654,19 @@ transportKindEditor value =
                 , label = Input.labelHidden ""
                 }
     in
-    Element.el [ padding, Element.alignTop, Border.width 1 ] variantRow
+    Element.el
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
+        variantRow
 
 
-conditionEditor : Model.Condition -> Element.Element Model.Condition
-conditionEditor value =
+conditionEditor : Int -> Model.Condition -> Element.Element Model.Condition
+conditionEditor level value =
     let
         { conditionExtracted, itemNameExtracted, listConditionExtracted, stringExtracted } =
             case value of
@@ -661,7 +724,9 @@ conditionEditor value =
         inputsRow =
             case value of
                 Model.ConditionNot condition ->
-                    [ Element.map Model.ConditionNot (conditionEditor condition)
+                    [ Element.map
+                        Model.ConditionNot
+                        (conditionEditor (level + 1) condition)
                     ]
 
                 Model.ConditionAnd listCondition ->
@@ -670,6 +735,7 @@ conditionEditor value =
                         (listEditor
                             conditionEditor
                             conditionDefault
+                            (level + 1)
                             listCondition
                         )
                     ]
@@ -680,23 +746,36 @@ conditionEditor value =
                         (listEditor
                             conditionEditor
                             conditionDefault
+                            (level + 1)
                             listCondition
                         )
                     ]
 
                 Model.HasItem itemName ->
-                    [ Element.map Model.HasItem (itemNameEditor itemName) ]
+                    [ Element.map
+                        Model.HasItem
+                        (itemNameEditor (level + 1) itemName)
+                    ]
 
                 Model.LocalFlag string ->
-                    [ Element.map Model.LocalFlag (stringEditor string) ]
+                    [ Element.map
+                        Model.LocalFlag
+                        (stringEditor (level + 1) string)
+                    ]
     in
     Element.column
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
-itemNameEditor : Model.ItemName -> Element.Element Model.ItemName
-itemNameEditor value =
+itemNameEditor : Int -> Model.ItemName -> Element.Element Model.ItemName
+itemNameEditor level value =
     let
         { fromCityNametoCityNamekindTransportKindExtracted, stringExtracted } =
             case value of
@@ -739,13 +818,18 @@ itemNameEditor value =
         inputsRow =
             case value of
                 Model.GenericItemName string ->
-                    [ Element.map Model.GenericItemName (stringEditor string) ]
+                    [ Element.map
+                        Model.GenericItemName
+                        (stringEditor (level + 1) string)
+                    ]
 
                 Model.TicketName fromCityNametoCityNamekindTransportKind ->
                     [ Element.map
                         Model.TicketName
                         (Element.table
                             [ Element.width Element.fill
+                            , Background.color (getColor (level + 1))
+                            , Element.width Element.fill
                             , spacing
                             , padding
                             , Element.alignTop
@@ -762,6 +846,7 @@ itemNameEditor value =
                                             { updating | from = lambdaArg0 }
                                         )
                                         (cityNameEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKind.from
                                         )
                                   )
@@ -775,6 +860,7 @@ itemNameEditor value =
                                             { updating | to = lambdaArg0 }
                                         )
                                         (cityNameEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKind.to
                                         )
                                   )
@@ -788,6 +874,7 @@ itemNameEditor value =
                                             { updating | kind = lambdaArg0 }
                                         )
                                         (transportKindEditor
+                                            (level + 1 + 1)
                                             fromCityNametoCityNamekindTransportKind.kind
                                         )
                                   )
@@ -811,7 +898,13 @@ itemNameEditor value =
                     ]
     in
     Element.column
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
@@ -894,8 +987,8 @@ padding =
     Element.padding rythm
 
 
-intEditor : Int -> Element.Element Basics.Int
-intEditor value =
+intEditor : Int -> Int -> Element.Element Basics.Int
+intEditor level value =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
         (Input.text
@@ -911,28 +1004,38 @@ intEditor value =
 
 
 tupleEditor :
-    (l -> Element.Element l)
+    (Int -> l -> Element.Element l)
     -> l
-    -> (r -> Element.Element r)
+    -> (Int -> r -> Element.Element r)
     -> r
+    -> Int
     -> ( l, r )
     -> Element.Element ( l, r )
-tupleEditor leftEditor _ rightEditor _ ( left, right ) =
-    Element.row
-        [ Element.width Element.fill
+tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
+    Element.column
+        [ Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
         , Border.width 1
         ]
-        [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) (leftEditor left)
-        , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) (rightEditor right)
+        [ Element.map
+            (\lambdaArg0 -> ( lambdaArg0, right ))
+            (leftEditor (level + 1) left)
+        , Element.map
+            (\lambdaArg0 -> ( left, lambdaArg0 ))
+            (rightEditor (level + 1) right)
         ]
 
 
 maybeEditor :
-    (e -> Element.Element e) -> e -> Maybe e -> Element.Element (Maybe e)
-maybeEditor valueEditor valueDefault value =
+    (Int -> e -> Element.Element e)
+    -> e
+    -> Int
+    -> Maybe e
+    -> Element.Element (Maybe e)
+maybeEditor valueEditor valueDefault level value =
     let
         extracted =
             case value of
@@ -960,15 +1063,21 @@ maybeEditor valueEditor valueDefault value =
                     Element.none
 
                 Just inner ->
-                    Element.map Maybe.Just (valueEditor inner)
+                    Element.map Maybe.Just (valueEditor (level + 1) inner)
     in
     Element.column
-        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        ]
         [ variantRow, inputsRow ]
 
 
-stringEditor : String -> Element.Element String.String
-stringEditor value =
+stringEditor : Int -> String -> Element.Element String.String
+stringEditor level value =
     Input.text
         [ Element.width (Element.minimum 100 Element.fill), Element.alignTop ]
         { onChange = Basics.identity
@@ -978,8 +1087,8 @@ stringEditor value =
         }
 
 
-boolEditor : Bool -> Element.Element Basics.Bool
-boolEditor value =
+boolEditor : Int -> Bool -> Element.Element Basics.Bool
+boolEditor level value =
     Input.radioRow
         [ spacing, Element.alignTop ]
         { onChange = Basics.identity
@@ -992,8 +1101,13 @@ boolEditor value =
         }
 
 
-listEditor : (e -> Element.Element e) -> e -> List e -> Element.Element (List e)
-listEditor valueEditor valueDefault value =
+listEditor :
+    (Int -> e -> Element.Element e)
+    -> e
+    -> Int
+    -> List e
+    -> Element.Element (List e)
+listEditor valueEditor valueDefault level value =
     let
         rows =
             List.indexedMap
@@ -1021,7 +1135,7 @@ listEditor valueEditor valueDefault value =
                                 { onPress = Maybe.Just valueDefault
                                 , label = Element.text "Delete"
                                 }
-                            , valueEditor row
+                            , valueEditor (level + 1) row
                             ]
                         )
                 )
@@ -1041,7 +1155,8 @@ listEditor valueEditor valueDefault value =
                    ]
     in
     Element.column
-        [ Element.width Element.fill
+        [ Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -1051,13 +1166,14 @@ listEditor valueEditor valueDefault value =
 
 
 dictEditor :
-    (comparable -> Element.Element comparable)
+    (Int -> comparable -> Element.Element comparable)
     -> comparable
-    -> (v -> Element.Element v)
+    -> (Int -> v -> Element.Element v)
     -> v
+    -> Int
     -> Dict.Dict comparable v
     -> Element.Element (Dict.Dict comparable v)
-dictEditor keyEditor keyDefault valueEditor valueDefault value =
+dictEditor keyEditor keyDefault valueEditor valueDefault level value =
     let
         keysColumn =
             { header = Element.none
@@ -1080,7 +1196,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
                                     memberValue
                                     (Dict.remove key value)
                         )
-                        (keyEditor key)
+                        (keyEditor (level + 1) key)
             }
 
         valuesColumn =
@@ -1097,11 +1213,12 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
                             else
                                 Dict.insert key lambdaArg0 value
                         )
-                        (valueEditor memberValue)
+                        (valueEditor (level + 1) memberValue)
             }
     in
     Element.table
-        [ Element.width Element.fill
+        [ Background.color (getColor level)
+        , Element.width Element.fill
         , spacing
         , padding
         , Element.alignTop
@@ -1110,5 +1227,25 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
         { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
         , columns = [ keysColumn, valuesColumn ]
         }
+
+
+colors : List Element.Color
+colors =
+    [ Element.rgb255 0xFD 0xDF 0xDF
+    , Element.rgb255 0xFC 0xF7 0xDE
+    , Element.rgb255 0xDE 0xFD 0xE0
+    , Element.rgb255 0xDE 0xF3 0xFD
+    , Element.rgb255 0xF0 0xDE 0xFD
+    ]
+
+
+getColor index =
+    let
+        reduced =
+            Basics.modBy 5 index
+    in
+    List.drop reduced colors
+        |> List.head
+        |> Maybe.withDefault (Element.rgb 0.7 0.7 0.7)
 
 
