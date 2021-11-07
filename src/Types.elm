@@ -14,6 +14,7 @@ type alias FrontendModel =
     { key : Key
     , data : Maybe Data
     , lastError : String
+    , selectedCity : Id
     }
 
 
@@ -28,6 +29,7 @@ type FrontendMsg
     = FileSelect
     | FileSelected File
     | ReadFile String
+    | SelectCity Id
     | UpdateCity Id (Maybe City)
     | DownloadJson
     | UrlClicked UrlRequest

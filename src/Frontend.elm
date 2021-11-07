@@ -6,7 +6,7 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, alignRight, centerX, centerY, column, el, fill, row, text, width, wrappedRow)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, row, scrollbarY, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -17,7 +17,7 @@ import File.Select
 import Hex
 import Html
 import Lamdera exposing (Key, Url)
-import Model exposing (City)
+import Model exposing (City, Id)
 import Random
 import Task
 import Theme
@@ -94,6 +94,7 @@ init _ key =
     ( { key = key
       , data = Nothing
       , lastError = ""
+      , selectedCity = ""
       }
     , Cmd.none
     )
@@ -162,6 +163,9 @@ update msg model =
                 |> Random.generate (\newId -> UpdateCity newId (Just Editors.cityDefault))
             )
 
+        ( SelectCity id, Just _ ) ->
+            ( { model | selectedCity = id }, Cmd.none )
+
 
 view : Model -> Element Msg
 view model =
@@ -174,33 +178,49 @@ view model =
                 citiesViews =
                     data
                         |> Dict.toList
-                        |> List.map
-                            (\( id, city ) ->
-                                Element.map (UpdateCity id) <|
-                                    viewCity city
-                            )
-                        |> wrappedRow [ Theme.spacing ]
+                        |> List.map (\( id, city ) -> viewCity id city)
+                        |> column [ Theme.spacing, scrollbarY, height fill, width fill, alignTop ]
             in
-            column [ width fill, Theme.spacing, Theme.padding ]
+            column [ width fill, height fill, Theme.spacing, Theme.padding ]
                 [ controls
-                , citiesViews
+                , row [ width fill, height fill, Theme.spacing ] [ citiesViews, gameView data model.selectedCity ]
                 ]
 
 
-viewCity : City -> Element (Maybe City)
-viewCity city =
-    Element.column [ width fill ]
-        [ Input.button
-            [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
-            , Theme.padding
-            , alignRight
-            , Border.color <| Element.rgb 0 0 0
-            , Background.color <| Element.rgb 1 0.6 0.6
+gameView : Model.Data -> Model.Id -> Element msg
+gameView data selectedCity =
+    el [ alignTop ] <|
+        case Dict.get selectedCity data of
+            Nothing ->
+                text "Select a city to show a preview"
+
+            Just city ->
+                el [ Background.image "" ] <| text "TODO"
+
+
+viewCity : Id -> City -> Element Msg
+viewCity id city =
+    column [ width fill ]
+        [ row [ width fill, Theme.spacing ]
+            [ Input.button
+                [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
+                , Theme.padding
+                , alignRight
+                ]
+                { onPress = Just <| SelectCity id
+                , label = text "Select"
+                }
+            , Input.button
+                [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
+                , Theme.padding
+                , alignRight
+                , Background.color <| Element.rgb 1 0.6 0.6
+                ]
+                { onPress = Just <| UpdateCity id Nothing
+                , label = text "Delete"
+                }
             ]
-            { onPress = Just Nothing
-            , label = text "Delete"
-            }
-        , Element.map Just <| Editors.cityEditor city
+        , Element.map (\newCity -> UpdateCity id <| Just newCity) <| Editors.cityEditor city
         ]
 
 
@@ -213,7 +233,7 @@ controls =
                 , label = text label
                 }
     in
-    column [ Theme.spacing ]
+    column [ Theme.spacing, alignTop ]
         [ row [ Theme.spacing ] <|
             [ btn FileSelect "Upload JSON"
             , btn DownloadJson "Save as JSON"
