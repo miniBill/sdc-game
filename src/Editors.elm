@@ -994,6 +994,7 @@ intEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
+            , Background.color (getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromInt value
@@ -1079,7 +1080,10 @@ maybeEditor valueEditor valueDefault level value =
 stringEditor : Int -> String -> Element.Element String.String
 stringEditor level value =
     Input.text
-        [ Element.width (Element.minimum 100 Element.fill), Element.alignTop ]
+        [ Element.width (Element.minimum 100 Element.fill)
+        , Element.alignTop
+        , Background.color (getColor level)
+        ]
         { onChange = Basics.identity
         , text = value
         , placeholder = Maybe.Nothing
