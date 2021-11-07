@@ -1,13 +1,16 @@
-module Editors exposing (dataEditor, cityEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
+module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
 
-{-|
+{-| 
 
 @docs dataEditor, cityEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
+
 -}
+
 
 import Dict
 import Element
+import Element.Border as Border
 import Element.Input as Input
 import List.Extra
 import Model
@@ -21,26 +24,50 @@ dataEditor value =
 cityEditor : Model.City -> Element.Element Model.City
 cityEditor value =
     Element.table
-        [ spacing ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         { data =
             [ ( "Name"
               , Element.map
-                    (\lambdaArg0 -> { value | name = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | name = lambdaArg0 }
+                    )
                     (cityNameEditor value.name)
               )
             , ( "Text"
               , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | text = lambdaArg0 }
+                    )
                     (stringEditor value.text)
               )
             , ( "Image"
               , Element.map
-                    (\lambdaArg0 -> { value | image = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | image = lambdaArg0 }
+                    )
                     (stringEditor value.image)
               )
             , ( "People"
               , Element.map
-                    (\lambdaArg0 -> { value | people = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | people = lambdaArg0 }
+                    )
                     (listEditor personEditor personDefault value.people)
               )
             ]
@@ -65,21 +92,39 @@ cityNameEditor value =
 personEditor : Model.Person -> Element.Element Model.Person
 personEditor value =
     Element.table
-        [ spacing ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         { data =
             [ ( "Name"
               , Element.map
-                    (\lambdaArg0 -> { value | name = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | name = lambdaArg0 }
+                    )
                     (stringEditor value.name)
               )
             , ( "Image"
               , Element.map
-                    (\lambdaArg0 -> { value | image = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | image = lambdaArg0 }
+                    )
                     (stringEditor value.image)
               )
             , ( "Dialog"
               , Element.map
-                    (\lambdaArg0 -> { value | dialog = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | dialog = lambdaArg0 }
+                    )
                     (listEditor
                         (tupleEditor
                             idEditor
@@ -113,16 +158,28 @@ idEditor value =
 dialogEditor : Model.Dialog -> Element.Element Model.Dialog
 dialogEditor value =
     Element.table
-        [ spacing ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         { data =
             [ ( "Text"
               , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | text = lambdaArg0 }
+                    )
                     (stringEditor value.text)
               )
             , ( "Choices"
               , Element.map
-                    (\lambdaArg0 -> { value | choices = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | choices = lambdaArg0 }
+                    )
                     (listEditor choiceEditor choiceDefault value.choices)
               )
             ]
@@ -142,21 +199,39 @@ dialogEditor value =
 choiceEditor : Model.Choice -> Element.Element Model.Choice
 choiceEditor value =
     Element.table
-        [ spacing ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         { data =
             [ ( "Text"
               , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | text = lambdaArg0 }
+                    )
                     (stringEditor value.text)
               )
             , ( "Next"
               , Element.map
-                    (\lambdaArg0 -> { value | next = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | next = lambdaArg0 }
+                    )
                     (idEditor value.next)
               )
             , ( "Consequences"
               , Element.map
-                    (\lambdaArg0 -> { value | consequences = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | consequences = lambdaArg0 }
+                    )
                     (listEditor
                         consequenceEditor
                         consequenceDefault
@@ -165,7 +240,13 @@ choiceEditor value =
               )
             , ( "Condition"
               , Element.map
-                    (\lambdaArg0 -> { value | condition = lambdaArg0 })
+                    (\lambdaArg0 ->
+                        let
+                            updating =
+                                value
+                        in
+                        { updating | condition = lambdaArg0 }
+                    )
                     (maybeEditor
                         conditionEditor
                         conditionDefault
@@ -284,7 +365,7 @@ consequenceEditor value =
                     ]
     in
     Element.column
-        [ padding, spacing, Element.alignTop, Border.width 1 ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
@@ -338,19 +419,32 @@ itemEditor value =
                     [ Element.map
                         (\newValue -> Model.GenericItem newValue)
                         (Element.table
-                            [ spacing ]
+                            [ spacing
+                            , padding
+                            , Element.alignTop
+                            , Border.width 1
+                            ]
                             { data =
                                 [ ( "Name"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | name = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    nameStringimageString
+                                            in
+                                            { updating | name = lambdaArg0 }
                                         )
-                                        (stringEditor nameStringimageString.name)
+                                        (stringEditor nameStringimageString.name
+                                        )
                                   )
                                 , ( "Image"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | image = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    nameStringimageString
+                                            in
+                                            { updating | image = lambdaArg0 }
                                         )
                                         (stringEditor
                                             nameStringimageString.image
@@ -375,12 +469,20 @@ itemEditor value =
                     [ Element.map
                         (\newValue -> Model.Ticket newValue)
                         (Element.table
-                            [ spacing ]
+                            [ spacing
+                            , padding
+                            , Element.alignTop
+                            , Border.width 1
+                            ]
                             { data =
                                 [ ( "From"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | from = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                            in
+                                            { updating | from = lambdaArg0 }
                                         )
                                         (cityNameEditor
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
@@ -389,7 +491,11 @@ itemEditor value =
                                 , ( "To"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | to = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                            in
+                                            { updating | to = lambdaArg0 }
                                         )
                                         (cityNameEditor
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
@@ -398,7 +504,11 @@ itemEditor value =
                                 , ( "Kind"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | kind = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                            in
+                                            { updating | kind = lambdaArg0 }
                                         )
                                         (transportKindEditor
                                             fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
@@ -407,7 +517,11 @@ itemEditor value =
                                 , ( "Consequences"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                            in
+                                            { updating
                                                 | consequences = lambdaArg0
                                             }
                                         )
@@ -433,7 +547,7 @@ itemEditor value =
                     ]
     in
     Element.column
-        [ padding, spacing, Element.alignTop, Border.width 1 ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
@@ -557,7 +671,7 @@ conditionEditor value =
                     ]
     in
     Element.column
-        [ padding, spacing, Element.alignTop, Border.width 1 ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
@@ -614,12 +728,20 @@ itemNameEditor value =
                     [ Element.map
                         (\newValue -> Model.TicketName newValue)
                         (Element.table
-                            [ spacing ]
+                            [ spacing
+                            , padding
+                            , Element.alignTop
+                            , Border.width 1
+                            ]
                             { data =
                                 [ ( "From"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | from = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKind
+                                            in
+                                            { updating | from = lambdaArg0 }
                                         )
                                         (cityNameEditor
                                             fromCityNametoCityNamekindTransportKind.from
@@ -628,7 +750,11 @@ itemNameEditor value =
                                 , ( "To"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | to = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKind
+                                            in
+                                            { updating | to = lambdaArg0 }
                                         )
                                         (cityNameEditor
                                             fromCityNametoCityNamekindTransportKind.to
@@ -637,7 +763,11 @@ itemNameEditor value =
                                 , ( "Kind"
                                   , Element.map
                                         (\lambdaArg0 ->
-                                            { value | kind = lambdaArg0 }
+                                            let
+                                                updating =
+                                                    fromCityNametoCityNamekindTransportKind
+                                            in
+                                            { updating | kind = lambdaArg0 }
                                         )
                                         (transportKindEditor
                                             fromCityNametoCityNamekindTransportKind.kind
@@ -659,7 +789,7 @@ itemNameEditor value =
                     ]
     in
     Element.column
-        [ padding, spacing, Element.alignTop, Border.width 1 ]
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
 
 
@@ -742,6 +872,72 @@ padding =
     Element.padding rythm
 
 
+intEditor : Int -> Element.Element Basics.Int
+intEditor value =
+    Element.map
+        (\newValue -> newValue |> String.toInt |> Maybe.withDefault value)
+        (Input.text
+            [ Element.alignTop ]
+            { onChange = Basics.identity
+            , text = String.fromInt value
+            , placeholder = Maybe.Nothing
+            , label = Input.labelHidden ""
+            }
+        )
+
+
+tupleEditor :
+    (l -> Element.Element l)
+    -> l
+    -> (r -> Element.Element r)
+    -> r
+    -> ( l, r )
+    -> Element.Element ( l, r )
+tupleEditor leftEditor _ rightEditor _ ( left, right ) =
+    Element.row
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ Element.map (\newValue -> ( newValue, right )) (leftEditor left)
+        , Element.map (\newValue -> ( left, newValue )) (rightEditor right)
+        ]
+
+
+maybeEditor :
+    (e -> Element.Element e) -> e -> Maybe e -> Element.Element (Maybe e)
+maybeEditor valueEditor valueDefault value =
+    let
+        extracted =
+            case value of
+                Nothing ->
+                    valueDefault
+
+                Just inner ->
+                    inner
+
+        variantRow =
+            Input.radioRow
+                [ spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option Nothing (Element.text "Nothing")
+                    , Input.option (Just extracted) (Element.text "Just")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
+
+        inputsRow =
+            case value of
+                Nothing ->
+                    Element.none
+
+                Just inner ->
+                    Element.map Maybe.Just (valueEditor inner)
+    in
+    Element.column
+        [ spacing, padding, Element.alignTop, Border.width 1 ]
+        [ variantRow, inputsRow ]
+
+
 stringEditor : String -> Element.Element String.String
 stringEditor value =
     Input.text
@@ -772,9 +968,10 @@ listEditor valueEditor valueDefault value =
     let
         rows =
             List.indexedMap
-                (Element.map
-                    (\newValue -> List.Extra.setAt newValue value)
-                    valueEditor
+                (\i row ->
+                    Element.map
+                        (\newValue -> List.Extra.setAt i newValue value)
+                        (valueEditor row)
                 )
                 value
                 ++ [ Element.map
@@ -825,7 +1022,8 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
                 \( key, memberValue ) ->
                     Element.map
                         (\newValue ->
-                            if key == keyDefault && newValue == valueDefault then
+                            if key == keyDefault && newValue == valueDefault
+                            then
                                 Dict.remove key value
 
                             else
@@ -839,3 +1037,5 @@ dictEditor keyEditor keyDefault valueEditor valueDefault value =
         { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
         , columns = [ keysColumn, valuesColumn ]
         }
+
+
