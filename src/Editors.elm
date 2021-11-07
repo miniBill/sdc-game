@@ -1006,20 +1006,23 @@ listEditor valueEditor valueDefault value =
                             else
                                 List.Extra.setAt i lambdaArg0 value
                         )
-                        (Element.row
-                            [ spacing, Element.width Element.fill ]
-                            [ valueEditor row
-                            , Input.button
+                        (Element.column
+                            [ Element.width Element.fill ]
+                            [ Input.button
                                 [ spacing
                                 , padding
                                 , Element.alignTop
                                 , Border.width 1
                                 , Border.color (Element.rgb 0 0 0)
                                 , Background.color (Element.rgb 1 0.6 0.6)
+                                , Element.alignRight
+                                , Border.widthEach
+                                    { bottom = 0, left = 1, right = 1, top = 1 }
                                 ]
                                 { onPress = Maybe.Just valueDefault
                                 , label = Element.text "Delete"
                                 }
+                            , valueEditor row
                             ]
                         )
                 )

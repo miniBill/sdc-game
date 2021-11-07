@@ -176,9 +176,9 @@ view model =
                         |> List.map
                             (\( id, city ) ->
                                 Element.map (UpdateCity id) <|
-                                    Element.column [ Theme.spacing, width fill ]
+                                    Element.column [ width fill ]
                                         [ Input.button
-                                            [ Border.width 1
+                                            [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
                                             , Theme.padding
                                             , alignRight
                                             , Border.color <| Element.rgb 0 0 0
