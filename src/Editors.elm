@@ -899,7 +899,9 @@ intEditor value =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
         (Input.text
-            [ Element.width Element.fill, Element.alignTop ]
+            [ Element.width (Element.minimum 100 Element.fill)
+            , Element.alignTop
+            ]
             { onChange = Basics.identity
             , text = String.fromInt value
             , placeholder = Maybe.Nothing
@@ -968,7 +970,7 @@ maybeEditor valueEditor valueDefault value =
 stringEditor : String -> Element.Element String.String
 stringEditor value =
     Input.text
-        [ Element.width Element.fill, Element.alignTop ]
+        [ Element.width (Element.minimum 100 Element.fill), Element.alignTop ]
         { onChange = Basics.identity
         , text = value
         , placeholder = Maybe.Nothing
