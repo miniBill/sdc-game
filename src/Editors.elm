@@ -15,6 +15,7 @@ import Element.Border as Border
 import Element.Input as Input
 import List.Extra
 import Model
+import Theme
 
 
 dataEditor : Int -> Model.Data -> Element.Element Model.Data
@@ -28,8 +29,8 @@ cityEditor level value =
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -77,6 +78,7 @@ cityEditor level value =
                         { updating | people = lambdaArg0 }
                     )
                     (listEditor
+                        "Person"
                         personEditor
                         personDefault
                         (level + 1)
@@ -110,8 +112,8 @@ personEditor level value =
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -148,6 +150,7 @@ personEditor level value =
                         { updating | dialog = lambdaArg0 }
                     )
                     (listEditor
+                        "(Id, Dialog)"
                         (tupleEditor
                             idEditor
                             idDefault
@@ -186,8 +189,8 @@ dialogEditor level value =
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -213,6 +216,7 @@ dialogEditor level value =
                         { updating | choices = lambdaArg0 }
                     )
                     (listEditor
+                        "Choice"
                         choiceEditor
                         choiceDefault
                         (level + 1)
@@ -241,8 +245,8 @@ choiceEditor level value =
         [ Element.width Element.fill
         , Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -279,6 +283,7 @@ choiceEditor level value =
                         { updating | consequences = lambdaArg0 }
                     )
                     (listEditor
+                        "Consequence"
                         consequenceEditor
                         consequenceDefault
                         (level + 1)
@@ -295,6 +300,7 @@ choiceEditor level value =
                         { updating | condition = lambdaArg0 }
                     )
                     (maybeEditor
+                        "Condition"
                         conditionEditor
                         conditionDefault
                         (level + 1)
@@ -350,7 +356,7 @@ consequenceEditor level value =
 
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -416,12 +422,12 @@ consequenceEditor level value =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
-        [ variantRow, Element.row [ spacing ] inputsRow ]
+        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
 
 
 itemEditor : Int -> Model.Item -> Element.Element Model.Item
@@ -452,7 +458,7 @@ itemEditor level value =
 
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -477,8 +483,8 @@ itemEditor level value =
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
-                            , spacing
-                            , padding
+                            , Theme.spacing
+                            , Theme.padding
                             , Element.alignTop
                             , Border.width 1
                             ]
@@ -537,8 +543,8 @@ itemEditor level value =
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
-                            , spacing
-                            , padding
+                            , Theme.spacing
+                            , Theme.padding
                             , Element.alignTop
                             , Border.width 1
                             ]
@@ -597,6 +603,7 @@ itemEditor level value =
                                             }
                                         )
                                         (listEditor
+                                            "Consequence"
                                             consequenceEditor
                                             consequenceDefault
                                             (level + 1 + 1)
@@ -625,12 +632,12 @@ itemEditor level value =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
-        [ variantRow, Element.row [ spacing ] inputsRow ]
+        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
 
 
 transportKindEditor :
@@ -639,7 +646,7 @@ transportKindEditor level value =
     let
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Model.Plane (Element.text "Plane")
@@ -657,8 +664,8 @@ transportKindEditor level value =
     Element.el
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -698,7 +705,7 @@ conditionEditor level value =
 
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -733,6 +740,7 @@ conditionEditor level value =
                     [ Element.map
                         Model.ConditionAnd
                         (listEditor
+                            "Condition"
                             conditionEditor
                             conditionDefault
                             (level + 1)
@@ -744,6 +752,7 @@ conditionEditor level value =
                     [ Element.map
                         Model.ConditionOr
                         (listEditor
+                            "Condition"
                             conditionEditor
                             conditionDefault
                             (level + 1)
@@ -766,12 +775,12 @@ conditionEditor level value =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
-        [ variantRow, Element.row [ spacing ] inputsRow ]
+        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
 
 
 itemNameEditor : Int -> Model.ItemName -> Element.Element Model.ItemName
@@ -799,7 +808,7 @@ itemNameEditor level value =
 
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -830,8 +839,8 @@ itemNameEditor level value =
                             [ Element.width Element.fill
                             , Background.color (getColor (level + 1))
                             , Element.width Element.fill
-                            , spacing
-                            , padding
+                            , Theme.spacing
+                            , Theme.padding
                             , Element.alignTop
                             , Border.width 1
                             ]
@@ -900,12 +909,12 @@ itemNameEditor level value =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
-        [ variantRow, Element.row [ spacing ] inputsRow ]
+        [ variantRow, Element.row [ Theme.spacing ] inputsRow ]
 
 
 dataDefault : Model.Data
@@ -972,21 +981,6 @@ itemNameDefault =
     Model.GenericItemName ""
 
 
-rythm : Int
-rythm =
-    10
-
-
-spacing : Element.Attribute msg
-spacing =
-    Element.spacing rythm
-
-
-padding : Element.Attribute msg
-padding =
-    Element.padding rythm
-
-
 intEditor : Int -> Int -> Element.Element Basics.Int
 intEditor level value =
     Element.map
@@ -1016,8 +1010,8 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -1031,12 +1025,13 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
 
 
 maybeEditor :
-    (Int -> e -> Element.Element e)
+    String
+    -> (Int -> e -> Element.Element e)
     -> e
     -> Int
     -> Maybe e
     -> Element.Element (Maybe e)
-maybeEditor valueEditor valueDefault level value =
+maybeEditor typeName valueEditor valueDefault level value =
     let
         extracted =
             case value of
@@ -1048,11 +1043,13 @@ maybeEditor valueEditor valueDefault level value =
 
         variantRow =
             Input.radioRow
-                [ spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Nothing (Element.text "Nothing")
-                    , Input.option (Maybe.Just extracted) (Element.text "Just")
+                    , Input.option
+                        (Maybe.Just extracted)
+                        (Element.text typeName)
                     ]
                 , selected = Maybe.Just value
                 , label = Input.labelHidden ""
@@ -1069,8 +1066,8 @@ maybeEditor valueEditor valueDefault level value =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -1094,7 +1091,7 @@ stringEditor level value =
 boolEditor : Int -> Bool -> Element.Element Basics.Bool
 boolEditor level value =
     Input.radioRow
-        [ spacing, Element.alignTop ]
+        [ Theme.spacing, Element.alignTop ]
         { onChange = Basics.identity
         , options =
             [ Input.option True (Element.text "True")
@@ -1106,12 +1103,13 @@ boolEditor level value =
 
 
 listEditor :
-    (Int -> e -> Element.Element e)
+    String
+    -> (Int -> e -> Element.Element e)
     -> e
     -> Int
     -> List e
     -> Element.Element (List e)
-listEditor valueEditor valueDefault level value =
+listEditor typeName valueEditor valueDefault level value =
     let
         rows =
             List.indexedMap
@@ -1126,9 +1124,9 @@ listEditor valueEditor valueDefault level value =
                         )
                         (Element.column
                             [ Element.width Element.fill ]
-                            [ Input.button
-                                [ spacing
-                                , padding
+                            [ Theme.tabButton
+                                [ Theme.spacing
+                                , Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
                                 , Background.color (Element.rgb 1 0.6 0.6)
@@ -1144,25 +1142,25 @@ listEditor valueEditor valueDefault level value =
                         )
                 )
                 value
-                ++ [ Input.button
+                ++ [ Theme.button
                         [ Element.alignRight
-                        , spacing
-                        , padding
+                        , Theme.spacing
+                        , Theme.padding
                         , Element.alignTop
                         , Border.width 1
                         , Border.color (Element.rgb 0 0 0)
                         , Background.color (Element.rgb 0.6 1 0.6)
                         ]
                         { onPress = Maybe.Just (value ++ [ valueDefault ])
-                        , label = Element.text "Add new"
+                        , label = Element.text ("Add new " ++ typeName)
                         }
                    ]
     in
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]
@@ -1223,8 +1221,8 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
     Element.table
         [ Background.color (getColor level)
         , Element.width Element.fill
-        , spacing
-        , padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
         ]

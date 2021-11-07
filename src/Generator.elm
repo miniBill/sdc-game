@@ -8,7 +8,7 @@ generate : Data -> String
 generate model =
     let
         citys =
-            model
+            model |> Dict.toList
 
         map =
             citys

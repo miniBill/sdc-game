@@ -85,16 +85,17 @@ updateFromBackend msg model =
         TFData data ->
             ( { model
                 | data = Just data
-                , preview =
-                    let
-                        _ =
-                            Debug.todo
-                    in
-                    data
-                        |> Dict.keys
-                        |> List.head
-                        |> Maybe.withDefault ""
-                        |> PreviewBig
+
+                -- , preview =
+                --     let
+                --         _ =
+                --             Debug.todo
+                --     in
+                --     data
+                --         |> Dict.keys
+                --         |> List.head
+                --         |> Maybe.withDefault ""
+                --         |> PreviewBig
               }
             , Cmd.none
             )
