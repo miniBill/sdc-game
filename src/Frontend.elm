@@ -137,10 +137,11 @@ update msg model =
 
         ( ReadFile str, _ ) ->
             case Codec.decodeString Codecs.dataCodec str of
-                Err err ->
+                Err _ ->
                     let
                         errString =
-                            Debug.toString err
+                            --Debug.toString err
+                            "Error reading file"
                     in
                     ( { model | lastError = errString }, Cmd.none )
 
