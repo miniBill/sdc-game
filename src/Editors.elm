@@ -1,25 +1,17 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (cityEditor, cityDefault)
 
-{-| 
+{-|
 
-@docs dataEditor, cityEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
-
+@docs cityEditor, cityDefault
 
 -}
 
-
-import Dict
 import Element
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
 import List.Extra
 import Model
-
-
-dataEditor : Model.Data -> Element.Element Model.Data
-dataEditor value =
-    dictEditor idEditor idDefault cityEditor cityDefault value
 
 
 cityEditor : Model.City -> Element.Element Model.City
@@ -81,8 +73,8 @@ cityEditor value =
             [ { header = Element.none
               , width = Element.shrink
               , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
+                    \( name, _ ) ->
+                        Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -154,8 +146,8 @@ personEditor value =
             [ { header = Element.none
               , width = Element.shrink
               , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
+                    \( name, _ ) ->
+                        Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -207,8 +199,8 @@ dialogEditor value =
             [ { header = Element.none
               , width = Element.shrink
               , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
+                    \( name, _ ) ->
+                        Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -285,8 +277,8 @@ choiceEditor value =
             [ { header = Element.none
               , width = Element.shrink
               , view =
-                  \( name, _ ) ->
-                      Element.el [ Element.centerY ] (Element.text name)
+                    \( name, _ ) ->
+                        Element.el [ Element.centerY ] (Element.text name)
               }
             , { header = Element.none
               , width = Element.fill
@@ -453,8 +445,7 @@ itemEditor value =
                                             in
                                             { updating | name = lambdaArg0 }
                                         )
-                                        (stringEditor nameStringimageString.name
-                                        )
+                                        (stringEditor nameStringimageString.name)
                                   )
                                 , ( "Image"
                                   , Element.map
@@ -474,10 +465,10 @@ itemEditor value =
                                 [ { header = Element.none
                                   , width = Element.shrink
                                   , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
+                                        \( name, _ ) ->
+                                            Element.el
+                                                [ Element.centerY ]
+                                                (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -560,10 +551,10 @@ itemEditor value =
                                 [ { header = Element.none
                                   , width = Element.shrink
                                   , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
+                                        \( name, _ ) ->
+                                            Element.el
+                                                [ Element.centerY ]
+                                                (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -796,10 +787,10 @@ itemNameEditor value =
                                 [ { header = Element.none
                                   , width = Element.shrink
                                   , view =
-                                      \( name, _ ) ->
-                                          Element.el
-                                              [ Element.centerY ]
-                                              (Element.text name)
+                                        \( name, _ ) ->
+                                            Element.el
+                                                [ Element.centerY ]
+                                                (Element.text name)
                                   }
                                 , { header = Element.none
                                   , width = Element.fill
@@ -813,11 +804,6 @@ itemNameEditor value =
     Element.column
         [ spacing, padding, Element.alignTop, Border.width 1 ]
         [ variantRow, Element.row [ spacing ] inputsRow ]
-
-
-dataDefault : Model.Data
-dataDefault =
-    Dict.empty
 
 
 cityDefault : Model.City
@@ -930,8 +916,7 @@ tupleEditor leftEditor _ rightEditor _ ( left, right ) =
         ]
 
 
-maybeEditor :
-    (e -> Element.Element e) -> e -> Maybe e -> Element.Element (Maybe e)
+maybeEditor : (e -> Element.Element e) -> e -> Maybe e -> Element.Element (Maybe e)
 maybeEditor valueEditor valueDefault value =
     let
         extracted =
@@ -1049,67 +1034,3 @@ listEditor valueEditor valueDefault value =
         , Border.width 1
         ]
         rows
-
-
-dictEditor :
-    (comparable -> Element.Element comparable)
-    -> comparable
-    -> (v -> Element.Element v)
-    -> v
-    -> Dict.Dict comparable v
-    -> Element.Element (Dict.Dict comparable v)
-dictEditor keyEditor keyDefault valueEditor valueDefault value =
-    let
-        keysColumn =
-            { header = Element.none
-            , width = Element.shrink
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if
-                                lambdaArg0
-                                    == keyDefault
-                                    && memberValue
-                                    == valueDefault
-                            then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert
-                                    lambdaArg0
-                                    memberValue
-                                    (Dict.remove key value)
-                        )
-                        (keyEditor key)
-            }
-
-        valuesColumn =
-            { header = Element.none
-            , width = Element.fill
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if key == keyDefault && lambdaArg0 == valueDefault
-                            then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert key lambdaArg0 value
-                        )
-                        (valueEditor memberValue)
-            }
-    in
-    Element.table
-        [ Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        ]
-        { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
-        , columns = [ keysColumn, valuesColumn ]
-        }
-
-

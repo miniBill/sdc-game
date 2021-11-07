@@ -1,13 +1,12 @@
-module Codecs exposing (dataCodec, cityCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec)
+module Codecs exposing (dataCodec)
 
 {-|
 
-@docs dataCodec, cityCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+@docs dataCodec
 
 -}
 
 import Codec
-import Dict
 import Model
 
 
@@ -126,45 +125,46 @@ consequenceCodec =
 
 itemCodec : Codec.Codec Model.Item
 itemCodec =
-    Codec.lazy <| \() ->
-    Codec.custom
-        (\fgenericItem fticket value ->
-            case value of
-                Model.GenericItem arg0 ->
-                    fgenericItem arg0
+    Codec.lazy <|
+        \() ->
+            Codec.custom
+                (\fgenericItem fticket value ->
+                    case value of
+                        Model.GenericItem arg0 ->
+                            fgenericItem arg0
 
-                Model.Ticket arg0 ->
-                    fticket arg0
-        )
-        |> Codec.variant1
-            "GenericItem"
-            Model.GenericItem
-            (Codec.object (\name image -> { name = name, image = image })
-                |> Codec.field "name" .name Codec.string
-                |> Codec.field "image" .image Codec.string
-                |> Codec.buildObject
-            )
-        |> Codec.variant1
-            "Ticket"
-            Model.Ticket
-            (Codec.object
-                (\from to kind consequences ->
-                    { from = from
-                    , to = to
-                    , kind = kind
-                    , consequences = consequences
-                    }
+                        Model.Ticket arg0 ->
+                            fticket arg0
                 )
-                |> Codec.field "from" .from cityNameCodec
-                |> Codec.field "to" .to cityNameCodec
-                |> Codec.field "kind" .kind transportKindCodec
-                |> Codec.field
-                    "consequences"
-                    .consequences
-                    (Codec.list consequenceCodec)
-                |> Codec.buildObject
-            )
-        |> Codec.buildCustom
+                |> Codec.variant1
+                    "GenericItem"
+                    Model.GenericItem
+                    (Codec.object (\name image -> { name = name, image = image })
+                        |> Codec.field "name" .name Codec.string
+                        |> Codec.field "image" .image Codec.string
+                        |> Codec.buildObject
+                    )
+                |> Codec.variant1
+                    "Ticket"
+                    Model.Ticket
+                    (Codec.object
+                        (\from to kind consequences ->
+                            { from = from
+                            , to = to
+                            , kind = kind
+                            , consequences = consequences
+                            }
+                        )
+                        |> Codec.field "from" .from cityNameCodec
+                        |> Codec.field "to" .to cityNameCodec
+                        |> Codec.field "kind" .kind transportKindCodec
+                        |> Codec.field
+                            "consequences"
+                            .consequences
+                            (Codec.list consequenceCodec)
+                        |> Codec.buildObject
+                    )
+                |> Codec.buildCustom
 
 
 transportKindCodec : Codec.Codec Model.TransportKind

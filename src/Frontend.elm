@@ -17,6 +17,7 @@ import File.Select
 import Hex
 import Html
 import Lamdera exposing (Key, Url)
+import Model exposing (City)
 import Random
 import Task
 import Theme
@@ -176,19 +177,7 @@ view model =
                         |> List.map
                             (\( id, city ) ->
                                 Element.map (UpdateCity id) <|
-                                    Element.column [ width fill ]
-                                        [ Input.button
-                                            [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
-                                            , Theme.padding
-                                            , alignRight
-                                            , Border.color <| Element.rgb 0 0 0
-                                            , Background.color <| Element.rgb 1 0.6 0.6
-                                            ]
-                                            { onPress = Just Nothing
-                                            , label = text "Delete"
-                                            }
-                                        , Element.map Just <| Editors.cityEditor city
-                                        ]
+                                    viewCity city
                             )
                         |> wrappedRow [ Theme.spacing ]
             in
@@ -196,6 +185,23 @@ view model =
                 [ controls
                 , citiesViews
                 ]
+
+
+viewCity : City -> Element (Maybe City)
+viewCity city =
+    Element.column [ width fill ]
+        [ Input.button
+            [ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
+            , Theme.padding
+            , alignRight
+            , Border.color <| Element.rgb 0 0 0
+            , Background.color <| Element.rgb 1 0.6 0.6
+            ]
+            { onPress = Just Nothing
+            , label = text "Delete"
+            }
+        , Element.map Just <| Editors.cityEditor city
+        ]
 
 
 controls : Element Msg
