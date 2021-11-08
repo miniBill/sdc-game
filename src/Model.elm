@@ -4,6 +4,7 @@ module Model exposing
     , CityName
     , Condition(..)
     , Consequence(..)
+    , Coordinates
     , Data
     , Dialog
     , Id
@@ -24,7 +25,14 @@ type alias City =
     { name : CityName
     , text : String
     , image : String
+    , coordinates : Coordinates
     , people : List Person
+    }
+
+
+type alias Coordinates =
+    { north : Float
+    , east : Float
     }
 
 

@@ -265,7 +265,7 @@ viewPreview data preview =
                             ]
                             [ row [ width fill ]
                                 [ el [ centerX, Theme.fontSizes.big ] <| text "Preview"
-                                , Theme.button [ Background.color Theme.colors.red ]
+                                , Theme.button [ Background.color Theme.colors.delete ]
                                     { label = text "X"
                                     , onPress = Just <| Preview PreviewNone
                                     }
@@ -369,7 +369,7 @@ viewCity id city =
                 { onPress = Just <| Preview <| PreviewBig id
                 , label = text "Big preview"
                 }
-            , Theme.tabButton [ Background.color Theme.colors.red ]
+            , Theme.tabButton [ Background.color Theme.colors.delete ]
                 { onPress = Just <| UpdateCity id Nothing
                 , label = text "Delete"
                 }
@@ -382,7 +382,7 @@ controls : Element Msg
 controls =
     let
         btn msg label =
-            Theme.button []
+            Theme.button [ Background.color Theme.colors.white ]
                 { onPress = Just msg
                 , label = text label
                 }
@@ -399,5 +399,8 @@ controls =
         ]
         [ btn FileSelect "Upload JSON"
         , btn DownloadJson "Save as JSON"
-        , btn AddCity "Add City"
+        , Theme.button [ Background.color Theme.colors.addNew ]
+            { onPress = Just AddCity
+            , label = text "Add City"
+            }
         ]

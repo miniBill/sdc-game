@@ -1,6 +1,6 @@
 module Theme exposing (button, colors, column, fontSize, fontSizes, input, multiline, padding, row, rythm, select, spacing, tabButton)
 
-import Element exposing (Attribute, Color, Element, el, rgba)
+import Element exposing (Attribute, Color, Element, el)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -29,10 +29,17 @@ spacing =
     Element.spacing rythm
 
 
-colors : { semitransparent : Color, red : Color }
+colors :
+    { addNew : Color
+    , delete : Color
+    , semitransparent : Color
+    , white : Color
+    }
 colors =
-    { semitransparent = rgba 1 1 1 0.7
-    , red = Element.rgb 1 0.6 0.6
+    { addNew = Element.rgb 0.6 1 0.6
+    , delete = Element.rgb 1 0.6 0.6
+    , semitransparent = Element.rgba 1 1 1 0.7
+    , white = Element.rgb 1 1 1
     }
 
 

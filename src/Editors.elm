@@ -1,12 +1,10 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
 
-{-| 
+{-|
 
-@docs dataEditor, cityEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
-
+@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
 -}
-
 
 import Dict
 import Element
@@ -65,6 +63,16 @@ cityEditor level value =
                 { updating | image = lambdaArg0 }
             )
             (stringEditor (level + 1) value.image)
+        , Element.text "Coordinates"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | coordinates = lambdaArg0 }
+            )
+            (coordinatesEditor (level + 1) value.coordinates)
         , Element.text "People"
         , Element.map
             (\lambdaArg0 ->
@@ -81,6 +89,41 @@ cityEditor level value =
                 (level + 1)
                 value.people
             )
+        ]
+
+
+coordinatesEditor : Int -> Model.Coordinates -> Element.Element Model.Coordinates
+coordinatesEditor level value =
+    Element.column
+        [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ Element.text "North"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | north = lambdaArg0 }
+            )
+            (floatEditor (level + 1) value.north)
+        , Element.text "East"
+        , Element.map
+            (\lambdaArg0 ->
+                let
+                    updating =
+                        value
+                in
+                { updating | east = lambdaArg0 }
+            )
+            (floatEditor (level + 1) value.east)
         ]
 
 
@@ -253,8 +296,7 @@ choiceEditor level value =
         ]
 
 
-consequenceEditor :
-    Int -> Model.Consequence -> Element.Element Model.Consequence
+consequenceEditor : Int -> Model.Consequence -> Element.Element Model.Consequence
 consequenceEditor level value =
     let
         { boolExtracted, intExtracted, itemExtracted, stringExtracted } =
@@ -538,8 +580,7 @@ itemEditor level value =
         ]
 
 
-transportKindEditor :
-    Int -> Model.TransportKind -> Element.Element Model.TransportKind
+transportKindEditor : Int -> Model.TransportKind -> Element.Element Model.TransportKind
 transportKindEditor level value =
     let
         variantRow =
@@ -811,7 +852,17 @@ dataDefault =
 
 cityDefault : Model.City
 cityDefault =
-    { name = cityNameDefault, text = "", image = "", people = [] }
+    { name = cityNameDefault
+    , text = ""
+    , image = ""
+    , coordinates = coordinatesDefault
+    , people = []
+    }
+
+
+coordinatesDefault : Model.Coordinates
+coordinatesDefault =
+    { north = 0, east = 0 }
 
 
 cityNameDefault : Model.CityName
@@ -879,6 +930,23 @@ intEditor level value =
             ]
             { onChange = Basics.identity
             , text = String.fromInt value
+            , placeholder = Maybe.Nothing
+            , label = Input.labelHidden ""
+            }
+        )
+
+
+floatEditor : Int -> Float -> Element.Element Basics.Float
+floatEditor level value =
+    Element.map
+        (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
+        (Input.text
+            [ Element.width (Element.minimum 100 Element.fill)
+            , Element.alignTop
+            , Background.color (getColor level)
+            ]
+            { onChange = Basics.identity
+            , text = String.fromFloat value
             , placeholder = Maybe.Nothing
             , label = Input.labelHidden ""
             }
@@ -1028,7 +1096,7 @@ listEditor typeName valueEditor valueDefault level value =
                                     , Element.alignTop
                                     , Border.width 1
                                     , Border.rounded Theme.rythm
-                                    , Background.color (Element.rgb 1 0.6 0.6)
+                                    , Background.color Theme.colors.delete
                                     , Border.widthEach
                                         { bottom = 0
                                         , left = 1
@@ -1075,8 +1143,7 @@ listEditor typeName valueEditor valueDefault level value =
                 , Element.alignTop
                 , Border.width 1
                 , Border.rounded Theme.rythm
-                , Border.color (Element.rgb 0 0 0)
-                , Background.color (Element.rgb 0.6 1 0.6)
+                , Background.color Theme.colors.addNew
                 , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
                 , Border.roundEach
                     { topLeft = 0
@@ -1133,8 +1200,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
                 \( key, memberValue ) ->
                     Element.map
                         (\lambdaArg0 ->
-                            if key == keyDefault && lambdaArg0 == valueDefault
-                            then
+                            if key == keyDefault && lambdaArg0 == valueDefault then
                                 Dict.remove key value
 
                             else
@@ -1175,5 +1241,3 @@ getColor index =
     List.drop reduced colors
         |> List.head
         |> Maybe.withDefault (Element.rgb 0.7 0.7 0.7)
-
-

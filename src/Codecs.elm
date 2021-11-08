@@ -36,7 +36,10 @@ cityCodec =
 
 coordinatesCodec : Codec.Codec Model.Coordinates
 coordinatesCodec =
-    Codec.tuple Codec.float Codec.float
+    Codec.object (\north east -> { north = north, east = east })
+        |> Codec.field "north" .north Codec.float
+        |> Codec.field "east" .east Codec.float
+        |> Codec.buildObject
 
 
 cityNameCodec : Codec.Codec Model.CityName
