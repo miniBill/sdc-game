@@ -18,14 +18,25 @@ dataCodec =
 cityCodec : Codec.Codec Model.City
 cityCodec =
     Codec.object
-        (\name text image people ->
-            { name = name, text = text, image = image, people = people }
+        (\name text image coordinates people ->
+            { name = name
+            , text = text
+            , image = image
+            , coordinates = coordinates
+            , people = people
+            }
         )
         |> Codec.field "name" .name cityNameCodec
         |> Codec.field "text" .text Codec.string
         |> Codec.field "image" .image Codec.string
+        |> Codec.field "coordinates" .coordinates coordinatesCodec
         |> Codec.field "people" .people (Codec.list personCodec)
         |> Codec.buildObject
+
+
+coordinatesCodec : Codec.Codec Model.Coordinates
+coordinatesCodec =
+    Codec.tuple Codec.float Codec.float
 
 
 cityNameCodec : Codec.Codec Model.CityName
