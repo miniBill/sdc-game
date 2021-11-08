@@ -19,6 +19,7 @@ import Lamdera exposing (Key, Url)
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (City, Id)
+import Pins
 import Random
 import Task
 import Theme
@@ -148,11 +149,7 @@ update msg model =
                     )
 
         ( UrlChanged url, _ ) ->
-            let
-                ( page, cmd ) =
-                    urlToPage url
-            in
-            ( { model | page = page }, cmd )
+            ( { model | page = urlToPage url }, Cmd.none )
 
         ( FileSelect, _ ) ->
             ( model, File.Select.file [ "application/json" ] FileSelected )
@@ -218,8 +215,8 @@ view model =
 
         Just data ->
             case model.page of
-                Game gameModel ->
-                    viewGame gameModel
+                Game _ ->
+                    viewGame model
 
                 Editor { preview } ->
                     let
@@ -251,9 +248,58 @@ view model =
                         citiesViews
 
 
-viewGame : GameModel -> Element msg
+viewGame : Model -> Element msg
 viewGame model =
-    Element.none
+    let
+        scale =
+            0.5
+
+        originalWidth =
+            1830
+
+        scaledWidth =
+            round <| scale * originalWidth
+
+        attrs =
+            width (px scaledWidth) :: inFronts
+
+        inFronts =
+            model.data
+                |> Maybe.withDefault Dict.empty
+                |> Dict.toList
+                |> List.concatMap
+                    (\( _, city ) ->
+                        let
+                            ( x, y ) =
+                                Pins.northEastToXY
+                                    city.coordinates.north
+                                    city.coordinates.east
+                        in
+                        [ inFront <|
+                            el
+                                [ Element.moveDown <| scale * y - Theme.rythm / 2
+                                , Element.moveRight <| scale * x - Theme.rythm / 2
+                                , Border.width 1
+                                , Background.color Theme.colors.delete
+                                , Border.rounded Theme.rythm
+                                , width <| px Theme.rythm
+                                , height <| px Theme.rythm
+                                ]
+                                Element.none
+                        , inFront <|
+                            el
+                                [ Element.moveDown <| scale * y - Theme.rythm * 1.8
+                                , Element.moveRight <| scale * x + Theme.rythm
+                                , Border.width 1
+                                , Background.color Theme.colors.semitransparent
+                                , Border.rounded Theme.rythm
+                                , Theme.padding
+                                ]
+                                (text city.name)
+                        ]
+                    )
+    in
+    Element.image attrs { src = "/art/europe.jpg", description = "A map of Europe" }
 
 
 viewPreview : Model.Data -> Preview -> Element Msg

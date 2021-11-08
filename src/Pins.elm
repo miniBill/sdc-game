@@ -1,18 +1,52 @@
-module Pins exposing (latLongToXY)
+module Pins exposing (northEastToXY, pins)
 
 
-latLongToXY lat long =
+northEastToXY : Float -> Float -> ( Float, Float )
+northEastToXY lat long =
+    ( Tuple.first coeffsEast + Tuple.second coeffsEast * long
+    , Tuple.first coeffsNorth + Tuple.second coeffsNorth * lat
+    )
+
+
+coeffsEast : ( Float, Float )
+coeffsEast =
+    calculateCoeffs .east (.x >> toFloat)
+
+
+coeffsNorth : ( Float, Float )
+coeffsNorth =
+    calculateCoeffs .north (.y >> toFloat)
+
+
+calculateCoeffs : (Pin -> Float) -> (Pin -> Float) -> ( Float, Float )
+calculateCoeffs xf yf =
     let
-        x =
-            0
+        xs =
+            List.map xf pins
 
-        y =
-            0
+        ys =
+            List.map yf pins
 
-        _ =
-            Debug.todo
+        xAverage =
+            List.sum xs / toFloat (List.length xs)
+
+        yAverage =
+            List.sum ys / toFloat (List.length ys)
+
+        xDelta =
+            List.map (\x -> x - xAverage) xs
+
+        yDelta =
+            List.map (\y -> y - yAverage) ys
+
+        beta =
+            List.sum (List.map2 (\xd yd -> xd * yd) xDelta yDelta)
+                / List.sum (List.map (\xd -> xd * xd) xDelta)
+
+        alpha =
+            yAverage - beta * xAverage
     in
-    ( x, y )
+    ( alpha, beta )
 
 
 pins : List Pin
