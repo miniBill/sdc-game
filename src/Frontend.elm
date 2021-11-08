@@ -22,8 +22,10 @@ import Model exposing (City, Id)
 import Random
 import Task
 import Theme
-import Types exposing (FrontendModel, FrontendMsg(..), Preview(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), GameModel, Page(..), Preview(..), ToBackend(..), ToFrontend(..))
 import Url
+import Url.Builder
+import Url.Parser
 
 
 type alias Model =
@@ -83,30 +85,40 @@ updateFromBackend msg model =
             ( { model | data = Maybe.map (Dict.update id <| always city) model.data }, Cmd.none )
 
         TFData data ->
-            ( { model
-                | data = Just data
-
-                -- , preview =
-                --     let
-                --         _ =
-                --             Debug.todo
-                --     in
-                --     data
-                --         |> Dict.keys
-                --         |> List.head
-                --         |> Maybe.withDefault ""
-                --         |> PreviewBig
-              }
+            ( { model | data = Just data }
             , Cmd.none
             )
 
 
+urlToPage : Url -> Page
+urlToPage url =
+    let
+        parser =
+            Url.Parser.oneOf
+                [ Url.Parser.map (Editor { preview = PreviewNone }) <| Url.Parser.s "editor"
+                , Url.Parser.map (Game {}) Url.Parser.top
+                ]
+    in
+    Url.Parser.parse parser url
+        |> Maybe.withDefault (Game {})
+
+
+pageToUrl : Page -> String
+pageToUrl page =
+    case page of
+        Game _ ->
+            Url.Builder.absolute [] []
+
+        Editor _ ->
+            Url.Builder.absolute [ "editor" ] []
+
+
 init : Url -> Key -> ( Model, Cmd Msg )
-init _ key =
+init url key =
     ( { key = key
       , data = Nothing
       , lastError = ""
-      , preview = PreviewNone
+      , page = urlToPage url
       }
     , Cmd.none
     )
@@ -135,8 +147,12 @@ update msg model =
                     , Nav.load url
                     )
 
-        ( UrlChanged _, _ ) ->
-            ( model, Cmd.none )
+        ( UrlChanged url, _ ) ->
+            let
+                ( page, cmd ) =
+                    urlToPage url
+            in
+            ( { model | page = page }, cmd )
 
         ( FileSelect, _ ) ->
             ( model, File.Select.file [ "application/json" ] FileSelected )
@@ -176,7 +192,16 @@ update msg model =
             )
 
         ( Preview preview, Just _ ) ->
-            ( { model | preview = preview }, Cmd.none )
+            case model.page of
+                Editor e ->
+                    ( { model
+                        | page = Editor { e | preview = preview }
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
 
 view : Model -> Element Msg
@@ -192,33 +217,43 @@ view model =
                 (text "Loading...")
 
         Just data ->
-            let
-                citiesViews =
-                    data
-                        |> Dict.toList
-                        |> List.map (\( id, city ) -> viewCity id city)
-                        |> column
-                            [ paddingEach
-                                { left = Theme.rythm
-                                , top = 2 * Theme.rythm + 1
-                                , right = Theme.rythm
-                                , bottom = Theme.rythm
-                                }
-                            , Theme.spacing
-                            , scrollbars
-                            , height fill
-                            , width fill
-                            , alignTop
-                            ]
-            in
-            el
-                [ width fill
-                , height fill
-                , Theme.spacing
-                , inFront controls
-                , inFront <| viewPreview data model.preview
-                ]
-                citiesViews
+            case model.page of
+                Game gameModel ->
+                    viewGame gameModel
+
+                Editor { preview } ->
+                    let
+                        citiesViews =
+                            data
+                                |> Dict.toList
+                                |> List.map (\( id, city ) -> viewCity id city)
+                                |> column
+                                    [ paddingEach
+                                        { left = Theme.rythm
+                                        , top = 2 * Theme.rythm + 1
+                                        , right = Theme.rythm
+                                        , bottom = Theme.rythm
+                                        }
+                                    , Theme.spacing
+                                    , scrollbars
+                                    , height fill
+                                    , width fill
+                                    , alignTop
+                                    ]
+                    in
+                    el
+                        [ width fill
+                        , height fill
+                        , Theme.spacing
+                        , inFront controls
+                        , inFront <| viewPreview data preview
+                        ]
+                        citiesViews
+
+
+viewGame : GameModel -> Element msg
+viewGame model =
+    Element.none
 
 
 viewPreview : Model.Data -> Preview -> Element Msg
@@ -270,13 +305,13 @@ viewPreview data preview =
                                     , onPress = Just <| Preview PreviewNone
                                     }
                                 ]
-                            , viewGame scale city
+                            , viewCityPreview scale city
                             ]
                         )
 
 
-viewGame : Int -> City -> Element msg
-viewGame scale city =
+viewCityPreview : Int -> City -> Element msg
+viewCityPreview scale city =
     let
         shadowBox attrs =
             el

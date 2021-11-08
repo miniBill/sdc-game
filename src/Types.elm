@@ -14,8 +14,17 @@ type alias FrontendModel =
     { key : Key
     , data : Maybe Data
     , lastError : String
-    , preview : Preview
+    , page : Page
     }
+
+
+type Page
+    = Editor { preview : Preview }
+    | Game GameModel
+
+
+type alias GameModel =
+    {}
 
 
 type Preview
