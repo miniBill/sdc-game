@@ -6,45 +6,32 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
+import Element exposing (Element, centerX, centerY, el, fill, height, text, width)
 import Element.Font as Font
 import File
 import File.Download
 import File.Select
+import Frontend.Editor exposing (viewEditor)
+import Frontend.Game exposing (viewGame)
 import Hex
 import Html
 import Lamdera exposing (Key, Url)
-import Markdown.Parser
-import Markdown.Renderer
-import Model exposing (City, Id)
-import Pins
 import Random
 import Task
 import Theme
-import Types exposing (FrontendModel, FrontendMsg(..), GameModel, Page(..), Preview(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), Page(..), Preview(..), ToBackend(..), ToFrontend(..))
 import Url
-import Url.Builder
 import Url.Parser
 
 
-type alias Model =
-    FrontendModel
-
-
-type alias Msg =
-    FrontendMsg
-
-
 app :
-    { init : Url -> Key -> ( Model, Cmd Msg )
-    , view : Model -> Browser.Document Msg
-    , update : Msg -> Model -> ( Model, Cmd Msg )
-    , updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
-    , subscriptions : Model -> Sub Msg
-    , onUrlRequest : UrlRequest -> Msg
-    , onUrlChange : Url -> Msg
+    { init : Url -> Key -> ( FrontendModel, Cmd FrontendMsg )
+    , view : FrontendModel -> Browser.Document FrontendMsg
+    , update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
+    , updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
+    , subscriptions : FrontendModel -> Sub FrontendMsg
+    , onUrlRequest : UrlRequest -> FrontendMsg
+    , onUrlChange : Url -> FrontendMsg
     }
 app =
     Lamdera.frontend
@@ -66,7 +53,7 @@ app =
         }
 
 
-css : Html.Html Msg
+css : Html.Html FrontendMsg
 css =
     let
         content =
@@ -79,7 +66,7 @@ css =
     Html.node "style" [] [ Html.text content ]
 
 
-updateFromBackend : ToFrontend -> Model -> ( Model, Cmd Msg )
+updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
         TFUpdateCity id city ->
@@ -104,17 +91,7 @@ urlToPage url =
         |> Maybe.withDefault (Game {})
 
 
-pageToUrl : Page -> String
-pageToUrl page =
-    case page of
-        Game _ ->
-            Url.Builder.absolute [] []
-
-        Editor _ ->
-            Url.Builder.absolute [ "editor" ] []
-
-
-init : Url -> Key -> ( Model, Cmd Msg )
+init : Url -> Key -> ( FrontendModel, Cmd FrontendMsg )
 init url key =
     ( { key = key
       , data = Nothing
@@ -125,12 +102,12 @@ init url key =
     )
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions _ =
     Sub.none
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case ( msg, model.data ) of
         ( _, Nothing ) ->
@@ -201,7 +178,7 @@ update msg model =
                     ( model, Cmd.none )
 
 
-view : Model -> Element Msg
+view : FrontendModel -> Element FrontendMsg
 view model =
     case model.data of
         Nothing ->
@@ -218,270 +195,5 @@ view model =
                 Game _ ->
                     viewGame model
 
-                Editor { preview } ->
-                    let
-                        citiesViews =
-                            data
-                                |> Dict.toList
-                                |> List.map (\( id, city ) -> viewCity id city)
-                                |> column
-                                    [ paddingEach
-                                        { left = Theme.rythm
-                                        , top = 2 * Theme.rythm + 1
-                                        , right = Theme.rythm
-                                        , bottom = Theme.rythm
-                                        }
-                                    , Theme.spacing
-                                    , scrollbars
-                                    , height fill
-                                    , width fill
-                                    , alignTop
-                                    ]
-                    in
-                    el
-                        [ width fill
-                        , height fill
-                        , Theme.spacing
-                        , inFront controls
-                        , inFront <| viewPreview data preview
-                        ]
-                        citiesViews
-
-
-viewGame : Model -> Element msg
-viewGame model =
-    let
-        scale =
-            0.5
-
-        originalWidth =
-            1830
-
-        scaledWidth =
-            round <| scale * originalWidth
-
-        attrs =
-            width (px scaledWidth) :: inFronts
-
-        inFronts =
-            model.data
-                |> Maybe.withDefault Dict.empty
-                |> Dict.toList
-                |> List.concatMap
-                    (\( _, city ) ->
-                        let
-                            ( x, y ) =
-                                Pins.northEastToXY
-                                    city.coordinates.north
-                                    city.coordinates.east
-                        in
-                        [ inFront <|
-                            el
-                                [ Element.moveDown <| scale * y - Theme.rythm / 2
-                                , Element.moveRight <| scale * x - Theme.rythm / 2
-                                , Border.width 1
-                                , Background.color Theme.colors.delete
-                                , Border.rounded Theme.rythm
-                                , width <| px Theme.rythm
-                                , height <| px Theme.rythm
-                                ]
-                                Element.none
-                        , inFront <|
-                            el
-                                [ Element.moveDown <| scale * y - Theme.rythm * 1.8
-                                , Element.moveRight <| scale * x + Theme.rythm
-                                , Border.width 1
-                                , Background.color Theme.colors.semitransparent
-                                , Border.rounded Theme.rythm
-                                , Theme.padding
-                                ]
-                                (text city.name)
-                        ]
-                    )
-    in
-    Element.image attrs { src = "/art/europe.jpg", description = "A map of Europe" }
-
-
-viewPreview : Model.Data -> Preview -> Element Msg
-viewPreview data preview =
-    let
-        selected =
-            case preview of
-                PreviewNone ->
-                    Nothing
-
-                PreviewSmall id ->
-                    Just ( id, False )
-
-                PreviewBig id ->
-                    Just ( id, True )
-    in
-    case selected of
-        Nothing ->
-            Element.none
-
-        Just ( selectedCity, fullscreen ) ->
-            case Dict.get selectedCity data of
-                Nothing ->
-                    Element.none
-
-                Just city ->
-                    let
-                        scale =
-                            if fullscreen then
-                                18
-
-                            else
-                                6
-                    in
-                    el
-                        [ alignTop
-                        , alignRight
-                        , Theme.padding
-                        ]
-                        (Theme.column
-                            [ Border.rounded Theme.rythm
-                            , Border.width 1
-                            , Background.color Theme.colors.semitransparent
-                            ]
-                            [ row [ width fill ]
-                                [ el [ centerX, Theme.fontSizes.big ] <| text "Preview"
-                                , Theme.button [ Background.color Theme.colors.delete ]
-                                    { label = text "X"
-                                    , onPress = Just <| Preview PreviewNone
-                                    }
-                                ]
-                            , viewCityPreview scale city
-                            ]
-                        )
-
-
-viewCityPreview : Int -> City -> Element msg
-viewCityPreview scale city =
-    let
-        shadowBox attrs =
-            el
-                ([ Element.padding scale
-                 , Border.rounded scale
-                 , Background.color Theme.colors.semitransparent
-                 ]
-                    ++ attrs
-                )
-
-        viewMarked input =
-            input
-                |> String.split "  "
-                |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
-                |> List.filterMap
-                    (\g ->
-                        g
-                            |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
-                            |> Result.toMaybe
-                            |> Maybe.map
-                                (\ls ->
-                                    paragraph [ width fill ] <|
-                                        List.map (Element.el [] << Element.html) ls
-                                )
-                    )
-                |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
-    in
-    column
-        [ Background.image city.image
-        , width <| px <| scale * 80
-        , height <| px <| scale * 45
-        , Border.width 1
-        , Font.size <| scale * 3
-        ]
-        [ el [ padding scale, centerX ] <|
-            shadowBox
-                [ paddingEach
-                    { left = scale
-                    , top = scale
-                    , right = scale
-                    , bottom = scale * 5 // 2
-                    }
-                , Font.size <| scale * 6
-                ]
-                (text city.name)
-        , row [ padding scale, spacing scale, width fill, height fill ]
-            [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
-            , case city.people |> List.head of
-                Nothing ->
-                    Element.none
-
-                Just person ->
-                    shadowBox
-                        [ height fill
-                        , alignRight
-                        , width <| px <| scale * 22
-                        ]
-                        (column [ centerY, spacing scale ]
-                            [ el [ centerX ] <| text person.name
-                            , image
-                                [ width <| px <| scale * 20
-                                ]
-                                { description = "Person avatar"
-                                , src = person.image
-                                }
-                            ]
-                        )
-            ]
-        ]
-
-
-viewCity : Id -> City -> Element Msg
-viewCity id city =
-    column [ width fill ]
-        [ row
-            [ Theme.spacing
-            , alignRight
-            , paddingEach
-                { left = 0
-                , right = Theme.rythm
-                , top = 0
-                , bottom = 0
-                }
-            ]
-            [ Theme.tabButton []
-                { onPress = Just <| Preview <| PreviewSmall id
-                , label = text "Small preview"
-                }
-            , Theme.tabButton []
-                { onPress = Just <| Preview <| PreviewBig id
-                , label = text "Big preview"
-                }
-            , Theme.tabButton [ Background.color Theme.colors.delete ]
-                { onPress = Just <| UpdateCity id Nothing
-                , label = text "Delete"
-                }
-            ]
-        , Element.map (\newCity -> UpdateCity id <| Just newCity) <| Editors.cityEditor 0 city
-        ]
-
-
-controls : Element Msg
-controls =
-    let
-        btn msg label =
-            Theme.button [ Background.color Theme.colors.white ]
-                { onPress = Just msg
-                , label = text label
-                }
-    in
-    Theme.row
-        [ alignTop
-        , Border.roundEach
-            { topLeft = 0
-            , topRight = 0
-            , bottomLeft = 0
-            , bottomRight = Theme.rythm
-            }
-        , Background.color Theme.colors.semitransparent
-        ]
-        [ btn FileSelect "Upload JSON"
-        , btn DownloadJson "Save as JSON"
-        , Theme.button [ Background.color Theme.colors.addNew ]
-            { onPress = Just AddCity
-            , label = text "Add City"
-            }
-        ]
+                Editor e ->
+                    viewEditor e data

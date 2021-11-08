@@ -1,4 +1,4 @@
-module Pins exposing (northEastToXY, pins)
+module Pins exposing (northEastToXY)
 
 
 northEastToXY : Float -> Float -> ( Float, Float )
