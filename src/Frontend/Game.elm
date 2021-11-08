@@ -1,4 +1,4 @@
-module Frontend.Game exposing (..)
+module Frontend.Game exposing (viewGame)
 
 import Dict
 import Element exposing (Element, el, height, inFront, px, text, width)

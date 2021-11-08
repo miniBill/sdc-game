@@ -1,4 +1,4 @@
-module Frontend.Editor exposing (..)
+module Frontend.Editor exposing (viewEditor)
 
 import Dict
 import Editors
