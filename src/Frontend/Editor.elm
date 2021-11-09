@@ -2,7 +2,7 @@ module Frontend.Editor exposing (viewEditor)
 
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, moveUp, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, moveDown, moveUp, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -27,7 +27,7 @@ viewCity id city =
                     ]
                 }
     in
-    column [ width fill ]
+    column [ width fill, moveDown 1 ]
         [ row
             [ Theme.spacing
             , alignRight
