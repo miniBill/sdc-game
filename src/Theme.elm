@@ -36,8 +36,8 @@ colors :
     , white : Color
     }
 colors =
-    { addNew = Element.rgb 0.6 1 0.6
-    , delete = Element.rgb 1 0.6 0.6
+    { addNew = Element.rgb255 0xDE 0xFD 0xE0
+    , delete = Element.rgb255 0xFD 0xDF 0xDF
     , semitransparent = Element.rgba 1 1 1 0.7
     , white = Element.rgb 1 1 1
     }
