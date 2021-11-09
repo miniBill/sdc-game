@@ -134,8 +134,12 @@ cityEditor level value =
         simplesTable =
             if List.length simples <= 2 then
                 simples
-                    |> List.concatMap
-                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
                     |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
@@ -238,8 +242,12 @@ coordinatesEditor level value =
         simplesTable =
             if List.length simples <= 2 then
                 simples
-                    |> List.concatMap
-                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
                     |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
@@ -369,8 +377,12 @@ personEditor level value =
         simplesTable =
             if List.length simples <= 2 then
                 simples
-                    |> List.concatMap
-                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
                     |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
@@ -482,8 +494,12 @@ dialogEditor level value =
         simplesTable =
             if List.length simples <= 2 then
                 simples
-                    |> List.concatMap
-                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
                     |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
@@ -627,8 +643,12 @@ choiceEditor level value =
         simplesTable =
             if List.length simples <= 2 then
                 simples
-                    |> List.concatMap
-                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
                     |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
@@ -895,11 +915,16 @@ itemEditor level value =
                               simplesTable =
                                  if List.length simples <= 2 then
                                      simples
-                                         |> List.concatMap
+                                         |> List.map
                                              (\pair ->
-                                                 [ Tuple.first pair
-                                                 , Tuple.second pair
-                                                 ]
+                                                 Element.row
+                                                     [ Theme.spacing
+                                                     , Element.width
+                                                         Element.fill
+                                                     ]
+                                                     [ Tuple.first pair
+                                                     , Tuple.second pair
+                                                     ]
                                              )
                                          |> Element.row
                                              [ Theme.spacing
@@ -1061,11 +1086,16 @@ itemEditor level value =
                               simplesTable =
                                  if List.length simples <= 2 then
                                      simples
-                                         |> List.concatMap
+                                         |> List.map
                                              (\pair ->
-                                                 [ Tuple.first pair
-                                                 , Tuple.second pair
-                                                 ]
+                                                 Element.row
+                                                     [ Theme.spacing
+                                                     , Element.width
+                                                         Element.fill
+                                                     ]
+                                                     [ Tuple.first pair
+                                                     , Tuple.second pair
+                                                     ]
                                              )
                                          |> Element.row
                                              [ Theme.spacing
@@ -1422,11 +1452,16 @@ itemNameEditor level value =
                               simplesTable =
                                  if List.length simples <= 2 then
                                      simples
-                                         |> List.concatMap
+                                         |> List.map
                                              (\pair ->
-                                                 [ Tuple.first pair
-                                                 , Tuple.second pair
-                                                 ]
+                                                 Element.row
+                                                     [ Theme.spacing
+                                                     , Element.width
+                                                         Element.fill
+                                                     ]
+                                                     [ Tuple.first pair
+                                                     , Tuple.second pair
+                                                     ]
                                              )
                                          |> Element.row
                                              [ Theme.spacing
