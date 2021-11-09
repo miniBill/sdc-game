@@ -1,4 +1,4 @@
-module Theme exposing (button, colors, column, fontSize, fontSizes, input, multiline, padding, row, rythm, select, spacing, tabButton)
+module Theme exposing (button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton)
 
 import Element exposing (Attribute, Color, Element, el)
 import Element.Background as Background
@@ -41,6 +41,27 @@ colors =
     , semitransparent = Element.rgba 1 1 1 0.7
     , white = Element.rgb 1 1 1
     }
+
+
+colorList : List Element.Color
+colorList =
+    [ Element.rgb255 0xFD 0xDF 0xDF
+    , Element.rgb255 0xFC 0xF7 0xDE
+    , Element.rgb255 0xDE 0xFD 0xE0
+    , Element.rgb255 0xDE 0xF3 0xFD
+    , Element.rgb255 0xF0 0xDE 0xFD
+    ]
+
+
+getColor : Int -> Element.Color
+getColor index =
+    let
+        reduced =
+            Basics.modBy 5 index
+    in
+    List.drop reduced colorList
+        |> List.head
+        |> Maybe.withDefault (Element.rgb 0.7 0.7 0.7)
 
 
 fontSize : number

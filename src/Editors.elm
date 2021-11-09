@@ -173,7 +173,7 @@ cityEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -281,7 +281,7 @@ coordinatesEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -416,7 +416,7 @@ personEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -533,7 +533,7 @@ dialogEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -682,7 +682,7 @@ choiceEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -792,7 +792,7 @@ consequenceEditor level value =
                   ]
       in
       Element.column
-          [ Background.color (getColor level)
+          [ Background.color (Theme.getColor level)
           , Element.width Element.fill
           , Theme.spacing
           , Theme.padding
@@ -968,7 +968,7 @@ itemEditor level value =
                            in
                            ( Element.column
                                [ Element.width Element.fill
-                               , Background.color (getColor (level + 1))
+                               , Background.color (Theme.getColor (level + 1))
                                , Element.width Element.fill
                                , Theme.spacing
                                , Theme.padding
@@ -1139,7 +1139,7 @@ itemEditor level value =
                            in
                            ( Element.column
                                [ Element.width Element.fill
-                               , Background.color (getColor (level + 1))
+                               , Background.color (Theme.getColor (level + 1))
                                , Element.width Element.fill
                                , Theme.spacing
                                , Theme.padding
@@ -1155,7 +1155,7 @@ itemEditor level value =
                   ]
       in
       Element.column
-          [ Background.color (getColor level)
+          [ Background.color (Theme.getColor level)
           , Element.width Element.fill
           , Theme.spacing
           , Theme.padding
@@ -1192,7 +1192,7 @@ transportKindEditor level value =
               }
       in
       Element.el
-          [ Background.color (getColor level)
+          [ Background.color (Theme.getColor level)
           , Element.width Element.fill
           , Theme.spacing
           , Theme.padding
@@ -1307,7 +1307,7 @@ conditionEditor level value =
                   ]
       in
       Element.column
-          [ Background.color (getColor level)
+          [ Background.color (Theme.getColor level)
           , Element.width Element.fill
           , Theme.spacing
           , Theme.padding
@@ -1505,7 +1505,7 @@ itemNameEditor level value =
                            in
                            ( Element.column
                                [ Element.width Element.fill
-                               , Background.color (getColor (level + 1))
+                               , Background.color (Theme.getColor (level + 1))
                                , Element.width Element.fill
                                , Theme.spacing
                                , Theme.padding
@@ -1521,7 +1521,7 @@ itemNameEditor level value =
                   ]
       in
       Element.column
-          [ Background.color (getColor level)
+          [ Background.color (Theme.getColor level)
           , Element.width Element.fill
           , Theme.spacing
           , Theme.padding
@@ -1617,7 +1617,7 @@ intEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (getColor level)
+            , Background.color (Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromInt value
@@ -1636,7 +1636,7 @@ floatEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (getColor level)
+            , Background.color (Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromFloat value
@@ -1671,7 +1671,7 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
              else
                 Element.column
             )
-                [ Background.color (getColor level)
+                [ Background.color (Theme.getColor level)
                 , Element.width Element.fill
                 , Theme.spacing
                 , Theme.padding
@@ -1728,7 +1728,7 @@ maybeEditor typeName valueEditor valueDefault level value =
                         (Tuple.first (valueEditor (level + 1) inner))
     in
     ( Element.column
-        [ Background.color (getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -1746,7 +1746,7 @@ stringEditor level value =
     ( Input.text
         [ Element.width (Element.minimum 100 Element.fill)
         , Element.alignTop
-        , Background.color (getColor level)
+        , Background.color (Theme.getColor level)
         ]
         { onChange = Basics.identity
         , text = value
@@ -1813,7 +1813,7 @@ listEditor typeName valueEditor valueDefault level value =
                                     , Background.gradient
                                         { angle = 0
                                         , steps =
-                                            [ getColor (level + 1)
+                                            [ Theme.getColor (level + 1)
                                             , Theme.colors.delete
                                             , Theme.colors.delete
                                             ]
@@ -1848,7 +1848,7 @@ listEditor typeName valueEditor valueDefault level value =
     ( Element.column
         [ Element.width Element.fill ]
         [ Element.column
-            [ Background.color (getColor level)
+            [ Background.color (Theme.getColor level)
             , Element.width Element.fill
             , Theme.spacing
             , Theme.padding
@@ -1874,7 +1874,7 @@ listEditor typeName valueEditor valueDefault level value =
                         [ Theme.colors.addNew
                         , Theme.colors.addNew
                         , Theme.colors.addNew
-                        , getColor level
+                        , Theme.getColor level
                         ]
                     }
                 , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
@@ -1947,7 +1947,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
             }
     in
     ( Element.table
-        [ Background.color (getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
         , Theme.spacing
         , Theme.padding
@@ -1960,25 +1960,5 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
         }
     , Basics.False
     )
-
-
-colors : List Element.Color
-colors =
-    [ Element.rgb255 0xFD 0xDF 0xDF
-    , Element.rgb255 0xFC 0xF7 0xDE
-    , Element.rgb255 0xDE 0xFD 0xE0
-    , Element.rgb255 0xDE 0xF3 0xFD
-    , Element.rgb255 0xF0 0xDE 0xFD
-    ]
-
-
-getColor index =
-    let
-        reduced =
-            Basics.modBy 5 index
-    in
-    List.drop reduced colors
-        |> List.head
-        |> Maybe.withDefault (Element.rgb 0.7 0.7 0.7)
 
 

@@ -17,13 +17,13 @@ import Types exposing (FrontendMsg(..), Preview(..))
 viewCity : Id -> City -> Element FrontendMsg
 viewCity id city =
     let
-        gradient =
+        gradient color =
             Background.gradient
                 { angle = 0
                 , steps =
-                    [ Theme.colors.delete
-                    , Theme.colors.white
-                    , Theme.colors.white
+                    [ Theme.getColor 0
+                    , color
+                    , color
                     ]
                 }
     in
@@ -39,15 +39,15 @@ viewCity id city =
                 }
             , Element.htmlAttribute <| Html.Attributes.style "z-index" "1"
             ]
-            [ Theme.tabButton [ gradient ]
+            [ Theme.tabButton [ gradient Theme.colors.white ]
                 { onPress = Just <| Preview <| PreviewSmall id
                 , label = text "Small preview"
                 }
-            , Theme.tabButton [ gradient ]
+            , Theme.tabButton [ gradient Theme.colors.white ]
                 { onPress = Just <| Preview <| PreviewBig id
                 , label = text "Big preview"
                 }
-            , Theme.tabButton [ Background.color Theme.colors.delete ]
+            , Theme.tabButton [ gradient Theme.colors.delete ]
                 { onPress = Just <| UpdateCity id Nothing
                 , label = text "Delete"
                 }
