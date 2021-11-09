@@ -39,7 +39,9 @@ viewCity id city =
                 , label = text "Delete"
                 }
             ]
-        , Element.map (\newCity -> UpdateCity id <| Just newCity) <| Editors.cityEditor 0 city
+        , Element.map (\newCity -> UpdateCity id <| Just newCity) <|
+            Tuple.first <|
+                Editors.cityEditor 0 city
         ]
 
 

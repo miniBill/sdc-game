@@ -1,7 +1,7 @@
 module Frontend.Game exposing (viewGame)
 
 import Dict
-import Element exposing (Element, el, height, inFront, px, text, width)
+import Element exposing (Element, centerX, centerY, el, height, inFront, px, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Pins
@@ -21,8 +21,14 @@ viewGame model =
         scaledWidth =
             round <| scale * originalWidth
 
+        normalAttrs =
+            [ width (px scaledWidth)
+            , centerX
+            , centerY
+            ]
+
         attrs =
-            width (px scaledWidth) :: inFronts
+            normalAttrs ++ inFronts
 
         inFronts =
             model.data
