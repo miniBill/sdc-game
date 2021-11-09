@@ -1756,43 +1756,61 @@ listEditor typeName valueEditor valueDefault level value =
                             else
                                 List.Extra.setAt i lambdaArg0 value
                         )
-                        (Element.column
-                            [ Element.width Element.fill ]
-                            [ Element.el
-                                [ Element.paddingEach
-                                    { top = 0
-                                    , right = Theme.rythm
-                                    , bottom = 0
-                                    , left = 0
-                                    }
-                                , Element.alignRight
-                                ]
-                                (Theme.tabButton
-                                    [ Theme.spacing
-                                    , Theme.padding
-                                    , Element.alignTop
-                                    , Border.width 1
-                                    , Border.rounded Theme.rythm
-                                    , Background.color Theme.colors.delete
-                                    , Border.widthEach
-                                        { bottom = 0
-                                        , left = 1
-                                        , right = 1
-                                        , top = 1
+                        (Element.el
+                            [ Element.width Element.fill
+                            , Element.inFront
+                                (Element.el
+                                    [ Element.paddingEach
+                                        { top = 0
+                                        , right = 2 * Theme.rythm
+                                        , bottom = 0
+                                        , left = 0
                                         }
-                                    , Border.roundEach
-                                        { topLeft = Theme.rythm
-                                        , topRight = Theme.rythm
-                                        , bottomLeft = 0
-                                        , bottomRight = 0
-                                        }
+                                    , Element.alignRight
                                     ]
-                                    { onPress = Maybe.Just valueDefault
-                                    , label = Element.text "Delete"
-                                    }
+                                    (Theme.tabButton
+                                        [ Theme.spacing
+                                        , Theme.padding
+                                        , Element.alignTop
+                                        , Border.width 1
+                                        , Border.rounded Theme.rythm
+                                        , Background.gradient
+                                            { angle = 0
+                                            , steps =
+                                                [ getColor (level + 1)
+                                                , Theme.colors.delete
+                                                , Theme.colors.delete
+                                                ]
+                                            }
+                                        , Border.widthEach
+                                            { bottom = 0
+                                            , left = 1
+                                            , right = 1
+                                            , top = 1
+                                            }
+                                        , Border.roundEach
+                                            { topLeft = Theme.rythm
+                                            , topRight = Theme.rythm
+                                            , bottomLeft = 0
+                                            , bottomRight = 0
+                                            }
+                                        ]
+                                        { onPress = Maybe.Just valueDefault
+                                        , label = Element.text "Delete"
+                                        }
+                                    )
                                 )
-                            , Tuple.first (valueEditor (level + 1) row)
+                            , Element.paddingEach
+                                { top = 6 + 3 * Theme.rythm
+                                , right = 0
+                                , bottom = 0
+                                , left = 0
+                                }
                             ]
+                            (Element.el
+                                [ Element.width Element.fill ]
+                                (Tuple.first (valueEditor (level + 1) row))
+                            )
                         )
                 )
                 value
@@ -1820,7 +1838,15 @@ listEditor typeName valueEditor valueDefault level value =
                 , Element.alignTop
                 , Border.width 1
                 , Border.rounded Theme.rythm
-                , Background.color Theme.colors.addNew
+                , Background.gradient
+                    { angle = 0
+                    , steps =
+                        [ Theme.colors.addNew
+                        , Theme.colors.addNew
+                        , Theme.colors.addNew
+                        , getColor level
+                        ]
+                    }
                 , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
                 , Border.roundEach
                     { topLeft = 0
@@ -1828,6 +1854,7 @@ listEditor typeName valueEditor valueDefault level value =
                     , bottomLeft = Theme.rythm
                     , bottomRight = Theme.rythm
                     }
+                , Element.moveUp 1
                 ]
                 { onPress = Maybe.Just (value ++ [ valueDefault ])
                 , label = Element.text ("Add new " ++ typeName)
