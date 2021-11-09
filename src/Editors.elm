@@ -26,6 +26,145 @@ dataEditor level value =
 
 cityEditor : Int -> Model.City -> ( Element.Element Model.City, Bool )
 cityEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  cityNameEditor (level + 1) value.name
+              in
+              ( "Name"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | name = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.text
+              in
+              ( "Text"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | text = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.image
+              in
+              ( "Image"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | image = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  coordinatesEditor (level + 1) value.coordinates
+              in
+              ( "Coordinates"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | coordinates = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "Person"
+                      personEditor
+                      personDefault
+                      (level + 1)
+                      value.people
+              in
+              ( "People"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | people = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.concatMap
+                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
     ( Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
@@ -36,65 +175,7 @@ cityEditor level value =
         , Border.width 1
         , Border.rounded Theme.rythm
         ]
-        [ Element.text "Name"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | name = lambdaArg0 }
-            )
-            (Tuple.first (cityNameEditor (level + 1) value.name))
-        , Element.text "Text"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | text = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.text))
-        , Element.text "Image"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | image = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.image))
-        , Element.text "Coordinates"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | coordinates = lambdaArg0 }
-            )
-            (Tuple.first (coordinatesEditor (level + 1) value.coordinates))
-        , Element.text "People"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | people = lambdaArg0 }
-            )
-            (Tuple.first
-                (listEditor
-                    "Person"
-                    personEditor
-                    personDefault
-                    (level + 1)
-                    value.people
-                )
-            )
-        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -102,6 +183,92 @@ cityEditor level value =
 coordinatesEditor :
     Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
 coordinatesEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  floatEditor (level + 1) value.north
+              in
+              ( "North"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | north = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  floatEditor (level + 1) value.east
+              in
+              ( "East"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | east = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.concatMap
+                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
     ( Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
@@ -112,27 +279,7 @@ coordinatesEditor level value =
         , Border.width 1
         , Border.rounded Theme.rythm
         ]
-        [ Element.text "North"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | north = lambdaArg0 }
-            )
-            (Tuple.first (floatEditor (level + 1) value.north))
-        , Element.text "East"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | east = lambdaArg0 }
-            )
-            (Tuple.first (floatEditor (level + 1) value.east))
-        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -145,6 +292,114 @@ cityNameEditor level value =
 
 personEditor : Int -> Model.Person -> ( Element.Element Model.Person, Bool )
 personEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.name
+              in
+              ( "Name"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | name = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.image
+              in
+              ( "Image"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | image = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "(Id, Dialog)"
+                      (tupleEditor idEditor idDefault dialogEditor dialogDefault
+                      )
+                      ( idDefault, dialogDefault )
+                      (level + 1)
+                      value.dialog
+              in
+              ( "Dialog"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | dialog = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.concatMap
+                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
     ( Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
@@ -155,45 +410,7 @@ personEditor level value =
         , Border.width 1
         , Border.rounded Theme.rythm
         ]
-        [ Element.text "Name"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | name = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.name))
-        , Element.text "Image"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | image = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.image))
-        , Element.text "Dialog"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | dialog = lambdaArg0 }
-            )
-            (Tuple.first
-                (listEditor
-                    "(Id, Dialog)"
-                    (tupleEditor idEditor idDefault dialogEditor dialogDefault)
-                    ( idDefault, dialogDefault )
-                    (level + 1)
-                    value.dialog
-                )
-            )
-        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -205,6 +422,97 @@ idEditor level value =
 
 dialogEditor : Int -> Model.Dialog -> ( Element.Element Model.Dialog, Bool )
 dialogEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.text
+              in
+              ( "Text"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | text = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "Choice"
+                      choiceEditor
+                      choiceDefault
+                      (level + 1)
+                      value.choices
+              in
+              ( "Choices"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | choices = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.concatMap
+                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
     ( Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
@@ -215,41 +523,141 @@ dialogEditor level value =
         , Border.width 1
         , Border.rounded Theme.rythm
         ]
-        [ Element.text "Text"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | text = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.text))
-        , Element.text "Choices"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | choices = lambdaArg0 }
-            )
-            (Tuple.first
-                (listEditor
-                    "Choice"
-                    choiceEditor
-                    choiceDefault
-                    (level + 1)
-                    value.choices
-                )
-            )
-        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
 
 choiceEditor : Int -> Model.Choice -> ( Element.Element Model.Choice, Bool )
 choiceEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.text
+              in
+              ( "Text"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | text = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  idEditor (level + 1) value.next
+              in
+              ( "Next"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | next = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "Consequence"
+                      consequenceEditor
+                      consequenceDefault
+                      (level + 1)
+                      value.consequences
+              in
+              ( "Consequences"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | consequences = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  maybeEditor
+                      "Condition"
+                      conditionEditor
+                      conditionDefault
+                      (level + 1)
+                      value.condition
+              in
+              ( "Condition"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | condition = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.concatMap
+                        (\pair -> [ Tuple.first pair, Tuple.second pair ])
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
     ( Element.column
         [ Element.width Element.fill
         , Background.color (getColor level)
@@ -260,63 +668,7 @@ choiceEditor level value =
         , Border.width 1
         , Border.rounded Theme.rythm
         ]
-        [ Element.text "Text"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | text = lambdaArg0 }
-            )
-            (Tuple.first (stringEditor (level + 1) value.text))
-        , Element.text "Next"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | next = lambdaArg0 }
-            )
-            (Tuple.first (idEditor (level + 1) value.next))
-        , Element.text "Consequences"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | consequences = lambdaArg0 }
-            )
-            (Tuple.first
-                (listEditor
-                    "Consequence"
-                    consequenceEditor
-                    consequenceDefault
-                    (level + 1)
-                    value.consequences
-                )
-            )
-        , Element.text "Condition"
-        , Element.map
-            (\lambdaArg0 ->
-                let
-                    updating =
-                        value
-                in
-                { updating | condition = lambdaArg0 }
-            )
-            (Tuple.first
-                (maybeEditor
-                    "Condition"
-                    conditionEditor
-                    conditionDefault
-                    (level + 1)
-                    value.condition
-                )
-            )
-        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -483,48 +835,123 @@ itemEditor level value =
                   [ Element.map
                       Model.GenericItem
                       (Tuple.first
-                          ( Element.column
-                              [ Element.width Element.fill
-                              , Background.color (getColor (level + 1))
-                              , Element.width Element.fill
-                              , Theme.spacing
-                              , Theme.padding
-                              , Element.alignTop
-                              , Border.width 1
-                              , Border.rounded Theme.rythm
-                              ]
-                              [ Element.text "Name"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              nameStringimageString
-                                      in
-                                      { updating | name = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (stringEditor
-                                          (level + 1 + 1)
-                                          nameStringimageString.name
-                                      )
-                                  )
-                              , Element.text "Image"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              nameStringimageString
-                                      in
-                                      { updating | image = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (stringEditor
-                                          (level + 1 + 1)
-                                          nameStringimageString.image
-                                      )
-                                  )
-                              ]
-                          , Basics.False
+                          (let
+                              raw =
+                                 [ let
+                                     ( editor, simple ) =
+                                       stringEditor
+                                           (level + 1 + 1)
+                                           nameStringimageString.name
+                                   in
+                                   ( "Name"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   nameStringimageString
+                                           in
+                                           { updating | name = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       stringEditor
+                                           (level + 1 + 1)
+                                           nameStringimageString.image
+                                   in
+                                   ( "Image"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   nameStringimageString
+                                           in
+                                           { updating | image = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 ]
+
+                              simples =
+                                 raw
+                                     |> List.filterMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 Maybe.Just
+                                                     ( Element.el
+                                                         [ Element.centerY ]
+                                                         (Element.text fieldName
+                                                         )
+                                                     , fieldEditor
+                                                     )
+
+                                             else
+                                                 Maybe.Nothing
+                                         )
+
+                              simplesTable =
+                                 if List.length simples <= 2 then
+                                     simples
+                                         |> List.concatMap
+                                             (\pair ->
+                                                 [ Tuple.first pair
+                                                 , Tuple.second pair
+                                                 ]
+                                             )
+                                         |> Element.row
+                                             [ Theme.spacing
+                                             , Element.width Element.fill
+                                             ]
+
+                                 else
+                                     Element.table
+                                         [ Theme.spacing
+                                         , Element.width Element.fill
+                                         ]
+                                         { columns =
+                                             [ { header = Element.none
+                                               , width = Element.shrink
+                                               , view =
+                                                   \pair -> Tuple.first pair
+                                               }
+                                             , { header = Element.none
+                                               , width = Element.fill
+                                               , view =
+                                                   \pair -> Tuple.second pair
+                                               }
+                                             ]
+                                         , data = simples
+                                         }
+
+                              complexes =
+                                 raw
+                                     |> List.concatMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 []
+
+                                             else
+                                                 [ Element.text fieldName
+                                                 , fieldEditor
+                                                 ]
+                                         )
+                           in
+                           ( Element.column
+                               [ Element.width Element.fill
+                               , Background.color (getColor (level + 1))
+                               , Element.width Element.fill
+                               , Theme.spacing
+                               , Theme.padding
+                               , Element.alignTop
+                               , Border.width 1
+                               , Border.rounded Theme.rythm
+                               ]
+                               (simplesTable :: complexes)
+                           , Basics.False
+                           )
                           )
                       )
                   ]
@@ -533,81 +960,164 @@ itemEditor level value =
                   [ Element.map
                       Model.Ticket
                       (Tuple.first
-                          ( Element.column
-                              [ Element.width Element.fill
-                              , Background.color (getColor (level + 1))
-                              , Element.width Element.fill
-                              , Theme.spacing
-                              , Theme.padding
-                              , Element.alignTop
-                              , Border.width 1
-                              , Border.rounded Theme.rythm
-                              ]
-                              [ Element.text "From"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                      in
-                                      { updating | from = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (cityNameEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
-                                      )
-                                  )
-                              , Element.text "To"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                      in
-                                      { updating | to = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (cityNameEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
-                                      )
-                                  )
-                              , Element.text "Kind"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                      in
-                                      { updating | kind = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (transportKindEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
-                                      )
-                                  )
-                              , Element.text "Consequences"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                      in
-                                      { updating | consequences = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (listEditor
-                                          "Consequence"
-                                          consequenceEditor
-                                          consequenceDefault
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
-                                      )
-                                  )
-                              ]
-                          , Basics.False
+                          (let
+                              raw =
+                                 [ let
+                                     ( editor, simple ) =
+                                       cityNameEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
+                                   in
+                                   ( "From"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                           in
+                                           { updating | from = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       cityNameEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
+                                   in
+                                   ( "To"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                           in
+                                           { updating | to = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       transportKindEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
+                                   in
+                                   ( "Kind"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                           in
+                                           { updating | kind = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       listEditor
+                                           "Consequence"
+                                           consequenceEditor
+                                           consequenceDefault
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
+                                   in
+                                   ( "Consequences"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                           in
+                                           { updating
+                                               | consequences = lambdaArg0
+                                           }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 ]
+
+                              simples =
+                                 raw
+                                     |> List.filterMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 Maybe.Just
+                                                     ( Element.el
+                                                         [ Element.centerY ]
+                                                         (Element.text fieldName
+                                                         )
+                                                     , fieldEditor
+                                                     )
+
+                                             else
+                                                 Maybe.Nothing
+                                         )
+
+                              simplesTable =
+                                 if List.length simples <= 2 then
+                                     simples
+                                         |> List.concatMap
+                                             (\pair ->
+                                                 [ Tuple.first pair
+                                                 , Tuple.second pair
+                                                 ]
+                                             )
+                                         |> Element.row
+                                             [ Theme.spacing
+                                             , Element.width Element.fill
+                                             ]
+
+                                 else
+                                     Element.table
+                                         [ Theme.spacing
+                                         , Element.width Element.fill
+                                         ]
+                                         { columns =
+                                             [ { header = Element.none
+                                               , width = Element.shrink
+                                               , view =
+                                                   \pair -> Tuple.first pair
+                                               }
+                                             , { header = Element.none
+                                               , width = Element.fill
+                                               , view =
+                                                   \pair -> Tuple.second pair
+                                               }
+                                             ]
+                                         , data = simples
+                                         }
+
+                              complexes =
+                                 raw
+                                     |> List.concatMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 []
+
+                                             else
+                                                 [ Element.text fieldName
+                                                 , fieldEditor
+                                                 ]
+                                         )
+                           in
+                           ( Element.column
+                               [ Element.width Element.fill
+                               , Background.color (getColor (level + 1))
+                               , Element.width Element.fill
+                               , Theme.spacing
+                               , Theme.padding
+                               , Element.alignTop
+                               , Border.width 1
+                               , Border.rounded Theme.rythm
+                               ]
+                               (simplesTable :: complexes)
+                           , Basics.False
+                           )
                           )
                       )
                   ]
@@ -834,63 +1344,141 @@ itemNameEditor level value =
                   [ Element.map
                       Model.TicketName
                       (Tuple.first
-                          ( Element.column
-                              [ Element.width Element.fill
-                              , Background.color (getColor (level + 1))
-                              , Element.width Element.fill
-                              , Theme.spacing
-                              , Theme.padding
-                              , Element.alignTop
-                              , Border.width 1
-                              , Border.rounded Theme.rythm
-                              ]
-                              [ Element.text "From"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKind
-                                      in
-                                      { updating | from = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (cityNameEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKind.from
-                                      )
-                                  )
-                              , Element.text "To"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKind
-                                      in
-                                      { updating | to = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (cityNameEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKind.to
-                                      )
-                                  )
-                              , Element.text "Kind"
-                              , Element.map
-                                  (\lambdaArg0 ->
-                                      let
-                                          updating =
-                                              fromCityNametoCityNamekindTransportKind
-                                      in
-                                      { updating | kind = lambdaArg0 }
-                                  )
-                                  (Tuple.first
-                                      (transportKindEditor
-                                          (level + 1 + 1)
-                                          fromCityNametoCityNamekindTransportKind.kind
-                                      )
-                                  )
-                              ]
-                          , Basics.False
+                          (let
+                              raw =
+                                 [ let
+                                     ( editor, simple ) =
+                                       cityNameEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKind.from
+                                   in
+                                   ( "From"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKind
+                                           in
+                                           { updating | from = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       cityNameEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKind.to
+                                   in
+                                   ( "To"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKind
+                                           in
+                                           { updating | to = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 , let
+                                     ( editor, simple ) =
+                                       transportKindEditor
+                                           (level + 1 + 1)
+                                           fromCityNametoCityNamekindTransportKind.kind
+                                   in
+                                   ( "Kind"
+                                   , Element.map
+                                       (\lambdaArg0 ->
+                                           let
+                                               updating =
+                                                   fromCityNametoCityNamekindTransportKind
+                                           in
+                                           { updating | kind = lambdaArg0 }
+                                       )
+                                       editor
+                                   , simple
+                                   )
+                                 ]
+
+                              simples =
+                                 raw
+                                     |> List.filterMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 Maybe.Just
+                                                     ( Element.el
+                                                         [ Element.centerY ]
+                                                         (Element.text fieldName
+                                                         )
+                                                     , fieldEditor
+                                                     )
+
+                                             else
+                                                 Maybe.Nothing
+                                         )
+
+                              simplesTable =
+                                 if List.length simples <= 2 then
+                                     simples
+                                         |> List.concatMap
+                                             (\pair ->
+                                                 [ Tuple.first pair
+                                                 , Tuple.second pair
+                                                 ]
+                                             )
+                                         |> Element.row
+                                             [ Theme.spacing
+                                             , Element.width Element.fill
+                                             ]
+
+                                 else
+                                     Element.table
+                                         [ Theme.spacing
+                                         , Element.width Element.fill
+                                         ]
+                                         { columns =
+                                             [ { header = Element.none
+                                               , width = Element.shrink
+                                               , view =
+                                                   \pair -> Tuple.first pair
+                                               }
+                                             , { header = Element.none
+                                               , width = Element.fill
+                                               , view =
+                                                   \pair -> Tuple.second pair
+                                               }
+                                             ]
+                                         , data = simples
+                                         }
+
+                              complexes =
+                                 raw
+                                     |> List.concatMap
+                                         (\( fieldName, fieldEditor, simple ) ->
+                                             if simple then
+                                                 []
+
+                                             else
+                                                 [ Element.text fieldName
+                                                 , fieldEditor
+                                                 ]
+                                         )
+                           in
+                           ( Element.column
+                               [ Element.width Element.fill
+                               , Background.color (getColor (level + 1))
+                               , Element.width Element.fill
+                               , Theme.spacing
+                               , Theme.padding
+                               , Element.alignTop
+                               , Border.width 1
+                               , Border.rounded Theme.rythm
+                               ]
+                               (simplesTable :: complexes)
+                           , Basics.False
+                           )
                           )
                       )
                   ]
