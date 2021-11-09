@@ -2,10 +2,11 @@ module Frontend.Editor exposing (viewEditor)
 
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, moveUp, padding, paddingEach, paragraph, px, row, scrollbars, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Html.Attributes
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (City, Data, Id)
@@ -15,6 +16,17 @@ import Types exposing (FrontendMsg(..), Preview(..))
 
 viewCity : Id -> City -> Element FrontendMsg
 viewCity id city =
+    let
+        gradient =
+            Background.gradient
+                { angle = 0
+                , steps =
+                    [ Theme.colors.delete
+                    , Theme.colors.white
+                    , Theme.colors.white
+                    ]
+                }
+    in
     column [ width fill ]
         [ row
             [ Theme.spacing
@@ -25,12 +37,13 @@ viewCity id city =
                 , top = 0
                 , bottom = 0
                 }
+            , Element.htmlAttribute <| Html.Attributes.style "z-index" "1"
             ]
-            [ Theme.tabButton []
+            [ Theme.tabButton [ gradient ]
                 { onPress = Just <| Preview <| PreviewSmall id
                 , label = text "Small preview"
                 }
-            , Theme.tabButton []
+            , Theme.tabButton [ gradient ]
                 { onPress = Just <| Preview <| PreviewBig id
                 , label = text "Big preview"
                 }
@@ -39,9 +52,10 @@ viewCity id city =
                 , label = text "Delete"
                 }
             ]
-        , Element.map (\newCity -> UpdateCity id <| Just newCity) <|
-            Tuple.first <|
-                Editors.cityEditor 0 city
+        , el [ width fill, moveUp 1 ] <|
+            Element.map (\newCity -> UpdateCity id <| Just newCity) <|
+                Tuple.first <|
+                    Editors.cityEditor 0 city
         ]
 
 

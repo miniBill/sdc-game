@@ -13,6 +13,8 @@ import Element
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
+import Html
+import Html.Attributes
 import List.Extra
 import Model
 import Theme
@@ -1791,61 +1793,54 @@ listEditor typeName valueEditor valueDefault level value =
                             else
                                 List.Extra.setAt i lambdaArg0 value
                         )
-                        (Element.el
-                            [ Element.width Element.fill
-                            , Element.inFront
-                                (Element.el
-                                    [ Element.paddingEach
-                                        { top = 0
-                                        , right = 2 * Theme.rythm
-                                        , bottom = 0
-                                        , left = 0
+                        (Element.column
+                            [ Element.width Element.fill ]
+                            [ Element.el
+                                [ Element.paddingEach
+                                    { top = 0
+                                    , right = Theme.rythm
+                                    , bottom = 0
+                                    , left = 0
+                                    }
+                                , Element.alignRight
+                                ]
+                                (Theme.tabButton
+                                    [ Theme.spacing
+                                    , Theme.padding
+                                    , Element.alignTop
+                                    , Border.width 1
+                                    , Border.rounded Theme.rythm
+                                    , Background.gradient
+                                        { angle = 0
+                                        , steps =
+                                            [ getColor (level + 1)
+                                            , Theme.colors.delete
+                                            , Theme.colors.delete
+                                            ]
                                         }
-                                    , Element.alignRight
+                                    , Border.widthEach
+                                        { bottom = 0
+                                        , left = 1
+                                        , right = 1
+                                        , top = 1
+                                        }
+                                    , Border.roundEach
+                                        { topLeft = Theme.rythm
+                                        , topRight = Theme.rythm
+                                        , bottomLeft = 0
+                                        , bottomRight = 0
+                                        }
+                                    , Element.htmlAttribute
+                                        (Html.Attributes.style "z-index" "1")
                                     ]
-                                    (Theme.tabButton
-                                        [ Theme.spacing
-                                        , Theme.padding
-                                        , Element.alignTop
-                                        , Border.width 1
-                                        , Border.rounded Theme.rythm
-                                        , Background.gradient
-                                            { angle = 0
-                                            , steps =
-                                                [ getColor (level + 1)
-                                                , Theme.colors.delete
-                                                , Theme.colors.delete
-                                                ]
-                                            }
-                                        , Border.widthEach
-                                            { bottom = 0
-                                            , left = 1
-                                            , right = 1
-                                            , top = 1
-                                            }
-                                        , Border.roundEach
-                                            { topLeft = Theme.rythm
-                                            , topRight = Theme.rythm
-                                            , bottomLeft = 0
-                                            , bottomRight = 0
-                                            }
-                                        ]
-                                        { onPress = Maybe.Just valueDefault
-                                        , label = Element.text "Delete"
-                                        }
-                                    )
+                                    { onPress = Maybe.Just valueDefault
+                                    , label = Element.text "Delete"
+                                    }
                                 )
-                            , Element.paddingEach
-                                { top = 6 + 3 * Theme.rythm
-                                , right = 0
-                                , bottom = 0
-                                , left = 0
-                                }
-                            ]
-                            (Element.el
-                                [ Element.width Element.fill ]
+                            , Element.el
+                                [ Element.width Element.fill, Element.moveUp 1 ]
                                 (Tuple.first (valueEditor (level + 1) row))
-                            )
+                            ]
                         )
                 )
                 value
