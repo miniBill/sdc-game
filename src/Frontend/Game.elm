@@ -1,11 +1,15 @@
 module Frontend.Game exposing (viewGame)
 
 import Dict
-import Element exposing (Element, centerX, centerY, el, height, inFront, px, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Font as Font
+import Markdown.Parser
+import Markdown.Renderer
+import Model exposing (Person)
 import Pins
-import Theme
+import Theme exposing (column, row)
 import Types exposing (FrontendModel)
 
 
@@ -35,8 +39,11 @@ viewGame model =
                 |> Maybe.withDefault Dict.empty
                 |> Dict.toList
                 |> List.concatMap
-                    (\( _, city ) ->
+                    (\( _, person ) ->
                         let
+                            city =
+                                person.city
+
                             ( x, y ) =
                                 Pins.northEastToXY
                                     city.coordinates.north
@@ -67,3 +74,74 @@ viewGame model =
                     )
     in
     Element.image attrs { src = "/art/europe.jpg", description = "A map of Europe" }
+
+
+viewPersonPreview : Int -> Person -> Element msg
+viewPersonPreview scale person =
+    let
+        city =
+            person.city
+
+        shadowBox attrs =
+            el
+                ([ Element.padding scale
+                 , Border.rounded scale
+                 , Background.color Theme.colors.semitransparent
+                 ]
+                    ++ attrs
+                )
+
+        viewMarked input =
+            input
+                |> String.split "  "
+                |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
+                |> List.filterMap
+                    (\g ->
+                        g
+                            |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\ls ->
+                                    paragraph [ width fill ] <|
+                                        List.map (Element.el [] << Element.html) ls
+                                )
+                    )
+                |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
+    in
+    column
+        [ Background.image city.image
+        , width <| px <| scale * 80
+        , height <| px <| scale * 45
+        , Border.width 1
+        , Font.size <| scale * 3
+        ]
+        [ el [ padding scale, centerX ] <|
+            shadowBox
+                [ paddingEach
+                    { left = scale
+                    , top = scale
+                    , right = scale
+                    , bottom = scale * 5 // 2
+                    }
+                , Font.size <| scale * 6
+                ]
+                (text city.name)
+        , row [ padding scale, spacing scale, width fill, height fill ]
+            [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
+            , shadowBox
+                [ height fill
+                , alignRight
+                , width <| px <| scale * 22
+                ]
+                (column [ centerY, spacing scale ]
+                    [ el [ centerX ] <| text person.name
+                    , image
+                        [ width <| px <| scale * 20
+                        ]
+                        { description = "Person avatar"
+                        , src = person.image
+                        }
+                    ]
+                )
+            ]
+        ]

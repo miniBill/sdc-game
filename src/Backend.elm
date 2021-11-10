@@ -6,15 +6,11 @@ import Set
 import Types exposing (..)
 
 
-type alias Model =
-    BackendModel
-
-
 app :
-    { init : ( Model, Cmd BackendMsg )
-    , update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )
-    , updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
-    , subscriptions : Model -> Sub BackendMsg
+    { init : ( BackendModel, Cmd BackendMsg )
+    , update : BackendMsg -> BackendModel -> ( BackendModel, Cmd BackendMsg )
+    , updateFromFrontend : SessionId -> ClientId -> ToBackend -> BackendModel -> ( BackendModel, Cmd BackendMsg )
+    , subscriptions : BackendModel -> Sub BackendMsg
     }
 app =
     Lamdera.backend
@@ -25,7 +21,7 @@ app =
         }
 
 
-init : ( Model, Cmd BackendMsg )
+init : ( BackendModel, Cmd BackendMsg )
 init =
     ( { connectedClients = Set.empty
       , data = Dict.empty
@@ -35,7 +31,7 @@ init =
     )
 
 
-update : BackendMsg -> Model -> ( Model, Cmd BackendMsg )
+update : BackendMsg -> BackendModel -> ( BackendModel, Cmd BackendMsg )
 update msg model =
     case msg of
         Connected _ clientId ->
@@ -47,12 +43,12 @@ update msg model =
             ( { model | connectedClients = Set.remove clientId model.connectedClients }, Cmd.none )
 
 
-updateFromFrontend : SessionId -> ClientId -> ToBackend -> Model -> ( Model, Cmd BackendMsg )
+updateFromFrontend : SessionId -> ClientId -> ToBackend -> BackendModel -> ( BackendModel, Cmd BackendMsg )
 updateFromFrontend _ clientId msg model =
     case msg of
-        TBUpdateCity id city ->
-            ( { model | data = Dict.update id (always city) model.data }
-            , almostBroadcast model clientId <| TFUpdateCity id city
+        TBUpdatePerson id person ->
+            ( { model | data = Dict.update id (always person) model.data }
+            , almostBroadcast model clientId <| TFUpdatePerson id person
             )
 
         TBData data ->
@@ -61,7 +57,7 @@ updateFromFrontend _ clientId msg model =
             )
 
 
-almostBroadcast : Model -> ClientId -> ToFrontend -> Cmd BackendMsg
+almostBroadcast : BackendModel -> ClientId -> ToFrontend -> Cmd BackendMsg
 almostBroadcast model clientId msg =
     model.connectedClients
         |> Set.toList
@@ -70,7 +66,7 @@ almostBroadcast model clientId msg =
         |> Cmd.batch
 
 
-subscriptions : Model -> Sub BackendMsg
+subscriptions : BackendModel -> Sub BackendMsg
 subscriptions _ =
     Sub.batch
         [ Lamdera.onConnect Connected

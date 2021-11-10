@@ -1,5 +1,5 @@
 module Model exposing
-    ( Choice
+    ( Choice(..)
     , City
     , CityName
     , Condition(..)
@@ -18,7 +18,7 @@ import Dict exposing (Dict)
 
 
 type alias Data =
-    Dict Id City
+    Dict Id Person
 
 
 type alias City =
@@ -26,7 +26,6 @@ type alias City =
     , text : String
     , image : String
     , coordinates : Coordinates
-    , people : List Person
     }
 
 
@@ -42,8 +41,9 @@ type alias CityName =
 
 type alias Person =
     { name : String
+    , city : City
     , image : String
-    , dialog : List ( Id, Dialog )
+    , dialogs : List Dialog
     }
 
 
@@ -57,12 +57,11 @@ type alias Dialog =
     }
 
 
-type alias Choice =
-    { text : String
-    , next : Id
-    , consequences : List Consequence
-    , condition : Maybe Condition
-    }
+type Choice
+    = Choice
+        { text : String
+        , next : Maybe Dialog
+        }
 
 
 type Consequence

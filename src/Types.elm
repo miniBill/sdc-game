@@ -6,7 +6,7 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (City, Data, Id)
+import Model exposing (Data, Id, Person)
 import Set exposing (Set)
 
 
@@ -19,18 +19,12 @@ type alias FrontendModel =
 
 
 type Page
-    = Editor { preview : Preview }
+    = Editor {}
     | Game GameModel
 
 
 type alias GameModel =
     {}
-
-
-type Preview
-    = PreviewNone
-    | PreviewSmall Id
-    | PreviewBig Id
 
 
 type alias BackendModel =
@@ -50,13 +44,12 @@ type FrontendMsg
     | ReadFile String
     | DownloadJson
       -- Cities editor
-    | AddCity
-    | UpdateCity Id (Maybe City)
-    | Preview Preview
+    | AddPerson
+    | UpdatePerson Id (Maybe Person)
 
 
 type ToBackend
-    = TBUpdateCity Id (Maybe City)
+    = TBUpdatePerson Id (Maybe Person)
     | TBData Data
 
 
@@ -66,5 +59,5 @@ type BackendMsg
 
 
 type ToFrontend
-    = TFUpdateCity Id (Maybe City)
+    = TFUpdatePerson Id (Maybe Person)
     | TFData Data

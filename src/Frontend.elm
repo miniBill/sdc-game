@@ -15,11 +15,12 @@ import Frontend.Editor exposing (viewEditor)
 import Frontend.Game exposing (viewGame)
 import Hex
 import Html
+import Json.Decode
 import Lamdera exposing (Key, Url)
 import Random
 import Task
 import Theme
-import Types exposing (FrontendModel, FrontendMsg(..), Page(..), Preview(..), ToBackend(..), ToFrontend(..))
+import Types exposing (FrontendModel, FrontendMsg(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -69,8 +70,8 @@ css =
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 updateFromBackend msg model =
     case msg of
-        TFUpdateCity id city ->
-            ( { model | data = Maybe.map (Dict.update id <| always city) model.data }, Cmd.none )
+        TFUpdatePerson id person ->
+            ( { model | data = Maybe.map (Dict.update id <| always person) model.data }, Cmd.none )
 
         TFData data ->
             ( { model | data = Just data }
@@ -83,7 +84,7 @@ urlToPage url =
     let
         parser =
             Url.Parser.oneOf
-                [ Url.Parser.map (Editor { preview = PreviewNone }) <| Url.Parser.s "editor"
+                [ Url.Parser.map (Editor {}) <| Url.Parser.s "editor"
                 , Url.Parser.map (Game {}) Url.Parser.top
                 ]
     in
@@ -134,18 +135,17 @@ update msg model =
         ( FileSelected file, _ ) ->
             ( model, Task.perform ReadFile <| File.toString file )
 
-        ( UpdateCity id city, Just data ) ->
-            ( { model | data = Just <| Dict.update id (always city) data }
-            , Lamdera.sendToBackend <| TBUpdateCity id city
+        ( UpdatePerson id person, Just data ) ->
+            ( { model | data = Just <| Dict.update id (always person) data }
+            , Lamdera.sendToBackend <| TBUpdatePerson id person
             )
 
         ( ReadFile str, _ ) ->
             case Codec.decodeString Codecs.dataCodec str of
-                Err _ ->
+                Err err ->
                     let
                         errString =
-                            --Debug.toString err
-                            "Error reading file"
+                            Json.Decode.errorToString err
                     in
                     ( { model | lastError = errString }, Cmd.none )
 
@@ -158,24 +158,12 @@ update msg model =
                 Codec.encodeToString 0 Codecs.dataCodec data
             )
 
-        ( AddCity, Just _ ) ->
+        ( AddPerson, Just _ ) ->
             ( model
             , Random.int 0 Random.maxInt
                 |> Random.map Hex.toString
-                |> Random.generate (\newId -> UpdateCity newId (Just Editors.cityDefault))
+                |> Random.generate (\newId -> UpdatePerson newId (Just Editors.personDefault))
             )
-
-        ( Preview preview, Just _ ) ->
-            case model.page of
-                Editor e ->
-                    ( { model
-                        | page = Editor { e | preview = preview }
-                      }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
 
 
 view : FrontendModel -> Element FrontendMsg
@@ -195,5 +183,5 @@ view model =
                 Game _ ->
                     viewGame model
 
-                Editor e ->
-                    viewEditor e data
+                Editor _ ->
+                    viewEditor model data
