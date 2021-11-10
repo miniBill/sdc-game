@@ -40,40 +40,44 @@ viewGame model =
                 |> Dict.toList
                 |> List.concatMap
                     (\( _, person ) ->
-                        let
-                            city =
-                                person.city
-
-                            ( x, y ) =
-                                Pins.northEastToXY
-                                    city.coordinates.north
-                                    city.coordinates.east
-                        in
-                        [ inFront <|
-                            el
-                                [ Element.moveDown <| scale * y - Theme.rythm / 2
-                                , Element.moveRight <| scale * x - Theme.rythm / 2
-                                , Border.width 1
-                                , Background.color Theme.colors.delete
-                                , Border.rounded Theme.rythm
-                                , width <| px Theme.rythm
-                                , height <| px Theme.rythm
-                                ]
-                                Element.none
-                        , inFront <|
-                            el
-                                [ Element.moveDown <| scale * y - Theme.rythm * 1.8
-                                , Element.moveRight <| scale * x + Theme.rythm
-                                , Border.width 1
-                                , Background.color Theme.colors.semitransparent
-                                , Border.rounded Theme.rythm
-                                , Theme.padding
-                                ]
-                                (text city.name)
-                        ]
+                        viewPerson scale person
                     )
+                |> List.map inFront
     in
     Element.image attrs { src = "/art/europe.jpg", description = "A map of Europe" }
+
+
+viewPerson : Float -> Person -> List (Element msg)
+viewPerson scale person =
+    let
+        city =
+            person.city
+
+        ( x, y ) =
+            Pins.northEastToXY
+                city.coordinates.north
+                city.coordinates.east
+    in
+    [ el
+        [ Element.moveDown <| scale * y - Theme.rythm / 2
+        , Element.moveRight <| scale * x - Theme.rythm / 2
+        , Border.width 1
+        , Background.color Theme.colors.delete
+        , Border.rounded Theme.rythm
+        , width <| px Theme.rythm
+        , height <| px Theme.rythm
+        ]
+        Element.none
+    , el
+        [ Element.moveDown <| scale * y - Theme.rythm * 1.8
+        , Element.moveRight <| scale * x + Theme.rythm
+        , Border.width 1
+        , Background.color Theme.colors.semitransparent
+        , Border.rounded Theme.rythm
+        , Theme.padding
+        ]
+        (text city.name)
+    ]
 
 
 viewPersonPreview : Int -> Person -> Element msg
