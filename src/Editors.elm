@@ -567,7 +567,7 @@ choiceEditor level value =
                                  [ let
                                      ( editor, simple ) =
                                        stringEditor
-                                           (level + 1 + 1)
+                                           (level - 1 + 1 + 1)
                                            textStringnextMaybeDialog.text
                                    in
                                    ( "Text"
@@ -588,7 +588,7 @@ choiceEditor level value =
                                            "Dialog"
                                            dialogEditor
                                            dialogDefault
-                                           (level + 1 + 1)
+                                           (level - 1 + 1 + 1)
                                            textStringnextMaybeDialog.next
                                    in
                                    ( "Next"
@@ -676,7 +676,8 @@ choiceEditor level value =
                            in
                            ( Element.column
                                [ Element.width Element.fill
-                               , Background.color (Theme.getColor (level + 1))
+                               , Background.color
+                                   (Theme.getColor (level - 1 + 1))
                                , Element.width Element.fill
                                , Theme.spacing
                                , Theme.padding
@@ -691,16 +692,7 @@ choiceEditor level value =
                       )
                   ]
       in
-      Element.row
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          inputsRow
+      Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
     , Basics.False
     )
 

@@ -53,3 +53,25 @@ Ideas for the SDC game:
 14. US
     - Gerrit
     - sledj
+
+# Nonrandom randomness
+
+Game has 3 phases:
+
+1. UK
+2. Europe except The Netherlands
+3. The Netherlands
+
+You roll a loaded dice that depends on how many people you've met
+
+- If you haven't met enough you will not go to the next phase
+- If you have met enough the probability will be very high
+
+- random ?encounter? en route;
+- random consequences, including:
+  - losing money,
+  - taking off at the wrong station,
+  - getting the wrong tain/bus/whatever.
+
+If you run out of money you do a jam on the road to collet quids
+The jam will give you a random amount of money but always enough to get a new ticket.
