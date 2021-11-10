@@ -5,43 +5,49 @@ import Editors
 import Element exposing (Element, alignRight, alignTop, column, el, fill, height, inFront, moveDown, moveUp, paddingEach, row, scrollbars, text, width)
 import Element.Background as Background
 import Element.Border as Border
+import Frontend.Common
 import Html.Attributes
 import Model exposing (Data, Id, Person)
 import Theme
-import Types exposing (FrontendModel, FrontendMsg(..))
+import Types exposing (EditorModel, FrontendMsg(..))
 
 
-viewEditor : FrontendModel -> Data -> Element FrontendMsg
-viewEditor model data =
-    let
-        peopleViews =
-            data
-                |> Dict.toList
-                |> List.map (\( id, person ) -> viewPerson id person)
-                |> column
-                    [ paddingEach
-                        { left = Theme.rythm
-                        , top = 2 * Theme.rythm + 1
-                        , right = Theme.rythm
-                        , bottom = Theme.rythm
-                        }
-                    , Theme.spacing
-                    , scrollbars
-                    , height fill
-                    , width fill
-                    , alignTop
-                    ]
-    in
-    el
-        [ width fill
-        , height fill
-        , Theme.spacing
-        , inFront <| controls model
-        ]
-        peopleViews
+viewEditor : Maybe Data -> EditorModel -> Element FrontendMsg
+viewEditor data editorModel =
+    case data of
+        Nothing ->
+            Frontend.Common.loading
+
+        Just d ->
+            let
+                peopleViews =
+                    d
+                        |> Dict.toList
+                        |> List.map (\( id, person ) -> viewPerson id person)
+                        |> column
+                            [ paddingEach
+                                { left = Theme.rythm
+                                , top = 2 * Theme.rythm + 1
+                                , right = Theme.rythm
+                                , bottom = Theme.rythm
+                                }
+                            , Theme.spacing
+                            , scrollbars
+                            , height fill
+                            , width fill
+                            , alignTop
+                            ]
+            in
+            el
+                [ width fill
+                , height fill
+                , Theme.spacing
+                , inFront <| controls editorModel
+                ]
+                peopleViews
 
 
-controls : FrontendModel -> Element FrontendMsg
+controls : EditorModel -> Element FrontendMsg
 controls model =
     let
         btn msg label =

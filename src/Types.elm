@@ -6,25 +6,32 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (Data, Id, Person)
+import Model exposing (Data, Dialog, Id, Person)
 import Set exposing (Set)
 
 
 type alias FrontendModel =
     { key : Key
-    , data : Maybe Data
-    , lastError : String
     , page : Page
     }
 
 
 type Page
-    = Editor {}
+    = Editor (Maybe Data) EditorModel
     | Game GameModel
 
 
-type alias GameModel =
-    {}
+type alias EditorModel =
+    { lastError : String
+    }
+
+
+type GameModel
+    = LoadingData
+    | DataEmpty
+    | ViewingMap Data { currentPerson : Id }
+    | ViewingPerson Data { currentPerson : Id }
+    | Talking Data { currentPerson : Id, currentDialog : Dialog }
 
 
 type alias BackendModel =
@@ -46,6 +53,8 @@ type FrontendMsg
       -- Cities editor
     | AddPerson
     | UpdatePerson Id (Maybe Person)
+      -- Game
+    | ViewPerson Id
 
 
 type ToBackend

@@ -5,50 +5,71 @@ import Element exposing (Element, alignRight, alignTop, centerX, centerY, el, fi
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
+import Frontend.Common
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Person)
+import Model exposing (Data, Id, Person)
 import Pins
 import Theme exposing (column, row)
-import Types exposing (FrontendModel)
+import Types exposing (FrontendMsg(..), GameModel(..))
 
 
-viewGame : FrontendModel -> Element msg
+viewGame : GameModel -> Element FrontendMsg
 viewGame model =
-    let
-        scale =
-            0.5
+    case model of
+        LoadingData ->
+            Frontend.Common.loading
 
-        originalWidth =
-            1830
+        DataEmpty ->
+            text "branch 'DataEmpty' not implemented"
 
-        scaledWidth =
-            round <| scale * originalWidth
+        ViewingMap data { currentPerson } ->
+            let
+                scale =
+                    0.5
 
-        normalAttrs =
-            [ width (px scaledWidth)
-            , centerX
-            , centerY
-            ]
+                originalWidth =
+                    1830
 
-        attrs =
-            normalAttrs ++ inFronts
+                scaledWidth =
+                    round <| scale * originalWidth
 
-        inFronts =
-            model.data
-                |> Maybe.withDefault Dict.empty
-                |> Dict.toList
-                |> List.concatMap
-                    (\( _, person ) ->
-                        viewPerson scale person
-                    )
-                |> List.map inFront
-    in
-    Element.image attrs { src = "/art/europe.jpg", description = "A map of Europe" }
+                normalAttrs =
+                    [ width (px scaledWidth)
+                    , centerX
+                    , centerY
+                    ]
+
+                attrs =
+                    normalAttrs ++ inFronts
+
+                inFronts =
+                    data
+                        |> Dict.toList
+                        |> List.concatMap
+                            (\( personId, person ) ->
+                                viewPerson scale
+                                    (personId == currentPerson)
+                                    personId
+                                    person
+                            )
+                        |> List.map inFront
+            in
+            Element.image attrs
+                { src = "/art/europe.jpg"
+                , description = "A map of Europe"
+                }
+
+        ViewingPerson data submodel ->
+            viewPersonPreview data submodel
+
+        Talking _ _ ->
+            text "branch 'Talking _ _' not implemented"
 
 
-viewPerson : Float -> Person -> List (Element msg)
-viewPerson scale person =
+viewPerson : Float -> Bool -> Id -> Person -> List (Element FrontendMsg)
+viewPerson scale selected id person =
     let
         city =
             person.city
@@ -57,10 +78,17 @@ viewPerson scale person =
             Pins.northEastToXY
                 city.coordinates.north
                 city.coordinates.east
+
+        btn attrs child =
+            Input.button
+                attrs
+                { onPress = Just <| ViewPerson id
+                , label = el [ Theme.padding ] child
+                }
     in
-    [ el
-        [ Element.moveDown <| scale * y - Theme.rythm / 2
-        , Element.moveRight <| scale * x - Theme.rythm / 2
+    [ btn
+        [ Element.moveDown <| scale * y + Theme.rythm * -1.5
+        , Element.moveRight <| scale * x + Theme.rythm * -1.5
         , Border.width 1
         , Background.color Theme.colors.delete
         , Border.rounded Theme.rythm
@@ -68,84 +96,106 @@ viewPerson scale person =
         , height <| px Theme.rythm
         ]
         Element.none
-    , el
-        [ Element.moveDown <| scale * y - Theme.rythm * 1.8
-        , Element.moveRight <| scale * x + Theme.rythm
-        , Border.width 1
-        , Background.color Theme.colors.semitransparent
+    , btn
+        [ Element.moveDown <| scale * y + Theme.rythm * -2.8
+        , Element.moveRight <| scale * x + Theme.rythm * 0
+        , Border.width <|
+            if selected then
+                2
+
+            else
+                1
+        , Background.color <|
+            if selected then
+                Theme.colors.addNew
+
+            else
+                Theme.colors.semitransparent
+        , if selected then
+            Font.bold
+
+          else
+            Font.regular
         , Border.rounded Theme.rythm
-        , Theme.padding
         ]
         (text city.name)
     ]
 
 
-viewPersonPreview : Int -> Person -> Element msg
-viewPersonPreview scale person =
-    let
-        city =
-            person.city
+viewPersonPreview : Data -> { currentPerson : Id } -> Element msg
+viewPersonPreview data { currentPerson } =
+    case Dict.get currentPerson data of
+        Nothing ->
+            text "TODO - MISSING PERSON"
 
-        shadowBox attrs =
-            el
-                ([ Element.padding scale
-                 , Border.rounded scale
-                 , Background.color Theme.colors.semitransparent
-                 ]
-                    ++ attrs
-                )
+        Just person ->
+            let
+                scale =
+                    10
 
-        viewMarked input =
-            input
-                |> String.split "  "
-                |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
-                |> List.filterMap
-                    (\g ->
-                        g
-                            |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
-                            |> Result.toMaybe
-                            |> Maybe.map
-                                (\ls ->
-                                    paragraph [ width fill ] <|
-                                        List.map (Element.el [] << Element.html) ls
-                                )
-                    )
-                |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
-    in
-    column
-        [ Background.image city.image
-        , width <| px <| scale * 80
-        , height <| px <| scale * 45
-        , Border.width 1
-        , Font.size <| scale * 3
-        ]
-        [ el [ padding scale, centerX ] <|
-            shadowBox
-                [ paddingEach
-                    { left = scale
-                    , top = scale
-                    , right = scale
-                    , bottom = scale * 5 // 2
-                    }
-                , Font.size <| scale * 6
+                city =
+                    person.city
+
+                shadowBox attrs =
+                    el
+                        ([ Element.padding scale
+                         , Border.rounded scale
+                         , Background.color Theme.colors.semitransparent
+                         ]
+                            ++ attrs
+                        )
+
+                viewMarked input =
+                    input
+                        |> String.split "  "
+                        |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
+                        |> List.filterMap
+                            (\g ->
+                                g
+                                    |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
+                                    |> Result.toMaybe
+                                    |> Maybe.map
+                                        (\ls ->
+                                            paragraph [ width fill ] <|
+                                                List.map (Element.el [] << Element.html) ls
+                                        )
+                            )
+                        |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
+            in
+            column
+                [ Background.image city.image
+                , width <| px <| scale * 80
+                , height <| px <| scale * 45
+                , Border.width 1
+                , Font.size <| scale * 3
                 ]
-                (text city.name)
-        , row [ padding scale, spacing scale, width fill, height fill ]
-            [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
-            , shadowBox
-                [ height fill
-                , alignRight
-                , width <| px <| scale * 22
-                ]
-                (column [ centerY, spacing scale ]
-                    [ el [ centerX ] <| text person.name
-                    , image
-                        [ width <| px <| scale * 20
+                [ el [ padding scale, centerX ] <|
+                    shadowBox
+                        [ paddingEach
+                            { left = scale
+                            , top = scale
+                            , right = scale
+                            , bottom = scale * 5 // 2
+                            }
+                        , Font.size <| scale * 6
                         ]
-                        { description = "Person avatar"
-                        , src = person.image
-                        }
+                        (text city.name)
+                , row [ padding scale, spacing scale, width fill, height fill ]
+                    [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
+                    , shadowBox
+                        [ height fill
+                        , alignRight
+                        , width <| px <| scale * 22
+                        ]
+                        (column [ centerY, spacing scale ]
+                            [ el [ centerX ] <| text person.name
+                            , image
+                                [ width <| px <| scale * 20
+                                ]
+                                { description = "Person avatar"
+                                , src = person.image
+                                }
+                            ]
+                        )
                     ]
-                )
-            ]
-        ]
+                ]
