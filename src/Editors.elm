@@ -1,8 +1,8 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nextDefault, nextEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
 
 {-| 
 
-@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
+@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, nextEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, nextDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
 
 -}
@@ -425,155 +425,112 @@ idEditor level value =
 
 dialogEditor : Int -> Model.Dialog -> ( Element.Element Model.Dialog, Bool )
 dialogEditor level value =
-    ( let
-        { textStringchoicesListChoiceExtracted } =
-          case value of
-              Model.Dialog textStringchoicesListChoice ->
-                  { extractedDefault
-                      | textStringchoicesListChoiceExtracted =
-                          textStringchoicesListChoice
-                  }
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.text
+              in
+              ( "Text"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | text = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "Choice"
+                      choiceEditor
+                      choiceDefault
+                      (level + 1)
+                      value.choices
+              in
+              ( "Choices"
+              , Element.map
+                  (\lambdaArg0 ->
+                      let
+                          updating =
+                              value
+                      in
+                      { updating | choices = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            ]
 
-        extractedDefault =
-          { textStringchoicesListChoiceExtracted = { text = "", choices = [] } }
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
 
-        inputsRow =
-          case value of
-              Model.Dialog textStringchoicesListChoice ->
-                  [ Element.map
-                      Model.Dialog
-                      (Tuple.first
-                          (let
-                              raw =
-                                 [ let
-                                     ( editor, simple ) =
-                                       stringEditor
-                                           (level - 1 + 1 + 1)
-                                           textStringchoicesListChoice.text
-                                   in
-                                   ( "Text"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   textStringchoicesListChoice
-                                           in
-                                           { updating | text = lambdaArg0 }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       listEditor
-                                           "Choice"
-                                           choiceEditor
-                                           choiceDefault
-                                           (level - 1 + 1 + 1)
-                                           textStringchoicesListChoice.choices
-                                   in
-                                   ( "Choices"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   textStringchoicesListChoice
-                                           in
-                                           { updating | choices = lambdaArg0 }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 ]
+                        else
+                            Maybe.Nothing
+                    )
 
-                              simples =
-                                 raw
-                                     |> List.filterMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 Maybe.Just
-                                                     ( Element.el
-                                                         [ Element.centerY ]
-                                                         (Element.text fieldName
-                                                         )
-                                                     , fieldEditor
-                                                     )
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
-                                             else
-                                                 Maybe.Nothing
-                                         )
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
 
-                              simplesTable =
-                                 if List.length simples <= 2 then
-                                     simples
-                                         |> List.map
-                                             (\pair ->
-                                                 Element.row
-                                                     [ Theme.spacing
-                                                     , Element.width
-                                                         Element.fill
-                                                     ]
-                                                     [ Tuple.first pair
-                                                     , Tuple.second pair
-                                                     ]
-                                             )
-                                         |> Element.row
-                                             [ Theme.spacing
-                                             , Element.width Element.fill
-                                             ]
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
 
-                                 else
-                                     Element.table
-                                         [ Theme.spacing
-                                         , Element.width Element.fill
-                                         ]
-                                         { columns =
-                                             [ { header = Element.none
-                                               , width = Element.shrink
-                                               , view =
-                                                   \pair -> Tuple.first pair
-                                               }
-                                             , { header = Element.none
-                                               , width = Element.fill
-                                               , view =
-                                                   \pair -> Tuple.second pair
-                                               }
-                                             ]
-                                         , data = simples
-                                         }
-
-                              complexes =
-                                 raw
-                                     |> List.concatMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 []
-
-                                             else
-                                                 [ Element.text fieldName
-                                                 , fieldEditor
-                                                 ]
-                                         )
-                           in
-                           ( Element.column
-                               [ Element.width Element.fill
-                               , Background.color
-                                   (Theme.getColor (level - 1 + 1))
-                               , Element.width Element.fill
-                               , Theme.spacing
-                               , Theme.padding
-                               , Element.alignTop
-                               , Border.width 1
-                               , Border.rounded Theme.rythm
-                               ]
-                               (simplesTable :: complexes)
-                           , Basics.False
-                           )
-                          )
-                      )
-                  ]
-      in
-      Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
+    ( Element.column
+        [ Element.width Element.fill
+        , Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -600,12 +557,7 @@ choiceEditor level value =
               )
             , let
                 ( editor, simple ) =
-                  maybeEditor
-                      "Dialog"
-                      dialogEditor
-                      dialogDefault
-                      (level + 1)
-                      value.next
+                  nextEditor (level + 1) value.next
               in
               ( "Next"
               , Element.map
@@ -686,6 +638,61 @@ choiceEditor level value =
         , Border.rounded Theme.rythm
         ]
         (simplesTable :: complexes)
+    , Basics.False
+    )
+
+
+nextEditor : Int -> Model.Next -> ( Element.Element Model.Next, Bool )
+nextEditor level value =
+    ( let
+        { dialogExtracted } =
+          case value of
+              Model.NextDialog dialog ->
+                  { extractedDefault | dialogExtracted = dialog }
+
+              Model.NextViewMap ->
+                  extractedDefault
+
+        extractedDefault =
+          { dialogExtracted = dialogDefault }
+
+        variantRow =
+          Input.radioRow
+              [ Theme.spacing ]
+              { onChange = Basics.identity
+              , options =
+                  [ Input.option
+                      (Model.NextDialog dialogExtracted)
+                      (Element.text "Dialog")
+                  , Input.option Model.NextViewMap (Element.text "View map")
+                  ]
+              , selected = Maybe.Just value
+              , label = Input.labelHidden ""
+              }
+
+        inputsRow =
+          case value of
+              Model.NextDialog dialog ->
+                  [ Element.map
+                      Model.NextDialog
+                      (Tuple.first (dialogEditor (level + 1) dialog))
+                  ]
+
+              Model.NextViewMap ->
+                  []
+      in
+      Element.column
+          [ Background.color (Theme.getColor level)
+          , Element.width Element.fill
+          , Theme.spacing
+          , Theme.padding
+          , Element.alignTop
+          , Border.width 1
+          , Border.rounded Theme.rythm
+          ]
+          [ variantRow
+          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+          ]
     , Basics.False
     )
 
@@ -1567,12 +1574,17 @@ idDefault =
 
 dialogDefault : Model.Dialog
 dialogDefault =
-    Model.Dialog { text = "", choices = [] }
+    { text = "", choices = [] }
 
 
 choiceDefault : Model.Choice
 choiceDefault =
-    { text = "", next = Maybe.Nothing }
+    { text = "", next = nextDefault }
+
+
+nextDefault : Model.Next
+nextDefault =
+    Model.NextDialog dialogDefault
 
 
 consequenceDefault : Model.Consequence

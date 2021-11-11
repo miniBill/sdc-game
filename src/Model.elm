@@ -6,10 +6,11 @@ module Model exposing
     , Consequence(..)
     , Coordinates
     , Data
-    , Dialog(..)
+    , Dialog
     , Id
     , Item(..)
     , ItemName(..)
+    , Next(..)
     , Person
     , TransportKind(..)
     )
@@ -51,17 +52,21 @@ type alias Id =
     String
 
 
-type Dialog
-    = Dialog
-        { text : String
-        , choices : List Choice
-        }
+type alias Dialog =
+    { text : String
+    , choices : List Choice
+    }
 
 
 type alias Choice =
     { text : String
-    , next : Maybe Dialog
+    , next : Next
     }
+
+
+type Next
+    = NextDialog Dialog
+    | NextViewMap
 
 
 type Consequence

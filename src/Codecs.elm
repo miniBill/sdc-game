@@ -1,8 +1,8 @@
-module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, personCodec, transportKindCodec)
+module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, nextCodec, personCodec, transportKindCodec)
 
 {-| 
 
-@docs dataCodec, cityCodec, coordinatesCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+@docs dataCodec, cityCodec, coordinatesCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, nextCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
 
 
 -}
@@ -64,25 +64,36 @@ idCodec =
 
 dialogCodec : Codec.Codec Model.Dialog
 dialogCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.map
-                Model.Dialog
-                (\(Model.Dialog inner) -> inner)
-                (Codec.object
-                  (\text choices -> { text = text, choices = choices })
-                    |> Codec.field "text" .text Codec.string
-                    |> Codec.field "choices" .choices (Codec.list choiceCodec)
-                    |> Codec.buildObject
-                )
+    Codec.object (\text choices -> { text = text, choices = choices })
+        |> Codec.field "text" .text Codec.string
+        |> Codec.field "choices" .choices (Codec.list choiceCodec)
+        |> Codec.buildObject
 
 
 choiceCodec : Codec.Codec Model.Choice
 choiceCodec =
     Codec.object (\text next -> { text = text, next = next })
         |> Codec.field "text" .text Codec.string
-        |> Codec.maybeField "next" .next dialogCodec
+        |> Codec.field "next" .next nextCodec
         |> Codec.buildObject
+
+
+nextCodec : Codec.Codec Model.Next
+nextCodec =
+    Codec.lazy <|
+        \() ->
+            Codec.custom
+             (\fnextDialog fnextViewMap value ->
+                 case value of
+                     Model.NextDialog arg0 ->
+                         fnextDialog arg0
+
+                     Model.NextViewMap ->
+                         fnextViewMap
+             )
+                |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
+                |> Codec.variant0 "NextViewMap" Model.NextViewMap
+                |> Codec.buildCustom
 
 
 consequenceCodec : Codec.Codec Model.Consequence

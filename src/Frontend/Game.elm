@@ -10,7 +10,7 @@ import Frontend.Common
 import Html.Attributes
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Choice, Data, Dialog(..), Id, Person)
+import Model exposing (Choice, Data, Dialog, Id, Next(..), Person)
 import Pins
 import Theme exposing (column, row)
 import Types exposing (FrontendMsg(..), GameModel(..))
@@ -64,10 +64,18 @@ viewGame model =
                 }
 
         ViewingPerson data submodel ->
-            viewPerson data submodel
+            let
+                scale =
+                    10
+            in
+            viewPerson scale data submodel
 
         Talking data submodel ->
-            viewTalking data submodel
+            let
+                scale =
+                    10
+            in
+            viewTalking scale data submodel
 
 
 viewPinOnMap : Float -> Bool -> Id -> Person -> List (Element FrontendMsg)
@@ -124,35 +132,35 @@ viewPinOnMap scale selected id person =
     ]
 
 
-viewPerson : Data -> { currentPerson : Id } -> Element FrontendMsg
-viewPerson data { currentPerson } =
+viewPerson : Int -> Data -> { currentPerson : Id } -> Element FrontendMsg
+viewPerson scale data { currentPerson } =
     case Dict.get currentPerson data of
         Nothing ->
             text "TODO - MISSING PERSON"
 
         Just person ->
-            withPerson person <|
+            withPerson scale person <|
                 Theme.button [ centerX, centerY ]
                     { onPress = Just <| TalkTo currentPerson person.dialog
                     , label = text <| "Talk to " ++ person.name
                     }
 
 
-viewTalking : Data -> { currentDialog : Dialog, currentPerson : Id } -> Element FrontendMsg
-viewTalking data { currentDialog, currentPerson } =
+viewTalking : Int -> Data -> { currentDialog : Dialog, currentPerson : Id } -> Element FrontendMsg
+viewTalking scale data { currentDialog, currentPerson } =
     case Dict.get currentPerson data of
         Nothing ->
             text "TODO - MISSING PERSON"
 
         Just person ->
-            withPerson person <|
-                viewDialog currentPerson currentDialog
+            withPerson scale person <|
+                viewDialog scale currentPerson currentDialog
 
 
-viewDialog : Id -> Dialog -> Element FrontendMsg
-viewDialog currentPerson (Dialog { text, choices }) =
+viewDialog : Int -> Id -> Dialog -> Element FrontendMsg
+viewDialog scale currentPerson { text, choices } =
     Theme.column []
-        [ Element.text text
+        [ viewMarked scale text
         , choices
             |> List.map (viewChoice currentPerson)
             |> Theme.row []
@@ -166,21 +174,19 @@ viewChoice currentPerson { text, next } =
             paragraph [ width fill ]
                 [ Element.text text ]
         , onPress =
-            case next of
-                Just n ->
-                    Just <| TalkTo currentPerson n
+            Just <|
+                case next of
+                    NextDialog n ->
+                        TalkTo currentPerson n
 
-                Nothing ->
-                    Just <| ViewMap currentPerson
+                    NextViewMap ->
+                        ViewMap currentPerson
         }
 
 
-withPerson : Person -> Element FrontendMsg -> Element FrontendMsg
-withPerson person inner =
+withPerson : Int -> Person -> Element FrontendMsg -> Element FrontendMsg
+withPerson scale person inner =
     let
-        scale =
-            10
-
         city =
             person.city
 
@@ -200,7 +206,7 @@ withPerson person inner =
                 , height <| px <| scale * 45
                 , Element.htmlAttribute <| Html.Attributes.style "background-image" <| "url('" ++ city.image ++ "')"
                 , Element.htmlAttribute <| Html.Attributes.style "background-position" "center"
-                , Element.htmlAttribute <| Html.Attributes.style "background-size" "contain"
+                , Element.htmlAttribute <| Html.Attributes.style "background-size" "cover"
                 ]
                 Element.none
         , width <| px <| scale * 80
