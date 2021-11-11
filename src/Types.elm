@@ -55,6 +55,8 @@ type FrontendMsg
     | UpdatePerson Id (Maybe Person)
       -- Game
     | ViewPerson Id
+    | TalkTo Id Dialog
+    | ViewMap Id
 
 
 type ToBackend

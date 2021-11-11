@@ -110,9 +110,7 @@ gotGameData data =
             |> List.Extra.find (\( _, p ) -> p.name == "Orla")
     of
         Just ( id, _ ) ->
-            ViewingMap
-                data
-                { currentPerson = id }
+            ViewingPerson data { currentPerson = id }
 
         Nothing ->
             DataEmpty
@@ -230,6 +228,12 @@ update msg model =
         ( ViewPerson _, Editor _ _ ) ->
             ( model, Cmd.none )
 
+        ( ViewMap _, Editor _ _ ) ->
+            ( model, Cmd.none )
+
+        ( TalkTo _ _, Editor _ _ ) ->
+            ( model, Cmd.none )
+
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
@@ -298,7 +302,49 @@ update msg model =
             , Cmd.none
             )
 
+        ( ViewMap id, Game (ViewingPerson data _) ) ->
+            ( { model
+                | page =
+                    Game
+                        (ViewingMap data { currentPerson = id })
+              }
+            , Cmd.none
+            )
+
+        ( ViewMap id, Game (Talking data _) ) ->
+            ( { model
+                | page =
+                    Game
+                        (ViewingMap data { currentPerson = id })
+              }
+            , Cmd.none
+            )
+
+        ( TalkTo id dialog, Game (ViewingPerson data _) ) ->
+            ( { model
+                | page =
+                    Game
+                        (Talking data { currentPerson = id, currentDialog = dialog })
+              }
+            , Cmd.none
+            )
+
+        ( TalkTo id dialog, Game (Talking data _) ) ->
+            ( { model
+                | page =
+                    Game
+                        (Talking data { currentPerson = id, currentDialog = dialog })
+              }
+            , Cmd.none
+            )
+
+        ( TalkTo _ _, Game _ ) ->
+            ( model, Cmd.none )
+
         ( ViewPerson _, Game _ ) ->
+            ( model, Cmd.none )
+
+        ( ViewMap _, Game _ ) ->
             ( model, Cmd.none )
 
 

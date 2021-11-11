@@ -1,15 +1,16 @@
 module Frontend.Game exposing (viewGame)
 
 import Dict
-import Element exposing (Element, alignRight, alignTop, centerX, centerY, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, spacing, text, width)
+import Element exposing (Element, alignRight, alignTop, centerX, centerY, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, spacing, text, textColumn, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Frontend.Common
+import Html.Attributes
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Data, Id, Person)
+import Model exposing (Choice, Data, Dialog(..), Id, Person)
 import Pins
 import Theme exposing (column, row)
 import Types exposing (FrontendMsg(..), GameModel(..))
@@ -27,7 +28,7 @@ viewGame model =
         ViewingMap data { currentPerson } ->
             let
                 scale =
-                    0.5
+                    0.65
 
                 originalWidth =
                     1830
@@ -39,6 +40,7 @@ viewGame model =
                     [ width (px scaledWidth)
                     , centerX
                     , centerY
+                    , Font.size <| round <| 22 * scale
                     ]
 
                 attrs =
@@ -49,7 +51,7 @@ viewGame model =
                         |> Dict.toList
                         |> List.concatMap
                             (\( personId, person ) ->
-                                viewPerson scale
+                                viewPinOnMap scale
                                     (personId == currentPerson)
                                     personId
                                     person
@@ -62,14 +64,14 @@ viewGame model =
                 }
 
         ViewingPerson data submodel ->
-            viewPersonPreview data submodel
+            viewPerson data submodel
 
-        Talking _ _ ->
-            text "branch 'Talking _ _' not implemented"
+        Talking data submodel ->
+            viewTalking data submodel
 
 
-viewPerson : Float -> Bool -> Id -> Person -> List (Element FrontendMsg)
-viewPerson scale selected id person =
+viewPinOnMap : Float -> Bool -> Id -> Person -> List (Element FrontendMsg)
+viewPinOnMap scale selected id person =
     let
         city =
             person.city
@@ -83,7 +85,7 @@ viewPerson scale selected id person =
             Input.button
                 attrs
                 { onPress = Just <| ViewPerson id
-                , label = el [ Theme.padding ] child
+                , label = el [ padding <| Theme.rythm // 2 ] child
                 }
     in
     [ btn
@@ -122,80 +124,149 @@ viewPerson scale selected id person =
     ]
 
 
-viewPersonPreview : Data -> { currentPerson : Id } -> Element msg
-viewPersonPreview data { currentPerson } =
+viewPerson : Data -> { currentPerson : Id } -> Element FrontendMsg
+viewPerson data { currentPerson } =
     case Dict.get currentPerson data of
         Nothing ->
             text "TODO - MISSING PERSON"
 
         Just person ->
-            let
-                scale =
-                    10
+            withPerson person <|
+                Theme.button [ centerX, centerY ]
+                    { onPress = Just <| TalkTo currentPerson person.dialog
+                    , label = text <| "Talk to " ++ person.name
+                    }
 
-                city =
-                    person.city
 
-                shadowBox attrs =
-                    el
-                        ([ Element.padding scale
-                         , Border.rounded scale
-                         , Background.color Theme.colors.semitransparent
-                         ]
-                            ++ attrs
-                        )
+viewTalking : Data -> { currentDialog : Dialog, currentPerson : Id } -> Element FrontendMsg
+viewTalking data { currentDialog, currentPerson } =
+    case Dict.get currentPerson data of
+        Nothing ->
+            text "TODO - MISSING PERSON"
 
-                viewMarked input =
-                    input
-                        |> String.split "  "
-                        |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
-                        |> List.filterMap
-                            (\g ->
-                                g
-                                    |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
-                                    |> Result.toMaybe
-                                    |> Maybe.map
-                                        (\ls ->
-                                            paragraph [ width fill ] <|
-                                                List.map (Element.el [] << Element.html) ls
-                                        )
-                            )
-                        |> column [ spacing scale, width <| px <| scale * (80 - 28) ]
-            in
-            column
-                [ Background.image city.image
-                , width <| px <| scale * 80
+        Just person ->
+            withPerson person <|
+                viewDialog currentPerson currentDialog
+
+
+viewDialog : Id -> Dialog -> Element FrontendMsg
+viewDialog currentPerson (Dialog { text, choices }) =
+    Theme.column []
+        [ Element.text text
+        , choices
+            |> List.map (viewChoice currentPerson)
+            |> Theme.row []
+        ]
+
+
+viewChoice : Id -> Choice -> Element FrontendMsg
+viewChoice currentPerson { text, next } =
+    Theme.button [ width fill ]
+        { label =
+            paragraph [ width fill ]
+                [ Element.text text ]
+        , onPress =
+            case next of
+                Just n ->
+                    Just <| TalkTo currentPerson n
+
+                Nothing ->
+                    Just <| ViewMap currentPerson
+        }
+
+
+withPerson : Person -> Element FrontendMsg -> Element FrontendMsg
+withPerson person inner =
+    let
+        scale =
+            10
+
+        city =
+            person.city
+
+        shadowBox attrs =
+            el
+                ([ Element.padding scale
+                 , Border.rounded scale
+                 , Background.color Theme.colors.semitransparent
+                 ]
+                    ++ attrs
+                )
+    in
+    column
+        [ Element.behindContent <|
+            Element.el
+                [ width <| px <| scale * 80
                 , height <| px <| scale * 45
-                , Border.width 1
+                , Element.htmlAttribute <| Html.Attributes.style "background-image" <| "url('" ++ city.image ++ "')"
+                , Element.htmlAttribute <| Html.Attributes.style "background-position" "center"
+                , Element.htmlAttribute <| Html.Attributes.style "background-size" "contain"
+                ]
+                Element.none
+        , width <| px <| scale * 80
+        , height <| px <| scale * 45
+        , Border.width 1
+        , Font.size <| scale * 3
+        ]
+        [ el [ centerX ] <|
+            shadowBox
+                [ paddingEach
+                    { left = scale
+                    , top = scale
+                    , right = scale
+                    , bottom = scale * 5 // 2
+                    }
                 , Font.size <| scale * 3
                 ]
-                [ el [ padding scale, centerX ] <|
-                    shadowBox
-                        [ paddingEach
-                            { left = scale
-                            , top = scale
-                            , right = scale
-                            , bottom = scale * 5 // 2
-                            }
-                        , Font.size <| scale * 6
-                        ]
-                        (text city.name)
-                , row [ padding scale, spacing scale, width fill, height fill ]
-                    [ shadowBox [ alignTop, height fill ] <| viewMarked city.text
-                    , shadowBox
-                        [ height fill
-                        , alignRight
-                        , width <| px <| scale * 22
-                        ]
-                        (column [ centerY, spacing scale ]
-                            [ el [ centerX ] <| text person.name
-                            , image
-                                [ width <| px <| scale * 20
-                                ]
-                                { description = "Person avatar"
-                                , src = person.image
-                                }
-                            ]
-                        )
+                (textColumn
+                    [ spacing scale
+                    , Font.center
                     ]
+                    [ paragraph [ Font.bold ] [ text city.name ]
+                    , paragraph [] [ text city.text ]
+                    ]
+                )
+        , row [ spacing <| 2 * scale, width fill, height fill ]
+            [ shadowBox [ alignTop, height fill, width fill ] inner
+            , shadowBox
+                [ height fill
+                , alignRight
+                , width <| px <| scale * 26
+                , centerX
                 ]
+                (column
+                    [ centerX
+                    , centerY
+                    , spacing scale
+                    ]
+                    [ el [ centerX ] <| text person.name
+                    , image
+                        [ width <| px <| scale * 20
+                        , centerX
+                        ]
+                        { description = "Person avatar"
+                        , src = person.image
+                        }
+                    ]
+                )
+            ]
+        ]
+
+
+viewMarked : Int -> String -> Element msg
+viewMarked scale input =
+    input
+        |> String.split "  "
+        |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
+        |> List.filterMap
+            (\g ->
+                g
+                    |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
+                    |> Result.toMaybe
+                    |> Maybe.map
+                        (\ls ->
+                            paragraph [ width fill ] <|
+                                List.map (Element.el [] << Element.html) ls
+                        )
+            )
+        |> textColumn [ spacing scale ]

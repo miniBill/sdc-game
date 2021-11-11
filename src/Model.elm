@@ -1,12 +1,12 @@
 module Model exposing
-    ( Choice(..)
+    ( Choice
     , City
     , CityName
     , Condition(..)
     , Consequence(..)
     , Coordinates
     , Data
-    , Dialog
+    , Dialog(..)
     , Id
     , Item(..)
     , ItemName(..)
@@ -43,7 +43,7 @@ type alias Person =
     { name : String
     , city : City
     , image : String
-    , dialogs : List Dialog
+    , dialog : Dialog
     }
 
 
@@ -51,17 +51,17 @@ type alias Id =
     String
 
 
-type alias Dialog =
-    { text : String
-    , choices : List Choice
-    }
-
-
-type Choice
-    = Choice
+type Dialog
+    = Dialog
         { text : String
-        , next : Maybe Dialog
+        , choices : List Choice
         }
+
+
+type alias Choice =
+    { text : String
+    , next : Maybe Dialog
+    }
 
 
 type Consequence

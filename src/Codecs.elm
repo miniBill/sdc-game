@@ -47,13 +47,13 @@ cityNameCodec =
 personCodec : Codec.Codec Model.Person
 personCodec =
     Codec.object
-     (\name city image dialogs ->
-         { name = name, city = city, image = image, dialogs = dialogs }
+     (\name city image dialog ->
+         { name = name, city = city, image = image, dialog = dialog }
      )
         |> Codec.field "name" .name Codec.string
         |> Codec.field "city" .city cityCodec
         |> Codec.field "image" .image Codec.string
-        |> Codec.field "dialogs" .dialogs (Codec.list dialogCodec)
+        |> Codec.field "dialog" .dialog dialogCodec
         |> Codec.buildObject
 
 
@@ -64,24 +64,25 @@ idCodec =
 
 dialogCodec : Codec.Codec Model.Dialog
 dialogCodec =
-    Codec.object (\text choices -> { text = text, choices = choices })
-        |> Codec.field "text" .text Codec.string
-        |> Codec.field "choices" .choices (Codec.list choiceCodec)
-        |> Codec.buildObject
+    Codec.lazy <|
+        \() ->
+            Codec.map
+                Model.Dialog
+                (\(Model.Dialog inner) -> inner)
+                (Codec.object
+                  (\text choices -> { text = text, choices = choices })
+                    |> Codec.field "text" .text Codec.string
+                    |> Codec.field "choices" .choices (Codec.list choiceCodec)
+                    |> Codec.buildObject
+                )
 
 
 choiceCodec : Codec.Codec Model.Choice
 choiceCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.map
-                Model.Choice
-                (\(Model.Choice inner) -> inner)
-                (Codec.object (\text next -> { text = text, next = next })
-                    |> Codec.field "text" .text Codec.string
-                    |> Codec.maybeField "next" .next dialogCodec
-                    |> Codec.buildObject
-                )
+    Codec.object (\text next -> { text = text, next = next })
+        |> Codec.field "text" .text Codec.string
+        |> Codec.maybeField "next" .next dialogCodec
+        |> Codec.buildObject
 
 
 consequenceCodec : Codec.Codec Model.Consequence
