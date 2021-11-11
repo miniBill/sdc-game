@@ -1,15 +1,18 @@
 module Frontend exposing (app)
 
 import Browser exposing (UrlRequest(..))
+import Browser.Dom
+import Browser.Events
 import Browser.Navigation as Nav
 import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, fill, height, width)
+import Element exposing (Element, el, fill, height, width)
 import File
 import File.Download
 import File.Select
+import Frontend.Common
 import Frontend.Editor
 import Frontend.Game
 import Hex
@@ -194,19 +197,37 @@ init : Url -> Key -> ( FrontendModel, Cmd FrontendMsg )
 init url key =
     ( { key = key
       , page = urlToPage url
+      , size = Nothing
       }
-    , Cmd.none
+    , Browser.Dom.getViewport
+        |> Task.perform
+            (\{ viewport } ->
+                Resized
+                    (floor viewport.width)
+                    (floor viewport.height)
+            )
     )
 
 
 subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions _ =
-    Sub.none
+    Browser.Events.onResize Resized
 
 
 update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case ( msg, model.page ) of
+        ( Resized width height, _ ) ->
+            ( { model
+                | size =
+                    Just
+                        { width = width
+                        , height = height
+                        }
+              }
+            , Cmd.none
+            )
+
         ( _, Editor Nothing _ ) ->
             ( model, Cmd.none )
 
@@ -350,9 +371,13 @@ update msg model =
 
 view : FrontendModel -> Element FrontendMsg
 view model =
-    case model.page of
-        Game gameModel ->
-            Frontend.Game.view gameModel
+    case ( model.page, model.size ) of
+        ( Game _, Nothing ) ->
+            Frontend.Common.loading
 
-        Editor data editorModel ->
+        ( Game gameModel, Just size ) ->
+            el [ width fill, height fill ] <|
+                Frontend.Game.view size gameModel
+
+        ( Editor data editorModel, _ ) ->
             Frontend.Editor.view data editorModel

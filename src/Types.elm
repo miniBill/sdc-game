@@ -12,7 +12,14 @@ import Set exposing (Set)
 
 type alias FrontendModel =
     { key : Key
+    , size : Maybe Size
     , page : Page
+    }
+
+
+type alias Size =
+    { width : Int
+    , height : Int
     }
 
 
@@ -42,8 +49,10 @@ type alias BackendModel =
 
 
 type FrontendMsg
-    = -- URL management
-      UrlClicked UrlRequest
+    = -- Size
+      Resized Int Int
+      -- URL management
+    | UrlClicked UrlRequest
     | UrlChanged Url
       -- File management
     | FileSelect

@@ -13,11 +13,18 @@ import Markdown.Renderer
 import Model exposing (Choice, Data, Dialog, Id, Next(..), Person)
 import Pins
 import Theme exposing (column, row)
-import Types exposing (FrontendMsg(..), GameModel(..))
+import Types exposing (FrontendMsg(..), GameModel(..), Size)
 
 
-view : GameModel -> Element FrontendMsg
-view model =
+mapSize : { width : number, height : number }
+mapSize =
+    { width = 1830
+    , height = 1640
+    }
+
+
+view : Size -> GameModel -> Element FrontendMsg
+view size model =
     case model of
         LoadingData ->
             Frontend.Common.loading
@@ -27,20 +34,14 @@ view model =
 
         ViewingMap data { currentPerson } ->
             let
-                scale =
-                    0.65
-
-                originalWidth =
-                    1830
-
-                scaledWidth =
-                    round <| scale * originalWidth
+                proportionalHeight =
+                    mapSize.height * size.height // mapSize.width
 
                 normalAttrs =
-                    [ width (px scaledWidth)
-                    , centerX
+                    [ width <| px size.width
+                    , height <| px proportionalHeight
                     , centerY
-                    , Font.size <| round <| 22 * scale
+                    , Font.size <| size.width // 200
                     ]
 
                 attrs =
@@ -51,7 +52,7 @@ view model =
                         |> Dict.toList
                         |> List.concatMap
                             (\( personId, person ) ->
-                                viewPinOnMap scale
+                                viewPinOnMap { size | height = proportionalHeight }
                                     (personId == currentPerson)
                                     personId
                                     person
@@ -78,8 +79,8 @@ view model =
             viewTalking scale data submodel
 
 
-viewPinOnMap : Float -> Bool -> Id -> Person -> List (Element FrontendMsg)
-viewPinOnMap scale selected id person =
+viewPinOnMap : Size -> Bool -> Id -> Person -> List (Element FrontendMsg)
+viewPinOnMap size selected id person =
     let
         city =
             person.city
@@ -95,6 +96,9 @@ viewPinOnMap scale selected id person =
                 { onPress = Just <| ViewPerson id
                 , label = el [ padding <| Theme.rythm // 2 ] child
                 }
+
+        scale =
+            toFloat size.width / mapSize.width
     in
     [ btn
         [ Element.moveDown <| scale * y + Theme.rythm * -1.5
