@@ -1,4 +1,4 @@
-module Frontend.Editor exposing (viewEditor)
+module Frontend.Editor exposing (view)
 
 import Dict
 import Editors
@@ -12,8 +12,8 @@ import Theme
 import Types exposing (EditorModel, FrontendMsg(..))
 
 
-viewEditor : Maybe Data -> EditorModel -> Element FrontendMsg
-viewEditor data editorModel =
+view : Maybe Data -> EditorModel -> Element FrontendMsg
+view data editorModel =
     case data of
         Nothing ->
             Frontend.Common.loading

@@ -1,4 +1,4 @@
-module Frontend.Game exposing (viewGame)
+module Frontend.Game exposing (view)
 
 import Dict
 import Element exposing (Element, alignRight, alignTop, centerX, centerY, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, spacing, text, textColumn, width)
@@ -16,8 +16,8 @@ import Theme exposing (column, row)
 import Types exposing (FrontendMsg(..), GameModel(..))
 
 
-viewGame : GameModel -> Element FrontendMsg
-viewGame model =
+view : GameModel -> Element FrontendMsg
+view model =
     case model of
         LoadingData ->
             Frontend.Common.loading

@@ -10,8 +10,8 @@ import Element exposing (Element, fill, height, width)
 import File
 import File.Download
 import File.Select
-import Frontend.Editor exposing (viewEditor)
-import Frontend.Game exposing (viewGame)
+import Frontend.Editor
+import Frontend.Game
 import Hex
 import Html
 import Json.Decode
@@ -352,7 +352,7 @@ view : FrontendModel -> Element FrontendMsg
 view model =
     case model.page of
         Game gameModel ->
-            viewGame gameModel
+            Frontend.Game.view gameModel
 
         Editor data editorModel ->
-            viewEditor data editorModel
+            Frontend.Editor.view data editorModel
