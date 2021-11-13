@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Element, Orientation(..), alignRight, alignTop, centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
+import Element.WithUnits as Element exposing (Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
