@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, spacing, text, textColumn, width, withOrientation)
+module Element.WithUnits exposing (Attribute, Element, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, spacing, text, textColumn, todo, width, withOrientation)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -202,3 +202,8 @@ withOrientation f =
             run size <|
                 f orientation
         )
+
+
+todo : String -> Element msg
+todo msg =
+    Element (\_ -> Debug.todo <| "Element.todo " ++ msg)

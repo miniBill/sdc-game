@@ -10,6 +10,7 @@ import Element.WithUnits.Input as Input
 import Frontend.Common
 import Html.Attributes
 import Length exposing (Length)
+import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (Choice, Data, Dialog, Id, Next(..), Person)
@@ -170,7 +171,7 @@ viewTalking data { currentDialog, currentPerson } =
 
 viewDialog : Id -> Dialog -> Element FrontendMsg
 viewDialog currentPerson { text, choices } =
-    column []
+    column [ spacing rythm ]
         [ viewMarked text
         , choices
             |> List.map (viewChoice currentPerson)
@@ -182,13 +183,13 @@ viewChoice : Id -> Choice -> Element FrontendMsg
 viewChoice currentPerson { text, next } =
     Input.button [ width fill ]
         { label =
-            paragraph
+            el
                 [ Border.rounded rythm
                 , padding rythm
                 , Border.width borderWidth
                 , width fill
                 ]
-                [ Element.text text ]
+                (viewMarked text)
         , onPress =
             Just <|
                 case next of
@@ -297,18 +298,39 @@ withPerson person inner =
 
 viewMarked : String -> Element msg
 viewMarked input =
-    input
-        |> String.split "  "
-        |> List.filterMap (Markdown.Parser.parse >> Result.toMaybe)
-        |> List.filterMap
-            (\g ->
-                g
-                    |> Markdown.Renderer.render Markdown.Renderer.defaultHtmlRenderer
-                    |> Result.toMaybe
-                    |> Maybe.map
-                        (\ls ->
-                            paragraph [ width fill ] <|
-                                List.map (el [] << Element.html) ls
-                        )
-            )
-        |> textColumn [ spacing rythm ]
+    Markdown.Parser.parse input
+        |> Result.mapError (\_ -> "Parsing error")
+        |> Result.andThen (Markdown.Renderer.render elmUiRendered)
+        |> Result.map (column [ spacing rythm, Font.center ])
+        |> Result.withDefault (text input)
+
+
+elmUiRendered : Markdown.Renderer.Renderer (Element msg)
+elmUiRendered =
+    let
+        html =
+            Markdown.Html.oneOf []
+    in
+    { heading = \_ -> Debug.todo "heading"
+    , paragraph = paragraph []
+    , blockQuote = \_ -> Debug.todo "blockQuote"
+    , html = html
+    , text = Element.text
+    , codeSpan = \_ -> Debug.todo "codeSpan"
+    , strong = \_ -> Debug.todo "strong"
+    , emphasis = \_ -> Debug.todo "emphasis"
+    , strikethrough = \_ -> Debug.todo "strikethrough"
+    , hardLineBreak = Element.todo "hardLineBreak"
+    , link = \_ -> Debug.todo "link"
+    , image = \_ -> Debug.todo "image"
+    , unorderedList = \_ -> Debug.todo "unorderedList"
+    , orderedList = \_ -> Debug.todo "orderedList"
+    , codeBlock = \_ -> Debug.todo "codeBlock"
+    , thematicBreak = Element.todo "thematicBreak"
+    , table = \_ -> Debug.todo "table"
+    , tableHeader = \_ -> Debug.todo "tableHeader"
+    , tableBody = \_ -> Debug.todo "tableBody"
+    , tableRow = \_ -> Debug.todo "tableRow"
+    , tableCell = \_ -> Debug.todo "tableCell"
+    , tableHeaderCell = \_ -> Debug.todo "tableHeaderCell"
+    }
