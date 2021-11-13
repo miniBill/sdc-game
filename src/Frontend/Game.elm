@@ -250,12 +250,12 @@ withPerson person inner =
                             ]
                             [ semiBox
                                 [ height fill
-                                , width <| fillPortion 5
+                                , width <| fillPortion 8
                                 ]
                                 inner
                             , semiBox
                                 [ height fill
-                                , width <| fillPortion 3
+                                , width <| fillPortion 2
                                 ]
                                 (column [ centerX, centerY, spacing rythm ]
                                     [ el [ centerX ] <| text person.name

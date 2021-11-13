@@ -32,6 +32,7 @@ type Page
 
 type alias EditorModel =
     { lastError : String
+    , currentPerson : Maybe Id
     }
 
 

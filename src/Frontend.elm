@@ -188,7 +188,10 @@ urlToPage : Url -> Page
 urlToPage url =
     let
         initEditor =
-            Editor Nothing { lastError = "" }
+            Editor Nothing
+                { lastError = ""
+                , currentPerson = Nothing
+                }
 
         parser =
             Url.Parser.oneOf
@@ -303,13 +306,17 @@ update msg model =
                     case Codec.decodeString Codecs.dataCodec str of
                         Err err ->
                             ( data
-                            , { lastError = Json.Decode.errorToString err }
+                            , { lastError = Json.Decode.errorToString err
+                              , currentPerson = Nothing
+                              }
                             , Cmd.none
                             )
 
                         Ok newData ->
                             ( Just newData
-                            , { lastError = "" }
+                            , { lastError = ""
+                              , currentPerson = Nothing
+                              }
                             , Lamdera.sendToBackend <| TBData newData
                             )
             in
