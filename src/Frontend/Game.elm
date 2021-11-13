@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Element, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paddingEach, paragraph, px, row, spacing, text, textColumn, width)
+import Element.WithUnits as Element exposing (Element, Orientation(..), alignRight, alignTop, centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -21,12 +21,17 @@ import Types exposing (FrontendMsg(..), GameModel(..))
 
 rythm : Length
 rythm =
-    Length.millimeters 10
+    Length.millimeters 40
 
 
-lineWidth : Length
-lineWidth =
-    Length.millimeters 1
+baseFontSize : Length
+baseFontSize =
+    Length.millimeters 100
+
+
+borderWidth : Length
+borderWidth =
+    Length.millimeters 5
 
 
 view : GameModel -> Element FrontendMsg
@@ -34,7 +39,7 @@ view model =
     el
         [ width fill
         , height fill
-        , Font.size <| Quantity.multiplyBy 10 rythm
+        , Font.size baseFontSize
         ]
         (case model of
             LoadingData ->
@@ -50,7 +55,7 @@ view model =
                         , height <| px mapSize.height
                         , centerX
                         , centerY
-                        , Font.size (Quantity.multiplyBy 4 rythm)
+                        , Font.size (Quantity.multiplyBy 0.3 baseFontSize)
                         ]
 
                     attrs =
@@ -102,7 +107,7 @@ viewPinOnMap selected id person =
     [ btn
         [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -1.5 rythm
         , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy -1.5 rythm
-        , Border.width lineWidth
+        , Border.width borderWidth
         , Background.color Theme.colors.delete
         , Border.rounded rythm
         , width <| px rythm
@@ -113,11 +118,14 @@ viewPinOnMap selected id person =
         [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -2.8 rythm
         , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 0.0 rythm
         , Border.width <|
-            if selected then
-                Quantity.multiplyBy 2 lineWidth
+            Quantity.multiplyBy
+                (if selected then
+                    1
 
-            else
-                lineWidth
+                 else
+                    0.5
+                )
+                borderWidth
         , Background.color <|
             if selected then
                 Theme.colors.addNew
@@ -172,12 +180,14 @@ viewDialog currentPerson { text, choices } =
 
 viewChoice : Id -> Choice -> Element FrontendMsg
 viewChoice currentPerson { text, next } =
-    Input.button
-        [ padding rythm
-        , width fill
-        ]
+    Input.button [ width fill ]
         { label =
-            paragraph [ width fill ]
+            paragraph
+                [ Border.rounded rythm
+                , padding rythm
+                , Border.width borderWidth
+                , width fill
+                ]
                 [ Element.text text ]
         , onPress =
             Just <|
@@ -196,7 +206,7 @@ withPerson person inner =
         city =
             person.city
 
-        shadowBox attrs =
+        semiBox attrs =
             el
                 ([ padding rythm
                  , Border.rounded rythm
@@ -218,48 +228,70 @@ withPerson person inner =
         , width fill
         , height fill
         , padding rythm
+        , spacing rythm
         ]
-        [ el [ centerX ] <|
-            shadowBox
-                [ paddingEach
-                    { left = rythm
-                    , top = rythm
-                    , right = rythm
-                    , bottom = Quantity.multiplyBy (5 / 2) rythm
-                    }
+        [ semiBox [ centerX ]
+            (column
+                [ spacing rythm
+                , Font.center
                 ]
-                (textColumn
-                    [ spacing rythm
-                    , Font.center
-                    ]
-                    [ paragraph [ Font.bold ] [ text city.name ]
-                    , paragraph [] [ text city.text ]
-                    ]
-                )
-        , row [ spacing <| Quantity.multiplyBy 2 rythm, width fill, height fill ]
-            [ shadowBox [ alignTop, height fill, width fill ] inner
-            , shadowBox
-                [ height fill
-                , alignRight
-                , width <| px <| Quantity.multiplyBy 26 rythm
-                , centerX
+                [ el [ centerX, Font.bold ] <| text city.name
+                , el [ centerX ] <| text city.text
                 ]
-                (column
-                    [ centerX
-                    , centerY
-                    , spacing rythm
-                    ]
-                    [ el [ centerX ] <| text person.name
-                    , image
-                        [ width <| px <| Quantity.multiplyBy 20 rythm
-                        , centerX
-                        ]
-                        { description = "Person avatar"
-                        , src = person.image
-                        }
-                    ]
-                )
-            ]
+            )
+        , Element.withOrientation
+            (\orientation ->
+                case orientation of
+                    Landscape ->
+                        row
+                            [ spacing rythm
+                            , width fill
+                            , height fill
+                            ]
+                            [ semiBox
+                                [ height fill
+                                , width <| fillPortion 5
+                                ]
+                                inner
+                            , semiBox
+                                [ height fill
+                                , width <| fillPortion 3
+                                ]
+                                (column [ centerX, centerY, spacing rythm ]
+                                    [ el [ centerX ] <| text person.name
+                                    , image [ width fill ]
+                                        { description = "Person avatar"
+                                        , src = person.image
+                                        }
+                                    ]
+                                )
+                            ]
+
+                    Portrait ->
+                        column
+                            [ spacing rythm
+                            , width fill
+                            , height fill
+                            ]
+                            [ semiBox [ width fill ]
+                                (column [ centerX, centerY, spacing rythm ]
+                                    [ el [ centerX ] <| text person.name
+                                    , image
+                                        [ width <| px <| Quantity.multiplyBy 20 rythm
+                                        , centerX
+                                        ]
+                                        { description = "Person avatar"
+                                        , src = person.image
+                                        }
+                                    ]
+                                )
+                            , semiBox
+                                [ height fill
+                                , width fill
+                                ]
+                                inner
+                            ]
+            )
         ]
 
 

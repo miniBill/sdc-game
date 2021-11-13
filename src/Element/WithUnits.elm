@@ -1,9 +1,10 @@
-module Element.WithUnits exposing (Attribute, Element, alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, height, html, htmlAttribute, image, inFront, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, spacing, text, textColumn, width)
+module Element.WithUnits exposing (Attribute, Element, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, spacing, text, textColumn, width, withOrientation)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
 import Html
 import Length
+import Quantity
 import Types exposing (Size)
 
 
@@ -96,6 +97,11 @@ fill =
     Length <| \_ -> Element.fill
 
 
+fillPortion : Int -> Length
+fillPortion p =
+    Length <| \_ -> Element.fillPortion p
+
+
 alignRight : Attribute msg
 alignRight =
     Attribute <| always Element.alignRight
@@ -174,3 +180,25 @@ moveLeft =
 moveRight : Length.Length -> Attribute msg
 moveRight =
     wrapAttributeF Element.moveRight
+
+
+type Orientation
+    = Portrait
+    | Landscape
+
+
+withOrientation : (Orientation -> Element msg) -> Element msg
+withOrientation f =
+    Element
+        (\size ->
+            let
+                orientation =
+                    if size.width |> Quantity.lessThan size.height then
+                        Portrait
+
+                    else
+                        Landscape
+            in
+            run size <|
+                f orientation
+        )
