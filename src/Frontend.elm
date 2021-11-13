@@ -256,6 +256,9 @@ update msg model =
         ( _, Game DataEmpty ) ->
             ( model, Cmd.none )
 
+        ( EditPerson _, Game _ ) ->
+            ( model, Cmd.none )
+
         ( DownloadJson, Game _ ) ->
             ( model, Cmd.none )
 
@@ -335,6 +338,15 @@ update msg model =
             , Random.int 0 Random.maxInt
                 |> Random.map Hex.toString
                 |> Random.generate (\newId -> UpdatePerson newId (Just Editors.personDefault))
+            )
+
+        ( EditPerson id, Editor data editorModel ) ->
+            ( { model
+                | page =
+                    Editor data
+                        { editorModel | currentPerson = Just id }
+              }
+            , Cmd.none
             )
 
         ( ViewPerson id, Game (ViewingMap data _) ) ->

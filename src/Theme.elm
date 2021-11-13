@@ -1,4 +1,4 @@
-module Theme exposing (button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton)
+module Theme exposing (button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
 
 import Element exposing (Attribute, Color, Element, el)
 import Element.Background as Background
@@ -34,12 +34,16 @@ colors :
     , delete : Color
     , semitransparent : Color
     , white : Color
+    , selectedTab : Color
+    , tab : Color
     }
 colors =
     { addNew = Element.rgb255 0xDE 0xFD 0xE0
     , delete = Element.rgb255 0xFD 0xDF 0xDF
     , semitransparent = Element.rgba255 0xFF 0xFF 0xFF 0.7
     , white = Element.rgb255 0xFF 0xFF 0xFF
+    , selectedTab = Element.rgb255 0xD0 0xD0 0xFF
+    , tab = Element.rgb255 0xD0 0xD0 0xD0
     }
 
 
@@ -100,6 +104,11 @@ fontSizes =
 row : List (Attribute msg) -> List (Element msg) -> Element msg
 row attrs =
     Element.row ([ padding, spacing ] ++ attrs)
+
+
+wrappedRow : List (Attribute msg) -> List (Element msg) -> Element msg
+wrappedRow attrs =
+    Element.wrappedRow ([ padding, spacing ] ++ attrs)
 
 
 column : List (Attribute msg) -> List (Element msg) -> Element msg

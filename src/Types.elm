@@ -66,6 +66,7 @@ type FrontendMsg
       -- Cities editor
     | AddPerson
     | UpdatePerson Id (Maybe Person)
+    | EditPerson Id
       -- Game
     | ViewPerson Id
     | TalkTo Id Dialog

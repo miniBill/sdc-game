@@ -2,7 +2,7 @@ module Frontend.Editor exposing (view)
 
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, column, el, fill, height, inFront, moveDown, moveUp, paddingEach, row, scrollbars, text, width)
+import Element exposing (Element, alignRight, alignTop, centerY, el, fill, height, image, inFront, padding, paddingEach, paddingXY, px, row, scrollbars, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Frontend.Common
@@ -13,101 +13,176 @@ import Types exposing (EditorModel, FrontendMsg(..))
 
 
 view : Maybe Data -> EditorModel -> Element FrontendMsg
-view data editorModel =
-    case data of
+view maybeData editorModel =
+    case maybeData of
         Nothing ->
             Frontend.Common.loading
 
-        Just d ->
+        Just data ->
             let
+                personView =
+                    editorModel.currentPerson
+                        |> Maybe.andThen
+                            (\id ->
+                                Maybe.map (Tuple.pair id) <|
+                                    Dict.get id data
+                            )
+                        |> Maybe.map (\( id, person ) -> viewPerson id person)
+                        |> Maybe.withDefault Element.none
+
                 peopleViews =
-                    d
-                        |> Dict.toList
-                        |> List.map (\( id, person ) -> viewPerson id person)
-                        |> column
-                            [ paddingEach
-                                { left = Theme.rythm
-                                , top = 2 * Theme.rythm + 1
-                                , right = Theme.rythm
-                                , bottom = Theme.rythm
-                                }
-                            , Theme.spacing
-                            , scrollbars
-                            , height fill
-                            , width fill
-                            , alignTop
-                            ]
+                    Theme.column
+                        [ scrollbars
+                        , height fill
+                        , width fill
+                        , alignTop
+                        ]
+                        [ el [ Element.transparent True ] <|
+                            controls data editorModel
+                        , personView
+                        ]
             in
             el
                 [ width fill
                 , height fill
                 , Theme.spacing
-                , inFront <| controls editorModel
+                , inFront <|
+                    el
+                        [ Theme.padding
+                        , Background.color Theme.colors.semitransparent
+                        , Border.roundEach
+                            { topLeft = 0
+                            , topRight = 0
+                            , bottomLeft = 0
+                            , bottomRight = Theme.rythm
+                            }
+                        ]
+                        (controls data editorModel)
                 ]
                 peopleViews
 
 
-controls : EditorModel -> Element FrontendMsg
-controls model =
+controls : Data -> EditorModel -> Element FrontendMsg
+controls data model =
     let
-        btn msg label =
-            Theme.button [ alignTop, Background.color Theme.colors.white ]
+        btn msg color label =
+            Theme.button
+                [ alignTop
+                , Background.color color
+                ]
                 { onPress = Just msg
                 , label = text label
                 }
+
+        common =
+            [ btn FileSelect Theme.colors.white "Upload JSON"
+            , btn DownloadJson Theme.colors.white "Save as JSON"
+            , btn AddPerson Theme.colors.addNew "Add Person"
+            ]
+
+        people =
+            data
+                |> Dict.toList
+                |> List.map
+                    (\( id, person ) ->
+                        Theme.button
+                            [ alignTop
+                            , padding 0
+                            , Background.color <|
+                                if Just id == model.currentPerson then
+                                    Theme.colors.selectedTab
+
+                                else
+                                    Theme.colors.tab
+                            ]
+                            { onPress = Just <| EditPerson id
+                            , label =
+                                row
+                                    [ paddingXY Theme.rythm 0
+                                    , Theme.spacing
+                                    ]
+                                    [ if String.isEmpty person.image then
+                                        Element.none
+
+                                      else
+                                        image
+                                            [ height <| px 30
+                                            , centerY
+                                            ]
+                                            { -- If the image has trouble loading, we really don't want to show an alt text
+                                              description = ""
+                                            , src = person.image
+                                            }
+                                    , el [ paddingXY 0 Theme.rythm ] <|
+                                        text <|
+                                            if String.isEmpty person.name then
+                                                "<New>"
+
+                                            else
+                                                person.name
+                                    ]
+                            }
+                    )
+
+        error =
+            if String.isEmpty model.lastError then
+                []
+
+            else
+                [ text model.lastError ]
+
+        delete =
+            case model.currentPerson of
+                Nothing ->
+                    []
+
+                Just id ->
+                    if Dict.member id data then
+                        let
+                            gradient color =
+                                Background.gradient
+                                    { angle = 0
+                                    , steps =
+                                        [ Theme.getColor 0
+                                        , color
+                                        , color
+                                        ]
+                                    }
+                        in
+                        [ el
+                            [ Theme.spacing
+                            , alignRight
+                            , paddingEach
+                                { left = 0
+                                , right = Theme.rythm
+                                , top = 0
+                                , bottom = 0
+                                }
+                            , Element.moveDown <| 1 + Theme.rythm
+                            ]
+                            (Theme.tabButton
+                                [ gradient Theme.colors.delete
+                                , Element.htmlAttribute <| Html.Attributes.style "z-index" "1"
+                                ]
+                                { onPress = Just <| UpdatePerson id Nothing
+                                , label = text "Delete"
+                                }
+                            )
+                        ]
+
+                    else
+                        []
     in
-    Theme.row
-        [ alignTop
-        , Border.roundEach
-            { topLeft = 0
-            , topRight = 0
-            , bottomLeft = 0
-            , bottomRight = Theme.rythm
-            }
-        , Background.color Theme.colors.semitransparent
+    Element.wrappedRow
+        [ Theme.spacing
+        , alignTop
         ]
-        [ btn FileSelect "Upload JSON"
-        , btn DownloadJson "Save as JSON"
-        , Theme.button [ alignTop, Background.color Theme.colors.addNew ]
-            { onPress = Just AddPerson
-            , label = text "Add Person"
-            }
-        , text model.lastError
-        ]
+        (common ++ people ++ error ++ delete)
 
 
 viewPerson : Id -> Person -> Element FrontendMsg
 viewPerson id person =
-    let
-        gradient color =
-            Background.gradient
-                { angle = 0
-                , steps =
-                    [ Theme.getColor 0
-                    , color
-                    , color
-                    ]
-                }
-    in
-    column [ width fill, moveDown 1 ]
-        [ row
-            [ Theme.spacing
-            , alignRight
-            , paddingEach
-                { left = 0
-                , right = Theme.rythm
-                , top = 0
-                , bottom = 0
-                }
-            , Element.htmlAttribute <| Html.Attributes.style "z-index" "1"
-            ]
-            [ Theme.tabButton [ gradient Theme.colors.delete ]
-                { onPress = Just <| UpdatePerson id Nothing
-                , label = text "Delete"
-                }
-            ]
-        , el [ width fill, moveUp 1 ] <|
-            Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
-                Tuple.first <|
-                    Editors.personEditor 0 person
-        ]
+    el [ width fill ] <|
+        Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
+            Tuple.first <|
+                Editors.personEditor 0 person
