@@ -2,17 +2,14 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, px, row, spacing, text, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
 import Element.WithUnits.Input as Input
-import Frontend.Common
+import Frontend.Common exposing (viewMarked)
 import Html.Attributes
 import Length exposing (Length)
-import Markdown.Html
-import Markdown.Parser
-import Markdown.Renderer
 import Model exposing (Choice, Data, Dialog, Id, Next(..), Person)
 import Pins exposing (mapSize)
 import Quantity
@@ -307,45 +304,3 @@ semiBox attrs =
          ]
             ++ attrs
         )
-
-
-viewMarked : String -> Element msg
-viewMarked input =
-    input
-        |> String.replace "  " "\n\n"
-        |> Markdown.Parser.parse
-        |> Result.mapError (\_ -> "Parsing error")
-        |> Result.andThen (Markdown.Renderer.render elmUiRendered)
-        |> Result.map (column [ spacing rythm, Font.center ])
-        |> Result.withDefault (text input)
-
-
-elmUiRendered : Markdown.Renderer.Renderer (Element msg)
-elmUiRendered =
-    let
-        html =
-            Markdown.Html.oneOf []
-    in
-    { heading = \_ -> Debug.todo "heading"
-    , paragraph = paragraph []
-    , blockQuote = \_ -> Debug.todo "blockQuote"
-    , html = html
-    , text = Element.text
-    , codeSpan = \_ -> Debug.todo "codeSpan"
-    , strong = \_ -> Debug.todo "strong"
-    , emphasis = \_ -> Debug.todo "emphasis"
-    , strikethrough = \_ -> Debug.todo "strikethrough"
-    , hardLineBreak = Element.todo "hardLineBreak"
-    , link = \_ -> Debug.todo "link"
-    , image = \_ -> Debug.todo "image"
-    , unorderedList = \_ -> Debug.todo "unorderedList"
-    , orderedList = \_ -> Debug.todo "orderedList"
-    , codeBlock = \_ -> Debug.todo "codeBlock"
-    , thematicBreak = Element.todo "thematicBreak"
-    , table = \_ -> Debug.todo "table"
-    , tableHeader = \_ -> Debug.todo "tableHeader"
-    , tableBody = \_ -> Debug.todo "tableBody"
-    , tableRow = \_ -> Debug.todo "tableRow"
-    , tableCell = \_ -> Debug.todo "tableCell"
-    , tableHeaderCell = \_ -> Debug.todo "tableHeaderCell"
-    }

@@ -1,16 +1,64 @@
 module Frontend.Common exposing (..)
 
-import Element exposing (Element, centerX, centerY, el, text)
-import Element.Font as Font
+import Element as E
+import Element.Font
+import Element.WithUnits as Element exposing (Element, column, paragraph, spacing, text)
+import Element.WithUnits.Font as Font
+import Length
+import Markdown.Html
+import Markdown.Parser
+import Markdown.Renderer
 import Theme
 
 
-loading : Element msg
+loading : E.Element msg
 loading =
-    el
+    E.el
         [ Theme.fontSizes.huge
-        , centerX
-        , centerY
-        , Font.center
+        , E.centerX
+        , E.centerY
+        , Element.Font.center
         ]
-        (text "Loading...")
+        (E.text "Loading...")
+
+
+elmUiRendered : Markdown.Renderer.Renderer (Element msg)
+elmUiRendered =
+    let
+        html =
+            Markdown.Html.oneOf []
+    in
+    { heading = \_ -> Debug.todo "heading"
+    , paragraph = paragraph []
+    , blockQuote = \_ -> Debug.todo "blockQuote"
+    , html = html
+    , text = Element.text
+    , codeSpan = \_ -> Debug.todo "codeSpan"
+    , strong = \_ -> Debug.todo "strong"
+    , emphasis = \_ -> Debug.todo "emphasis"
+    , strikethrough = \_ -> Debug.todo "strikethrough"
+    , hardLineBreak = Element.todo "hardLineBreak"
+    , link = \_ -> Debug.todo "link"
+    , image = \_ -> Debug.todo "image"
+    , unorderedList = \_ -> Debug.todo "unorderedList"
+    , orderedList = \_ -> Debug.todo "orderedList"
+    , codeBlock = \_ -> Debug.todo "codeBlock"
+    , thematicBreak = Element.todo "thematicBreak"
+    , table = \_ -> Debug.todo "table"
+    , tableHeader = \_ -> Debug.todo "tableHeader"
+    , tableBody = \_ -> Debug.todo "tableBody"
+    , tableRow = \_ -> Debug.todo "tableRow"
+    , tableCell = \_ -> Debug.todo "tableCell"
+    , tableHeaderCell = \_ -> Debug.todo "tableHeaderCell"
+    }
+
+
+viewMarked : String -> Element msg
+viewMarked input =
+    input
+        |> String.replace "  " "\n\n"
+        |> Markdown.Parser.parse
+        |> Result.mapError (\_ -> "Parsing error")
+        |> Result.andThen (Markdown.Renderer.render elmUiRendered)
+        |> Result.map (column [ spacing (Length.millimeters 10), Font.center ])
+        |> Result.withDefault (text input)
