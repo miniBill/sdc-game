@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, paragraph, px, row, spacing, text, textColumn, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -49,35 +49,8 @@ view model =
             DataEmpty ->
                 text "branch 'DataEmpty' not implemented"
 
-            ViewingMap data { currentPerson } ->
-                let
-                    normalAttrs =
-                        [ width <| px mapSize.width
-                        , height <| px mapSize.height
-                        , centerX
-                        , centerY
-                        , Font.size (Quantity.multiplyBy 0.3 baseFontSize)
-                        ]
-
-                    attrs =
-                        normalAttrs ++ inFronts
-
-                    inFronts =
-                        data
-                            |> Dict.toList
-                            |> List.concatMap
-                                (\( personId, person ) ->
-                                    viewPinOnMap
-                                        (personId == currentPerson)
-                                        personId
-                                        person
-                                )
-                            |> List.map inFront
-                in
-                Element.image attrs
-                    { src = "/art/europe.jpg"
-                    , description = "A map of Europe"
-                    }
+            ViewingMap data submodel ->
+                viewMap data submodel
 
             ViewingPerson data submodel ->
                 viewPerson data submodel
@@ -87,11 +60,46 @@ view model =
         )
 
 
+viewMap : Data -> { currentPerson : Id } -> Element FrontendMsg
+viewMap data { currentPerson } =
+    let
+        normalAttrs =
+            [ width <| px mapSize.width
+            , height <| px mapSize.height
+            , centerX
+            , centerY
+            , Font.size (Quantity.multiplyBy 0.3 baseFontSize)
+            ]
+
+        attrs =
+            normalAttrs ++ inFronts
+
+        inFronts =
+            data
+                |> Dict.toList
+                |> List.concatMap
+                    (\( personId, person ) ->
+                        viewPinOnMap
+                            (personId == currentPerson)
+                            personId
+                            person
+                    )
+                |> List.map inFront
+    in
+    Element.image attrs
+        { src = "/art/europe.jpg"
+        , description = "A map of Europe"
+        }
+
+
 viewPinOnMap : Bool -> Id -> Person -> List (Element FrontendMsg)
 viewPinOnMap selected id person =
     let
         city =
             person.city
+
+        radius =
+            Quantity.multiplyBy 0.3 rythm
 
         ( x, y ) =
             Pins.northEastToXY
@@ -102,22 +110,22 @@ viewPinOnMap selected id person =
             Input.button
                 attrs
                 { onPress = Just <| ViewPerson id
-                , label = el [ padding (Quantity.multiplyBy 0.5 rythm) ] child
+                , label = el [ padding (Quantity.multiplyBy 0.25 rythm) ] child
                 }
     in
     [ btn
-        [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -1.5 rythm
-        , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy -1.5 rythm
+        [ Element.moveDown <| Quantity.plus y <| Quantity.negate radius
+        , Element.moveRight <| Quantity.plus x <| Quantity.negate radius
         , Border.width borderWidth
         , Background.color Theme.colors.delete
-        , Border.rounded rythm
-        , width <| px rythm
-        , height <| px rythm
+        , Border.rounded radius
+        , width <| px <| Quantity.multiplyBy 2 radius
+        , height <| px <| Quantity.multiplyBy 2 radius
         ]
         Element.none
     , btn
-        [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -2.8 rythm
-        , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 0.0 rythm
+        [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.75 rythm
+        , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 2 radius
         , Border.width <|
             Quantity.multiplyBy
                 (if selected then
@@ -154,7 +162,12 @@ viewPerson data { currentPerson } =
             withPerson person <|
                 Input.button [ centerX, centerY ]
                     { onPress = Just <| TalkTo currentPerson person.dialog
-                    , label = text <| "Talk to " ++ person.name
+                    , label =
+                        semiBox
+                            [ Border.width borderWidth
+                            , width fill
+                            ]
+                            (text <| "Talk to " ++ person.name)
                     }
 
 
@@ -183,10 +196,8 @@ viewChoice : Id -> Choice -> Element FrontendMsg
 viewChoice currentPerson { text, next } =
     Input.button [ width fill ]
         { label =
-            el
-                [ Border.rounded rythm
-                , padding rythm
-                , Border.width borderWidth
+            semiBox
+                [ Border.width borderWidth
                 , width fill
                 ]
                 (viewMarked text)
@@ -206,15 +217,6 @@ withPerson person inner =
     let
         city =
             person.city
-
-        semiBox attrs =
-            el
-                ([ padding rythm
-                 , Border.rounded rythm
-                 , Background.color Theme.colors.semitransparent
-                 ]
-                    ++ attrs
-                )
     in
     column
         [ Element.behindContent <|
@@ -296,9 +298,22 @@ withPerson person inner =
         ]
 
 
+semiBox : List (Attribute msg) -> Element msg -> Element msg
+semiBox attrs =
+    el
+        ([ padding rythm
+         , Border.rounded rythm
+         , Background.color Theme.colors.semitransparent
+         ]
+            ++ attrs
+        )
+
+
 viewMarked : String -> Element msg
 viewMarked input =
-    Markdown.Parser.parse input
+    input
+        |> String.replace "  " "\n\n"
+        |> Markdown.Parser.parse
         |> Result.mapError (\_ -> "Parsing error")
         |> Result.andThen (Markdown.Renderer.render elmUiRendered)
         |> Result.map (column [ spacing rythm, Font.center ])

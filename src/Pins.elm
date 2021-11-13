@@ -80,27 +80,27 @@ type alias Pin =
 
 udine : Pin
 udine =
-    pin 1469 1001 46.065602 13.237361
+    pin 1459 1001 46.065602 13.237361
 
 
 london : Pin
 london =
-    pin 669 675 51.508551 -0.128021
+    pin 659 675 51.508551 -0.128021
 
 
 paris : Pin
 paris =
-    pin 817 832 48.853258 2.348854
+    pin 807 832 48.853258 2.348854
 
 
 gibraltar : Pin
 gibraltar =
-    pin 354 1595 36.162037 -5.350013
+    pin 344 1595 36.162037 -5.350013
 
 
 malmo : Pin
 malmo =
-    pin 1455 428 55.593527 13.004635
+    pin 1445 428 55.593527 13.004635
 
 
 pin : Float -> Float -> Float -> Float -> Pin
@@ -117,6 +117,6 @@ mapSize :
     , height : Length
     }
 mapSize =
-    { width = Length.millimeters 1830
-    , height = Length.millimeters 1640
+    { width = Length.millimeters 1820
+    , height = Length.millimeters 1140
     }
