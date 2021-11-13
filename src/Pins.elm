@@ -1,24 +1,28 @@
-module Pins exposing (northEastToXY)
+module Pins exposing (mapSize, northEastToXY)
+
+import Angle exposing (Angle, Radians)
+import Length exposing (Length, Meters)
+import Quantity exposing (Product, Quantity(..), Rate)
 
 
-northEastToXY : Float -> Float -> ( Float, Float )
+northEastToXY : Angle -> Angle -> ( Length, Length )
 northEastToXY lat long =
-    ( Tuple.first coeffsEast + Tuple.second coeffsEast * long
-    , Tuple.first coeffsNorth + Tuple.second coeffsNorth * lat
+    ( Quantity.plus (Tuple.first coeffsEast) (Quantity.at (Tuple.second coeffsEast) long)
+    , Quantity.plus (Tuple.first coeffsNorth) (Quantity.at (Tuple.second coeffsNorth) lat)
     )
 
 
-coeffsEast : ( Float, Float )
+coeffsEast : ( Length, Quantity Float (Rate Meters Radians) )
 coeffsEast =
-    calculateCoeffs .east (.x >> toFloat)
+    calculateCoeffs .east .x
 
 
-coeffsNorth : ( Float, Float )
+coeffsNorth : ( Length, Quantity Float (Rate Meters Radians) )
 coeffsNorth =
-    calculateCoeffs .north (.y >> toFloat)
+    calculateCoeffs .north .y
 
 
-calculateCoeffs : (Pin -> Float) -> (Pin -> Float) -> ( Float, Float )
+calculateCoeffs : (Pin -> Angle) -> (Pin -> Length) -> ( Length, Quantity Float (Rate Meters Radians) )
 calculateCoeffs xf yf =
     let
         xs =
@@ -28,25 +32,32 @@ calculateCoeffs xf yf =
             List.map yf pins
 
         xAverage =
-            List.sum xs / toFloat (List.length xs)
+            Quantity.sum xs
+                |> Quantity.divideBy (toFloat <| List.length xs)
 
         yAverage =
-            List.sum ys / toFloat (List.length ys)
+            Quantity.sum ys
+                |> Quantity.divideBy (toFloat <| List.length ys)
 
         xDelta =
-            List.map (\x -> x - xAverage) xs
+            List.map (\x -> Quantity.difference x xAverage) xs
 
         yDelta =
-            List.map (\y -> y - yAverage) ys
+            List.map (\y -> Quantity.difference y yAverage) ys
 
         beta =
-            List.sum (List.map2 (\xd yd -> xd * yd) xDelta yDelta)
-                / List.sum (List.map (\xd -> xd * xd) xDelta)
+            Quantity.sum (List.map2 (\xd yd -> Quantity.product xd yd) xDelta yDelta)
+                |> over2 (Quantity.sum (List.map Quantity.squared xDelta))
 
         alpha =
-            yAverage - beta * xAverage
+            Quantity.difference yAverage (Quantity.at beta xAverage)
     in
     ( alpha, beta )
+
+
+over2 : Quantity Float (Product l d) -> Quantity Float (Product l n) -> Quantity Float (Rate n d)
+over2 d n =
+    Quantity.unsafe (Quantity.unwrap n / Quantity.unwrap d)
 
 
 pins : List Pin
@@ -60,10 +71,10 @@ pins =
 
 
 type alias Pin =
-    { x : Int
-    , y : Int
-    , north : Float
-    , east : Float
+    { x : Length
+    , y : Length
+    , north : Angle
+    , east : Angle
     }
 
 
@@ -92,6 +103,20 @@ malmo =
     pin 1455 428 55.593527 13.004635
 
 
-pin : Int -> Int -> Float -> Float -> Pin
+pin : Float -> Float -> Float -> Float -> Pin
 pin x y north east =
-    { x = x, y = y, north = north, east = east }
+    { x = Length.millimeters x
+    , y = Length.millimeters y
+    , north = Angle.degrees north
+    , east = Angle.degrees east
+    }
+
+
+mapSize :
+    { width : Length
+    , height : Length
+    }
+mapSize =
+    { width = Length.millimeters 1830
+    , height = Length.millimeters 1640
+    }

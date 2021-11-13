@@ -8,7 +8,8 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, el, fill, height, width)
+import Element exposing (Element, fill, height, width)
+import Element.WithUnits
 import File
 import File.Download
 import File.Select
@@ -17,10 +18,12 @@ import Frontend.Editor
 import Frontend.Game
 import Hex
 import Html
+import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
 import Model exposing (Data, Id, Person)
+import Pixels
 import Random
 import Task
 import Theme
@@ -48,8 +51,13 @@ app =
                 { title = "SDC Game"
                 , body =
                     [ css
-                    , Element.layout [ Theme.fontSizes.normal, height fill, width fill ] <|
-                        view model
+                    , Element.layout
+                        [ Theme.fontSizes.normal
+                        , height fill
+                        , width fill
+                        , Element.htmlAttribute <| Html.Attributes.id "main"
+                        ]
+                        (view model)
                     ]
                 }
         , update = update
@@ -199,24 +207,32 @@ init url key =
       , page = urlToPage url
       , size = Nothing
       }
-    , Browser.Dom.getViewport
-        |> Task.perform
-            (\{ viewport } ->
-                Resized
-                    (floor viewport.width)
-                    (floor viewport.height)
-            )
+    , getSizeCmd
     )
+
+
+getSizeCmd : Cmd FrontendMsg
+getSizeCmd =
+    Task.perform
+        (\{ viewport } ->
+            Resized
+                (Pixels.pixels viewport.width)
+                (Pixels.pixels viewport.height)
+        )
+        Browser.Dom.getViewport
 
 
 subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions _ =
-    Browser.Events.onResize Resized
+    Browser.Events.onResize (\_ _ -> GotResized)
 
 
 update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case ( msg, model.page ) of
+        ( GotResized, _ ) ->
+            ( model, getSizeCmd )
+
         ( Resized width height, _ ) ->
             ( { model
                 | size =
@@ -376,8 +392,7 @@ view model =
             Frontend.Common.loading
 
         ( Game gameModel, Just size ) ->
-            el [ width fill, height fill ] <|
-                Frontend.Game.view size gameModel
+            Element.WithUnits.run size <| Frontend.Game.view gameModel
 
         ( Editor data editorModel, _ ) ->
             Frontend.Editor.view data editorModel

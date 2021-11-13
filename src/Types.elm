@@ -7,6 +7,8 @@ import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
 import Model exposing (Data, Dialog, Id, Person)
+import Pixels exposing (Pixels)
+import Quantity exposing (Quantity)
 import Set exposing (Set)
 
 
@@ -18,8 +20,8 @@ type alias FrontendModel =
 
 
 type alias Size =
-    { width : Int
-    , height : Int
+    { width : Quantity Float Pixels
+    , height : Quantity Float Pixels
     }
 
 
@@ -50,7 +52,8 @@ type alias BackendModel =
 
 type FrontendMsg
     = -- Size
-      Resized Int Int
+      GotResized
+    | Resized (Quantity Float Pixels) (Quantity Float Pixels)
       -- URL management
     | UrlClicked UrlRequest
     | UrlChanged Url
