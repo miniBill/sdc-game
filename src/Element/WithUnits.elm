@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, todo, width, withOrientation, withSize)
+module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, todo, transparent, width, withOrientation, withSize)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -77,11 +77,6 @@ paddingEach { top, left, right, bottom } =
         }
 
 
-px : Length.Length -> Length
-px length =
-    Length (wrap Element.px length)
-
-
 width : Length -> Attribute msg
 width (Length length) =
     Attribute (Element.width << length)
@@ -90,6 +85,11 @@ width (Length length) =
 height : Length -> Attribute msg
 height (Length length) =
     Attribute (Element.height << length)
+
+
+px : Length.Length -> Length
+px length =
+    Length (wrap Element.px length)
 
 
 shrink : Length
@@ -115,6 +115,11 @@ fill =
 fillPortion : Int -> Length
 fillPortion p =
     Length <| \_ -> Element.fillPortion p
+
+
+transparent : Bool -> Attribute msg
+transparent b =
+    Attribute <| \_ -> Element.transparent b
 
 
 alignRight : Attribute msg

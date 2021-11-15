@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -34,44 +34,21 @@ borderWidth =
 
 view : GameModel -> Element FrontendMsg
 view model =
-    el
-        [ width fill
-        , height fill
-        , Font.size baseFontSize
-        , inFront <|
-            el
-                [ Font.size (Quantity.multiplyBy 0.5 rythm)
-                , alignRight
-                , alignTop
-                ]
-                (Element.withSize
-                    (\size ->
-                        text <|
-                            String.join "x" <|
-                                List.map
-                                    (Quantity.unwrap >> String.fromFloat)
-                                    [ size.width
-                                    , size.height
-                                    ]
-                    )
-                )
-        ]
-        (case model of
-            LoadingData ->
-                Element.element Frontend.Common.loading
+    case model of
+        LoadingData ->
+            Element.element Frontend.Common.loading
 
-            DataEmpty ->
-                text "branch 'DataEmpty' not implemented"
+        DataEmpty ->
+            text "branch 'DataEmpty' not implemented"
 
-            ViewingMap data submodel ->
-                viewMap data submodel
+        ViewingMap data submodel ->
+            viewMap data submodel
 
-            ViewingPerson data submodel ->
-                viewPerson data submodel
+        ViewingPerson data submodel ->
+            viewPerson data submodel
 
-            Talking data submodel ->
-                viewTalking data submodel
-        )
+        Talking data submodel ->
+            viewTalking data submodel
 
 
 viewMap : Data -> { currentPerson : Id } -> Element FrontendMsg
@@ -181,6 +158,7 @@ viewPerson data { currentPerson } =
                         , width fill
                         , height fill
                         , cityBackground person.city
+                        , Font.size baseFontSize
                         ]
                         [ viewCityDescription
                             (if orientation == Portrait then
@@ -206,17 +184,11 @@ viewPerson data { currentPerson } =
                                 , spacing rythm
                                 , width fill
                                 ]
-                                [ image
-                                    [ if orientation == Portrait then
-                                        width <| px <| Quantity.multiplyBy 30 rythm
-
-                                      else
-                                        width fill
-                                    , centerX
+                                [ avatar
+                                    [ width fill
+                                    , Element.htmlAttribute <| Html.Attributes.style "height" "100%"
                                     ]
-                                    { description = "Person avatar"
-                                    , src = person.image
-                                    }
+                                    person
                                 , Input.button [ centerX, centerY ]
                                     { onPress = Just <| TalkTo currentPerson person.dialog
                                     , label =
@@ -268,13 +240,18 @@ viewDialog currentPerson person { text, choices } =
         , height fill
         , width fill
         , cityBackground person.city
+        , Font.size baseFontSize
         ]
         [ semiBox [ width fill ] <|
             row
                 [ height fill
                 , spacing rythm
                 ]
-                [ avatar person
+                [ avatar
+                    [ width avatarSize
+                    , height avatarSize
+                    ]
+                    person
                 , viewMarked [ width fill ] text
                 ]
         , choices
@@ -283,17 +260,21 @@ viewDialog currentPerson person { text, choices } =
         ]
 
 
-avatar : { a | image : String, name : String } -> Element msg
-avatar person =
+avatar : List (Attribute msg) -> { a | image : String, name : String } -> Element msg
+avatar attrs person =
     el
-        [ width avatarSize
-        , height avatarSize
-        , Border.width borderWidth
-        , Border.rounded rythm
-        , Background.image person.image
-        , alignTop
-        ]
-        Element.none
+        ([ Border.width borderWidth
+         , Border.rounded rythm
+         , Background.image person.image
+         , alignTop
+         ]
+            ++ attrs
+        )
+        (image (attrs ++ [ Element.transparent True ])
+            { src = person.image
+            , description = person.name ++ "'s avatar"
+            }
+        )
 
 
 viewChoice : Id -> Choice -> Element FrontendMsg
@@ -305,7 +286,11 @@ viewChoice currentPerson { text, next } =
                 , width fill
                 ]
                 (row [ spacing rythm ]
-                    [ avatar { image = "/art/duck.jpg", name = "DUCK" }
+                    [ avatar
+                        [ width avatarSize
+                        , height avatarSize
+                        ]
+                        { image = "/art/duck.jpg", name = "DUCK" }
                     , viewMarked [ width fill ] text
                     ]
                 )
