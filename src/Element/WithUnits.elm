@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, spacing, text, textColumn, todo, width, withOrientation)
+module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, todo, width, withOrientation, withSize)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -90,6 +90,21 @@ width (Length length) =
 height : Length -> Attribute msg
 height (Length length) =
     Attribute (Element.height << length)
+
+
+shrink : Length
+shrink =
+    Length <| \_ -> Element.shrink
+
+
+minimum : Length.Length -> Length -> Length
+minimum limit (Length w) =
+    Length (\size -> wrap (\l -> Element.minimum l (w size)) limit size)
+
+
+maximum : Length.Length -> Length -> Length
+maximum limit (Length w) =
+    Length (\size -> wrap (\l -> Element.maximum l (w size)) limit size)
 
 
 fill : Length
@@ -207,3 +222,8 @@ withOrientation f =
 todo : String -> Element msg
 todo msg =
     Element (\_ -> Debug.todo <| "Element.todo " ++ msg)
+
+
+withSize : (Size -> Element msg) -> Element msg
+withSize f =
+    Element (\size -> run size (f size))

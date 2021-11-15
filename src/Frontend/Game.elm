@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), centerX, centerY, column, el, fill, fillPortion, height, image, inFront, padding, px, row, spacing, text, width)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -10,7 +10,7 @@ import Element.WithUnits.Input as Input
 import Frontend.Common exposing (viewMarked)
 import Html.Attributes
 import Length exposing (Length)
-import Model exposing (Choice, Data, Dialog, Id, Next(..), Person)
+import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person)
 import Pins exposing (mapSize)
 import Quantity
 import Theme
@@ -29,7 +29,7 @@ baseFontSize =
 
 borderWidth : Length
 borderWidth =
-    Length.millimeters 5
+    Length.millimeters 3
 
 
 view : GameModel -> Element FrontendMsg
@@ -38,6 +38,23 @@ view model =
         [ width fill
         , height fill
         , Font.size baseFontSize
+        , inFront <|
+            el
+                [ Font.size (Quantity.multiplyBy 0.5 rythm)
+                , alignRight
+                , alignTop
+                ]
+                (Element.withSize
+                    (\size ->
+                        text <|
+                            String.join "x" <|
+                                List.map
+                                    (Quantity.unwrap >> String.fromFloat)
+                                    [ size.width
+                                    , size.height
+                                    ]
+                    )
+                )
         ]
         (case model of
             LoadingData ->
@@ -156,16 +173,76 @@ viewPerson data { currentPerson } =
             text "TODO - MISSING PERSON"
 
         Just person ->
-            withPerson person <|
-                Input.button [ centerX, centerY ]
-                    { onPress = Just <| TalkTo currentPerson person.dialog
-                    , label =
-                        semiBox
-                            [ Border.width borderWidth
-                            , width fill
+            Element.withOrientation
+                (\orientation ->
+                    orientationContainer
+                        [ padding rythm
+                        , spacing rythm
+                        , width fill
+                        , height fill
+                        , cityBackground person.city
+                        ]
+                        [ viewCityDescription
+                            (if orientation == Portrait then
+                                [ width fill ]
+
+                             else
+                                [ width fill
+                                , height fill
+                                ]
+                            )
+                            person.city
+                        , semiBox
+                            [ height fill
+                            , if orientation == Portrait then
+                                width fill
+
+                              else
+                                width shrink
                             ]
-                            (text <| "Talk to " ++ person.name)
-                    }
+                            (column
+                                [ centerX
+                                , centerY
+                                , spacing rythm
+                                , width fill
+                                ]
+                                [ image
+                                    [ if orientation == Portrait then
+                                        width <| px <| Quantity.multiplyBy 30 rythm
+
+                                      else
+                                        width fill
+                                    , centerX
+                                    ]
+                                    { description = "Person avatar"
+                                    , src = person.image
+                                    }
+                                , Input.button [ centerX, centerY ]
+                                    { onPress = Just <| TalkTo currentPerson person.dialog
+                                    , label =
+                                        semiBox
+                                            [ Border.width borderWidth
+                                            , width fill
+                                            ]
+                                            (text <| "Talk to " ++ person.name)
+                                    }
+                                ]
+                            )
+                        ]
+                )
+
+
+orientationContainer : List (Attribute msg) -> List (Element msg) -> Element msg
+orientationContainer attrs children =
+    Element.withOrientation
+        (\orientation ->
+            case orientation of
+                Portrait ->
+                    column attrs children
+
+                Landscape ->
+                    row attrs children
+        )
 
 
 viewTalking : Data -> { currentDialog : Dialog, currentPerson : Id } -> Element FrontendMsg
@@ -175,18 +252,48 @@ viewTalking data { currentDialog, currentPerson } =
             text "TODO - MISSING PERSON"
 
         Just person ->
-            withPerson person <|
-                viewDialog currentPerson currentDialog
+            viewDialog currentPerson person currentDialog
 
 
-viewDialog : Id -> Dialog -> Element FrontendMsg
-viewDialog currentPerson { text, choices } =
-    column [ spacing rythm ]
-        [ viewMarked text
+avatarSize : Element.Length
+avatarSize =
+    px <| Quantity.multiplyBy 6 rythm
+
+
+viewDialog : Id -> Person -> Dialog -> Element FrontendMsg
+viewDialog currentPerson person { text, choices } =
+    column
+        [ spacing rythm
+        , padding rythm
+        , height fill
+        , width fill
+        , cityBackground person.city
+        ]
+        [ semiBox [ width fill ] <|
+            row
+                [ height fill
+                , spacing rythm
+                ]
+                [ avatar person
+                , viewMarked [ width fill ] text
+                ]
         , choices
             |> List.map (viewChoice currentPerson)
             |> row []
         ]
+
+
+avatar : { a | image : String, name : String } -> Element msg
+avatar person =
+    el
+        [ width avatarSize
+        , height avatarSize
+        , Border.width borderWidth
+        , Border.rounded rythm
+        , Background.image person.image
+        , alignTop
+        ]
+        Element.none
 
 
 viewChoice : Id -> Choice -> Element FrontendMsg
@@ -197,7 +304,11 @@ viewChoice currentPerson { text, next } =
                 [ Border.width borderWidth
                 , width fill
                 ]
-                (viewMarked text)
+                (row [ spacing rythm ]
+                    [ avatar { image = "/art/duck.jpg", name = "DUCK" }
+                    , viewMarked [ width fill ] text
+                    ]
+                )
         , onPress =
             Just <|
                 case next of
@@ -209,90 +320,30 @@ viewChoice currentPerson { text, next } =
         }
 
 
-withPerson : Person -> Element FrontendMsg -> Element FrontendMsg
-withPerson person inner =
-    let
-        city =
-            person.city
-    in
-    column
-        [ Element.behindContent <|
-            el
-                [ width fill
-                , height fill
-                , Element.htmlAttribute <| Html.Attributes.style "background-image" <| "url('" ++ city.image ++ "')"
-                , Element.htmlAttribute <| Html.Attributes.style "background-position" "center"
-                , Element.htmlAttribute <| Html.Attributes.style "background-size" "cover"
-                ]
-                Element.none
-        , width fill
-        , height fill
-        , padding rythm
-        , spacing rythm
-        ]
-        [ semiBox [ centerX ]
-            (column
-                [ spacing rythm
-                , Font.center
-                ]
-                [ el [ centerX, Font.bold ] <| text city.name
-                , el [ centerX ] <| text city.text
-                ]
-            )
-        , Element.withOrientation
-            (\orientation ->
-                case orientation of
-                    Landscape ->
-                        row
-                            [ spacing rythm
-                            , width fill
-                            , height fill
-                            ]
-                            [ semiBox
-                                [ height fill
-                                , width <| fillPortion 8
-                                ]
-                                inner
-                            , semiBox
-                                [ height fill
-                                , width <| fillPortion 2
-                                ]
-                                (column [ centerX, centerY, spacing rythm ]
-                                    [ el [ centerX ] <| text person.name
-                                    , image [ width fill ]
-                                        { description = "Person avatar"
-                                        , src = person.image
-                                        }
-                                    ]
-                                )
-                            ]
+cityBackground : City -> Attribute FrontendMsg
+cityBackground city =
+    Element.behindContent <|
+        el
+            [ width fill
+            , height fill
+            , Element.htmlAttribute <| Html.Attributes.style "background-image" <| "url('" ++ city.image ++ "')"
+            , Element.htmlAttribute <| Html.Attributes.style "background-position" "center"
+            , Element.htmlAttribute <| Html.Attributes.style "background-size" "cover"
+            ]
+            Element.none
 
-                    Portrait ->
-                        column
-                            [ spacing rythm
-                            , width fill
-                            , height fill
-                            ]
-                            [ semiBox [ width fill ]
-                                (column [ centerX, centerY, spacing rythm ]
-                                    [ el [ centerX ] <| text person.name
-                                    , image
-                                        [ width <| px <| Quantity.multiplyBy 20 rythm
-                                        , centerX
-                                        ]
-                                        { description = "Person avatar"
-                                        , src = person.image
-                                        }
-                                    ]
-                                )
-                            , semiBox
-                                [ height fill
-                                , width fill
-                                ]
-                                inner
-                            ]
-            )
-        ]
+
+viewCityDescription : List (Attribute msg) -> City -> Element msg
+viewCityDescription attrs city =
+    semiBox attrs
+        (column
+            [ spacing rythm
+            , Font.center
+            ]
+            [ el [ centerX, Font.bold ] <| text city.name
+            , viewMarked [ centerX ] city.text
+            ]
+        )
 
 
 semiBox : List (Attribute msg) -> Element msg -> Element msg

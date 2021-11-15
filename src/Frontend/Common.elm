@@ -2,7 +2,7 @@ module Frontend.Common exposing (..)
 
 import Element as E
 import Element.Font
-import Element.WithUnits as Element exposing (Element, column, paragraph, spacing, text)
+import Element.WithUnits as Element exposing (Attribute, Element, column, paragraph, spacing, text)
 import Element.WithUnits.Font as Font
 import Length
 import Markdown.Html
@@ -53,12 +53,12 @@ elmUiRendered =
     }
 
 
-viewMarked : String -> Element msg
-viewMarked input =
+viewMarked : List (Attribute msg) -> String -> Element msg
+viewMarked attrs input =
     input
         |> String.replace "  " "\n\n"
         |> Markdown.Parser.parse
         |> Result.mapError (\_ -> "Parsing error")
         |> Result.andThen (Markdown.Renderer.render elmUiRendered)
-        |> Result.map (column [ spacing (Length.millimeters 10), Font.center ])
+        |> Result.map (column attrs)
         |> Result.withDefault (text input)
