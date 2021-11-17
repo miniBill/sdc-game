@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize)
+module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -180,6 +180,17 @@ htmlAttribute a =
 image : List (Attribute msg) -> { src : String, description : String } -> Element msg
 image attrs args =
     wrapAttrs Element.image attrs (\_ -> args)
+
+
+newTabLink : List (Attribute msg) -> { url : String, label : Element msg } -> Element msg
+newTabLink attrs args =
+    wrapAttrs Element.newTabLink
+        attrs
+        (\size ->
+            { url = args.url
+            , label = run size args.label
+            }
+        )
 
 
 moveDown : Length.Length -> Attribute msg

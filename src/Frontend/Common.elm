@@ -1,6 +1,6 @@
 module Frontend.Common exposing (..)
 
-import Element as E
+import Element as E exposing (newTabLink)
 import Element.Font
 import Element.WithUnits as Element exposing (Attribute, Element, column, paragraph, text)
 import Element.WithUnits.Font as Font
@@ -30,8 +30,9 @@ elmUiRendered : Markdown.Renderer.Renderer (View msg)
 elmUiRendered =
     let
         heading : { level : Markdown.Block.HeadingLevel, rawText : String, children : List (View msg) } -> View msg
-        heading _ =
-            Debug.todo "heading renderer"
+        heading { children } =
+            -- TODO: Add header support
+            List.concat children
 
         paragraph : List (View msg) -> View msg
         paragraph children =
@@ -50,8 +51,8 @@ elmUiRendered =
             [ Element.text s ]
 
         codeSpan : String -> View msg
-        codeSpan _ =
-            Debug.todo "codeSpan renderer"
+        codeSpan s =
+            [ Element.el [ Font.family [ Font.monospace ] ] (Element.text s) ]
 
         strong : List (View msg) -> View msg
         strong =
@@ -62,16 +63,24 @@ elmUiRendered =
             List.map (Element.el [ Font.italic ]) << List.concat
 
         strikethrough : List (View msg) -> View msg
-        strikethrough _ =
-            Debug.todo "strikethrough renderer"
+        strikethrough =
+            List.map (Element.el [ Font.strike ]) << List.concat
 
         hardLineBreak : View msg
         hardLineBreak =
             []
 
         link : { title : Maybe String, destination : String } -> List (View msg) -> View msg
-        link _ _ =
-            Debug.todo "link renderer"
+        link { destination } children =
+            case List.concat children of
+                [] ->
+                    [ Element.none ]
+
+                [ e ] ->
+                    [ Element.newTabLink [] { url = destination, label = e } ]
+
+                cs ->
+                    [ Element.newTabLink [] { url = destination, label = Element.row [] cs } ]
 
         image : { alt : String, src : String, title : Maybe String } -> View msg
         image _ =
