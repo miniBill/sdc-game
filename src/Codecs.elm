@@ -22,20 +22,63 @@ cityCodec : Codec.Codec Model.City
 cityCodec =
     Codec.object
      (\name text image coordinates ->
-         { name = name, text = text, image = image, coordinates = coordinates }
+         { name = name
+         , text = Maybe.withDefault "" text
+         , image = Maybe.withDefault "" image
+         , coordinates = coordinates
+         }
      )
         |> Codec.field "name" .name cityNameCodec
-        |> Codec.field "text" .text Codec.string
-        |> Codec.field "image" .image Codec.string
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
+        |> Codec.maybeField
+            "image"
+            (\lambdaArg0 ->
+                if lambdaArg0.image == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.image
+            )
+            Codec.string
         |> Codec.field "coordinates" .coordinates coordinatesCodec
         |> Codec.buildObject
 
 
 coordinatesCodec : Codec.Codec Model.Coordinates
 coordinatesCodec =
-    Codec.object (\north east -> { north = north, east = east })
-        |> Codec.field "north" .north Codec.float
-        |> Codec.field "east" .east Codec.float
+    Codec.object
+     (\north east ->
+         { north = Maybe.withDefault 0 north, east = Maybe.withDefault 0 east }
+     )
+        |> Codec.maybeField
+            "north"
+            (\lambdaArg0 ->
+                if lambdaArg0.north == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.north
+            )
+            Codec.float
+        |> Codec.maybeField
+            "east"
+            (\lambdaArg0 ->
+                if lambdaArg0.east == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.east
+            )
+            Codec.float
         |> Codec.buildObject
 
 
@@ -48,11 +91,33 @@ personCodec : Codec.Codec Model.Person
 personCodec =
     Codec.object
      (\name city image dialog ->
-         { name = name, city = city, image = image, dialog = dialog }
+         { name = Maybe.withDefault "" name
+         , city = city
+         , image = Maybe.withDefault "" image
+         , dialog = dialog
+         }
      )
-        |> Codec.field "name" .name Codec.string
+        |> Codec.maybeField
+            "name"
+            (\lambdaArg0 ->
+                if lambdaArg0.name == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.name
+            )
+            Codec.string
         |> Codec.field "city" .city cityCodec
-        |> Codec.field "image" .image Codec.string
+        |> Codec.maybeField
+            "image"
+            (\lambdaArg0 ->
+                if lambdaArg0.image == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.image
+            )
+            Codec.string
         |> Codec.field "dialog" .dialog dialogCodec
         |> Codec.buildObject
 
@@ -64,16 +129,49 @@ idCodec =
 
 dialogCodec : Codec.Codec Model.Dialog
 dialogCodec =
-    Codec.object (\text choices -> { text = text, choices = choices })
-        |> Codec.field "text" .text Codec.string
-        |> Codec.field "choices" .choices (Codec.list choiceCodec)
+    Codec.object
+     (\text choices ->
+         { text = Maybe.withDefault "" text
+         , choices = Maybe.withDefault [] choices
+         }
+     )
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
+        |> Codec.maybeField
+            "choices"
+            (\lambdaArg0 ->
+                if lambdaArg0.choices == [] then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.choices
+            )
+            (Codec.list choiceCodec)
         |> Codec.buildObject
 
 
 choiceCodec : Codec.Codec Model.Choice
 choiceCodec =
-    Codec.object (\text next -> { text = text, next = next })
-        |> Codec.field "text" .text Codec.string
+    Codec.object
+     (\text next -> { text = Maybe.withDefault "" text, next = next })
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
         |> Codec.field "next" .next nextCodec
         |> Codec.buildObject
 
@@ -159,9 +257,31 @@ itemCodec =
                     "GenericItem"
                     Model.GenericItem
                     (Codec.object
-                      (\name image -> { name = name, image = image })
-                        |> Codec.field "name" .name Codec.string
-                        |> Codec.field "image" .image Codec.string
+                      (\name image ->
+                          { name = Maybe.withDefault "" name
+                          , image = Maybe.withDefault "" image
+                          }
+                      )
+                        |> Codec.maybeField
+                            "name"
+                            (\lambdaArg0 ->
+                                if lambdaArg0.name == "" then
+                                    Maybe.Nothing
+
+                                else
+                                    Maybe.Just lambdaArg0.name
+                            )
+                            Codec.string
+                        |> Codec.maybeField
+                            "image"
+                            (\lambdaArg0 ->
+                                if lambdaArg0.image == "" then
+                                    Maybe.Nothing
+
+                                else
+                                    Maybe.Just lambdaArg0.image
+                            )
+                            Codec.string
                         |> Codec.buildObject
                     )
                 |> Codec.variant1
@@ -172,15 +292,21 @@ itemCodec =
                           { from = from
                           , to = to
                           , kind = kind
-                          , consequences = consequences
+                          , consequences = Maybe.withDefault [] consequences
                           }
                       )
                         |> Codec.field "from" .from cityNameCodec
                         |> Codec.field "to" .to cityNameCodec
                         |> Codec.field "kind" .kind transportKindCodec
-                        |> Codec.field
+                        |> Codec.maybeField
                             "consequences"
-                            .consequences
+                            (\lambdaArg0 ->
+                                if lambdaArg0.consequences == [] then
+                                    Maybe.Nothing
+
+                                else
+                                    Maybe.Just lambdaArg0.consequences
+                            )
                             (Codec.list consequenceCodec)
                         |> Codec.buildObject
                     )
