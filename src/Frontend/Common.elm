@@ -1,6 +1,6 @@
 module Frontend.Common exposing (..)
 
-import Element as E exposing (newTabLink)
+import Element as E
 import Element.Font
 import Element.WithUnits as Element exposing (Attribute, Element, column, paragraph, text)
 import Element.WithUnits.Font as Font
