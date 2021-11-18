@@ -36,13 +36,7 @@ cityEditor level value =
               in
               ( "Name"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | name = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | name = lambdaArg0 })
                   editor
               , simple
               )
@@ -52,13 +46,7 @@ cityEditor level value =
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | text = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | text = lambdaArg0 })
                   editor
               , simple
               )
@@ -68,13 +56,7 @@ cityEditor level value =
               in
               ( "Image"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | image = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | image = lambdaArg0 })
                   editor
               , simple
               )
@@ -84,13 +66,7 @@ cityEditor level value =
               in
               ( "Coordinates"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | coordinates = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
                   editor
               , simple
               )
@@ -176,13 +152,7 @@ coordinatesEditor level value =
               in
               ( "North"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | north = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | north = lambdaArg0 })
                   editor
               , simple
               )
@@ -192,13 +162,7 @@ coordinatesEditor level value =
               in
               ( "East"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | east = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | east = lambdaArg0 })
                   editor
               , simple
               )
@@ -289,13 +253,7 @@ personEditor level value =
               in
               ( "Name"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | name = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | name = lambdaArg0 })
                   editor
               , simple
               )
@@ -305,13 +263,7 @@ personEditor level value =
               in
               ( "City"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | city = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | city = lambdaArg0 })
                   editor
               , simple
               )
@@ -321,13 +273,7 @@ personEditor level value =
               in
               ( "Image"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | image = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | image = lambdaArg0 })
                   editor
               , simple
               )
@@ -337,13 +283,7 @@ personEditor level value =
               in
               ( "Dialog"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | dialog = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | dialog = lambdaArg0 })
                   editor
               , simple
               )
@@ -433,13 +373,7 @@ dialogEditor level value =
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | text = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | text = lambdaArg0 })
                   editor
               , simple
               )
@@ -454,13 +388,7 @@ dialogEditor level value =
               in
               ( "Choices"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | choices = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | choices = lambdaArg0 })
                   editor
               , simple
               )
@@ -545,13 +473,7 @@ choiceEditor level value =
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | text = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | text = lambdaArg0 })
                   editor
               , simple
               )
@@ -561,13 +483,7 @@ choiceEditor level value =
               in
               ( "Next"
               , Element.map
-                  (\lambdaArg0 ->
-                      let
-                          updating =
-                              value
-                      in
-                      { updating | next = lambdaArg0 }
-                  )
+                  (\lambdaArg0 -> { value | next = lambdaArg0 })
                   editor
               , simple
               )
@@ -870,11 +786,9 @@ itemEditor level value =
                                    ( "Name"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   nameStringimageString
-                                           in
-                                           { updating | name = lambdaArg0 }
+                                           { nameStringimageString
+                                               | name = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -888,11 +802,9 @@ itemEditor level value =
                                    ( "Image"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   nameStringimageString
-                                           in
-                                           { updating | image = lambdaArg0 }
+                                           { nameStringimageString
+                                               | image = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1000,11 +912,9 @@ itemEditor level value =
                                    ( "From"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                           in
-                                           { updating | from = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                               | from = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1018,11 +928,9 @@ itemEditor level value =
                                    ( "To"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                           in
-                                           { updating | to = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                               | to = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1036,11 +944,9 @@ itemEditor level value =
                                    ( "Kind"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                           in
-                                           { updating | kind = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                               | kind = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1057,11 +963,7 @@ itemEditor level value =
                                    ( "Consequences"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                           in
-                                           { updating
+                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
                                                | consequences = lambdaArg0
                                            }
                                        )
@@ -1389,11 +1291,9 @@ itemNameEditor level value =
                                    ( "From"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKind
-                                           in
-                                           { updating | from = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKind
+                                               | from = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1407,11 +1307,9 @@ itemNameEditor level value =
                                    ( "To"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKind
-                                           in
-                                           { updating | to = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKind
+                                               | to = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
@@ -1425,11 +1323,9 @@ itemNameEditor level value =
                                    ( "Kind"
                                    , Element.map
                                        (\lambdaArg0 ->
-                                           let
-                                               updating =
-                                                   fromCityNametoCityNamekindTransportKind
-                                           in
-                                           { updating | kind = lambdaArg0 }
+                                           { fromCityNametoCityNamekindTransportKind
+                                               | kind = lambdaArg0
+                                           }
                                        )
                                        editor
                                    , simple
