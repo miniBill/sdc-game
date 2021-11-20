@@ -448,8 +448,9 @@ pickNewTicket data model =
             data
                 |> Dict.toList
                 |> List.foldr
-                    (\( id, { city } ) acc ->
-                        if String.isEmpty id then
+                    (\( id, { name, city } ) acc ->
+                        if String.isEmpty id || name == "Orla" then
+                            -- Orla doesn't count here
                             acc
 
                         else

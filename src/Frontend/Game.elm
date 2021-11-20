@@ -7,6 +7,7 @@ import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
 import Element.WithUnits.Input as Input
+import Element.WithUnits.Internal exposing (wrapF)
 import Frontend.Common
 import Html
 import Html.Attributes
@@ -68,14 +69,14 @@ view model =
 
 
 viewMap : Data -> SharedGameModel -> Element GameMsg
-viewMap data { currentPerson, tickets } =
+viewMap data sharedGameModel =
     let
         normalAttrs =
             [ width <| px mapSize.width
             , height <| px mapSize.height
             , centerX
             , centerY
-            , Font.size (Quantity.multiplyBy 0.3 baseFontSize)
+            , Font.size (Quantity.multiplyBy 0.2 baseFontSize)
             ]
 
         attrs =
@@ -84,11 +85,11 @@ viewMap data { currentPerson, tickets } =
         inFronts =
             data
                 |> Dict.toList
-                |> List.filter (\( personId, _ ) -> Set.member personId tickets)
+                |> List.filter (\( personId, _ ) -> Set.member personId sharedGameModel.tickets)
                 |> List.concatMap
                     (\( personId, person ) ->
                         viewPinOnMap
-                            (personId == currentPerson)
+                            sharedGameModel
                             personId
                             person
                     )
@@ -100,11 +101,11 @@ viewMap data { currentPerson, tickets } =
         }
 
 
-viewPinOnMap : Bool -> Id -> Person -> List (Element GameMsg)
-viewPinOnMap selected id person =
+viewPinOnMap : SharedGameModel -> Id -> Person -> List (Element GameMsg)
+viewPinOnMap sharedGameModel id { city } =
     let
-        city =
-            person.city
+        selected =
+            id == sharedGameModel.currentPerson
 
         radius =
             Quantity.multiplyBy 0.3 rythm
@@ -118,7 +119,7 @@ viewPinOnMap selected id person =
             Input.button
                 attrs
                 { onPress = Just <| ViewPerson id
-                , label = el [ padding (Quantity.multiplyBy 0.25 rythm) ] child
+                , label = el [] child
                 }
     in
     [ btn
@@ -131,32 +132,25 @@ viewPinOnMap selected id person =
         , height <| px <| Quantity.multiplyBy 2 radius
         ]
         Element.none
-    , btn
-        [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.75 rythm
-        , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 2 radius
-        , Border.width <|
-            Quantity.multiplyBy
-                (if selected then
-                    1
+    , Element.withSize
+        (\size ->
+            btn
+                [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.3 rythm
+                , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 2 radius
+                , if selected then
+                    Font.bold
 
-                 else
-                    0.5
-                )
-                borderWidth
-        , Background.color <|
-            if selected then
-                Theme.colors.addNew
-
-            else
-                Theme.colors.semitransparent
-        , if selected then
-            Font.bold
-
-          else
-            Font.regular
-        , Border.rounded rythm
-        ]
-        (text city.name)
+                  else
+                    Font.regular
+                , Element.htmlAttribute <|
+                    Html.Attributes.style "text-shadow" <|
+                        String.join "," <|
+                            List.map
+                                (\b -> "0px 0px " ++ wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px #ffffff")
+                                [ 0.05, 0.1, 0.15, 0.2 ]
+                ]
+                (text city.name)
+        )
     ]
 
 

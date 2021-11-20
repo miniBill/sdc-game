@@ -8,6 +8,7 @@ module Element.WithUnits.Internal exposing
     , wrapAttributeF
     , wrapAttrs
     , wrapContainer
+    , wrapF
     )
 
 import Element

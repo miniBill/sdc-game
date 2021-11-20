@@ -1,8 +1,8 @@
-module Element.WithUnits.Font exposing (bold, center, color, family, italic, monospace, regular, size, strike, typeface)
+module Element.WithUnits.Font exposing (bold, center, color, family, italic, monospace, regular, shadow, size, strike, typeface)
 
 import Element.Font
 import Element.WithUnits exposing (Color)
-import Element.WithUnits.Internal exposing (Attribute(..), wrapAttribute)
+import Element.WithUnits.Internal exposing (Attribute(..), wrap, wrapAttribute, wrapF)
 import Length
 
 
@@ -58,3 +58,17 @@ typeface =
 color : Color -> Attribute msg
 color c =
     Attribute <| \_ -> Element.Font.color c
+
+
+shadow : { offset : ( Length.Length, Length.Length ), blur : Length.Length, color : Color } -> Attribute msg
+shadow shade =
+    Attribute <| \size_ ->
+    let
+        wrap u =
+            wrapF identity u size_
+    in
+    Element.Font.shadow
+        { offset = Tuple.mapBoth wrap wrap shade.offset
+        , color = shade.color
+        , blur = wrap shade.blur
+        }
