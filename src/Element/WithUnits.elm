@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
+module Element.WithUnits exposing (Attribute, Color, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, rgb255, rgba, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -18,6 +18,10 @@ type alias Attribute msg =
 
 type alias Length =
     Element.WithUnits.Internal.Length
+
+
+type alias Color =
+    Element.Color
 
 
 run : Size -> Element msg -> Element.Element msg
@@ -243,3 +247,13 @@ withOrientation f =
 withSize : (Size -> Element msg) -> Element msg
 withSize f =
     Element (\size -> run size (f size))
+
+
+rgb255 : Int -> Int -> Int -> Color
+rgb255 r g b =
+    Element.rgb255 r g b
+
+
+rgba : Float -> Float -> Float -> Float -> Color
+rgba r g b a =
+    Element.rgba r g b a

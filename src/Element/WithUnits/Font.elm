@@ -1,6 +1,7 @@
-module Element.WithUnits.Font exposing (bold, center, family, italic, monospace, regular, size, strike)
+module Element.WithUnits.Font exposing (bold, center, color, family, italic, monospace, regular, size, strike, typeface)
 
 import Element.Font
+import Element.WithUnits exposing (Color)
 import Element.WithUnits.Internal exposing (Attribute(..), wrapAttribute)
 import Length
 
@@ -47,3 +48,13 @@ family fonts =
 monospace : Font
 monospace =
     Element.Font.monospace
+
+
+typeface : String -> Font
+typeface =
+    Element.Font.typeface
+
+
+color : Color -> Attribute msg
+color c =
+    Attribute <| \_ -> Element.Font.color c

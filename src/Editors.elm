@@ -399,6 +399,26 @@ quizEditor level value =
               )
             , let
                 ( editor, simple ) =
+                  stringEditor (level + 1) value.messageIfCorrect
+              in
+              ( "Message if correct"
+              , Element.map
+                  (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.messageIfWrong
+              in
+              ( "Message if wrong"
+              , Element.map
+                  (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
                   listEditor
                       "String"
                       stringEditor
@@ -686,7 +706,7 @@ choiceEditor level value =
 nextEditor : Int -> Model.Next -> ( Element.Element Model.Next, Bool )
 nextEditor level value =
     ( let
-        { dialogExtracted } =
+        { dialogExtracted, quizExtracted } =
           case value of
               Model.NextDialog dialog ->
                   { extractedDefault | dialogExtracted = dialog }
@@ -694,11 +714,17 @@ nextEditor level value =
               Model.NextViewMap ->
                   extractedDefault
 
-              Model.NextQuiz ->
+              Model.NextRandomQuiz ->
+                  extractedDefault
+
+              Model.NextQuiz quiz ->
+                  { extractedDefault | quizExtracted = quiz }
+
+              Model.NextGiveTicket ->
                   extractedDefault
 
         extractedDefault =
-          { dialogExtracted = dialogDefault }
+          { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
 
         variantRow =
           Input.radioRow
@@ -709,7 +735,15 @@ nextEditor level value =
                       (Model.NextDialog dialogExtracted)
                       (Element.text "Dialog")
                   , Input.option Model.NextViewMap (Element.text "View map")
-                  , Input.option Model.NextQuiz (Element.text "Quiz")
+                  , Input.option
+                      Model.NextRandomQuiz
+                      (Element.text "Random quiz")
+                  , Input.option
+                      (Model.NextQuiz quizExtracted)
+                      (Element.text "Quiz")
+                  , Input.option
+                      Model.NextGiveTicket
+                      (Element.text "Give ticket")
                   ]
               , selected = Maybe.Just value
               , label = Input.labelHidden ""
@@ -726,7 +760,16 @@ nextEditor level value =
               Model.NextViewMap ->
                   []
 
-              Model.NextQuiz ->
+              Model.NextRandomQuiz ->
+                  []
+
+              Model.NextQuiz quiz ->
+                  [ Element.map
+                      Model.NextQuiz
+                      (Tuple.first (quizEditor (level + 1) quiz))
+                  ]
+
+              Model.NextGiveTicket ->
                   []
       in
       Element.column
@@ -1602,7 +1645,12 @@ personDefault =
 
 quizDefault : Model.Quiz
 quizDefault =
-    { question = "", correctAnswer = "", wrongAnswers = [] }
+    { question = ""
+    , correctAnswer = ""
+    , messageIfCorrect = ""
+    , messageIfWrong = ""
+    , wrongAnswers = []
+    }
 
 
 idDefault : Model.Id

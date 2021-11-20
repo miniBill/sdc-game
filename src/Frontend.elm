@@ -22,12 +22,13 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (Data, Id, Person)
+import Model exposing (Data, Id, Next(..), Person)
 import Pixels
 import Random
+import Set
 import Task
 import Theme
-import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
+import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), Page(..), SharedGameModel, ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -114,8 +115,12 @@ gotGameData data =
             |> Dict.toList
             |> List.Extra.find (\( _, p ) -> p.name == "Orla")
     of
-        Just ( id, _ ) ->
-            LoadedData data { currentPerson = id } ViewingPerson
+        Just ( orlaId, _ ) ->
+            LoadedData data
+                { currentPerson = orlaId
+                , tickets = Set.singleton orlaId
+                }
+                ViewingPerson
 
         Nothing ->
             -- Data must contain "Orla", as a starting point
@@ -387,13 +392,25 @@ updateGame msg outerModel =
                         ViewQuiz quiz ->
                             ( sharedModel, Quizzing quiz, Cmd.none )
 
-                        GaveCorrectAnswer ->
-                            ( sharedModel, model, Cmd.none )
-
-                        GaveWrongAnswer ->
-                            ( sharedModel, model, Cmd.none )
+                        GiveTicketAndViewMap ->
+                            ( sharedModel, ViewingMap, pickNewTicket sharedModel )
             in
             ( LoadedData data sharedModel_ model_, cmd )
+
+
+type GamePhase
+    = EnglandPhase
+    | EuropePhase
+    | NetherlandPhase
+
+
+pickNewTicket : SharedGameModel -> Cmd GameMsg
+pickNewTicket model =
+    let
+        phase =
+            EnglandPhase
+    in
+    Debug.todo "TODO"
 
 
 view : FrontendModel -> Element FrontendMsg

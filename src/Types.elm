@@ -43,7 +43,9 @@ type OuterGameModel
 
 
 type alias SharedGameModel =
-    { currentPerson : Id }
+    { currentPerson : Id
+    , tickets : Set Id
+    }
 
 
 type GameModel
@@ -89,8 +91,7 @@ type GameMsg
     | ViewMap
     | PickQuiz
     | ViewQuiz Quiz
-    | GaveCorrectAnswer
-    | GaveWrongAnswer
+    | GiveTicketAndViewMap
 
 
 type ToBackend

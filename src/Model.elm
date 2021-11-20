@@ -53,6 +53,8 @@ type alias Person =
 type alias Quiz =
     { question : String
     , correctAnswer : String
+    , messageIfCorrect : String
+    , messageIfWrong : String
     , wrongAnswers : List String
     }
 
@@ -76,7 +78,9 @@ type alias Choice =
 type Next
     = NextDialog Dialog
     | NextViewMap
-    | NextQuiz
+    | NextRandomQuiz
+    | NextQuiz Quiz
+    | NextGiveTicket
 
 
 type Consequence

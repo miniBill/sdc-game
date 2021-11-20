@@ -1,4 +1,4 @@
-module Element.WithUnits.Input exposing (button)
+module Element.WithUnits.Input exposing (button, defaultCheckbox)
 
 import Element.Input
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), wrapAttrs)
@@ -20,3 +20,8 @@ button attrs args =
             , label = Element.WithUnits.Internal.run size args.label
             }
         )
+
+
+defaultCheckbox : Bool -> Element msg
+defaultCheckbox checked =
+    Element <| \_ -> Element.Input.defaultCheckbox checked

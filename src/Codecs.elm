@@ -136,9 +136,11 @@ personCodec =
 quizCodec : Codec.Codec Model.Quiz
 quizCodec =
     Codec.object
-     (\question correctAnswer wrongAnswers ->
+     (\question correctAnswer messageIfCorrect messageIfWrong wrongAnswers ->
          { question = Maybe.withDefault "" question
          , correctAnswer = Maybe.withDefault "" correctAnswer
+         , messageIfCorrect = Maybe.withDefault "" messageIfCorrect
+         , messageIfWrong = Maybe.withDefault "" messageIfWrong
          , wrongAnswers = Maybe.withDefault [] wrongAnswers
          }
      )
@@ -160,6 +162,26 @@ quizCodec =
 
                 else
                     Maybe.Just lambdaArg0.correctAnswer
+            )
+            Codec.string
+        |> Codec.maybeField
+            "messageIfCorrect"
+            (\lambdaArg0 ->
+                if lambdaArg0.messageIfCorrect == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.messageIfCorrect
+            )
+            Codec.string
+        |> Codec.maybeField
+            "messageIfWrong"
+            (\lambdaArg0 ->
+                if lambdaArg0.messageIfWrong == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.messageIfWrong
             )
             Codec.string
         |> Codec.maybeField
@@ -234,7 +256,7 @@ nextCodec =
     Codec.lazy <|
         \() ->
             Codec.custom
-             (\fnextDialog fnextViewMap fnextQuiz value ->
+             (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
                  case value of
                      Model.NextDialog arg0 ->
                          fnextDialog arg0
@@ -242,12 +264,20 @@ nextCodec =
                      Model.NextViewMap ->
                          fnextViewMap
 
-                     Model.NextQuiz ->
-                         fnextQuiz
+                     Model.NextRandomQuiz ->
+                         fnextRandomQuiz
+
+                     Model.NextQuiz arg0 ->
+                         fnextQuiz arg0
+
+                     Model.NextGiveTicket ->
+                         fnextGiveTicket
              )
                 |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
                 |> Codec.variant0 "NextViewMap" Model.NextViewMap
-                |> Codec.variant0 "NextQuiz" Model.NextQuiz
+                |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
+                |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
+                |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
                 |> Codec.buildCustom
 
 

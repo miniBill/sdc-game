@@ -2,19 +2,25 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width, wrappedRow)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
 import Element.WithUnits.Input as Input
-import Frontend.Common exposing (viewMarked)
+import Frontend.Common
+import Html
 import Html.Attributes
 import Length exposing (Length)
+import Markdown.Block exposing (ListItem(..), Task(..))
+import Markdown.Html
+import Markdown.Parser
+import Markdown.Renderer
 import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person, Quiz)
 import Pins exposing (mapSize)
 import Quantity
+import Set
 import Theme
-import Types exposing (FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..))
+import Types exposing (FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel)
 
 
 rythm : Length
@@ -61,8 +67,8 @@ view model =
                             viewQuizzing person quiz
 
 
-viewMap : Data -> { currentPerson : Id } -> Element GameMsg
-viewMap data { currentPerson } =
+viewMap : Data -> SharedGameModel -> Element GameMsg
+viewMap data { currentPerson, tickets } =
     let
         normalAttrs =
             [ width <| px mapSize.width
@@ -78,6 +84,7 @@ viewMap data { currentPerson } =
         inFronts =
             data
                 |> Dict.toList
+                |> List.filter (\( personId, _ ) -> Set.member personId tickets)
                 |> List.concatMap
                     (\( personId, person ) ->
                         viewPinOnMap
@@ -247,12 +254,12 @@ viewTalking person { currentDialog } =
         [ viewDialogLine person currentDialog.text
         , currentDialog.choices
             |> List.map viewChoice
-            |> wrappedRow [ spacing rythm ]
+            |> wrappedRow [ width fill, spacing rythm ]
         ]
 
 
 viewQuizzing : Person -> Quiz -> Element GameMsg
-viewQuizzing person { question, correctAnswer, wrongAnswers } =
+viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
     column
         [ spacing rythm
         , padding rythm
@@ -262,6 +269,14 @@ viewQuizzing person { question, correctAnswer, wrongAnswers } =
         , Font.size baseFontSize
         ]
         [ semiBox [ width fill ] <|
+            el
+                [ Font.center
+                , Font.bold
+                , width fill
+                , Font.size <| Quantity.multiplyBy 2 baseFontSize
+                ]
+                (text "QUIZ TIME!")
+        , semiBox [ width fill ] <|
             row
                 [ height fill
                 , spacing rythm
@@ -275,8 +290,8 @@ viewQuizzing person { question, correctAnswer, wrongAnswers } =
                 ]
         , (correctAnswer :: wrongAnswers)
             |> List.sort
-            |> List.map (viewQuizAnswer correctAnswer)
-            |> wrappedRow [ spacing rythm ]
+            |> List.map (viewQuizAnswer quiz)
+            |> wrappedRow [ width fill, spacing rythm ]
         ]
 
 
@@ -287,17 +302,31 @@ duckPerson =
     }
 
 
-viewQuizAnswer : String -> String -> Element GameMsg
-viewQuizAnswer correctAnswer answer =
+viewQuizAnswer : Quiz -> String -> Element GameMsg
+viewQuizAnswer quiz answer =
+    let
+        next =
+            if answer == quiz.correctAnswer then
+                { text = quiz.messageIfCorrect
+                , choices =
+                    [ { text = "Thank you!"
+                      , next = NextGiveTicket
+                      }
+                    ]
+                }
+
+            else
+                { text = quiz.messageIfWrong
+                , choices =
+                    [ { text = "Let me try again!"
+                      , next = NextQuiz quiz
+                      }
+                    ]
+                }
+    in
     Input.button [ width fill ]
         { label = viewDialogLine duckPerson answer
-        , onPress =
-            Just <|
-                if answer == correctAnswer then
-                    GaveCorrectAnswer
-
-                else
-                    GaveWrongAnswer
+        , onPress = Just <| ViewDialog next
         }
 
 
@@ -331,8 +360,14 @@ viewChoice { text, next } =
                     NextViewMap ->
                         ViewMap
 
-                    NextQuiz ->
+                    NextRandomQuiz ->
                         PickQuiz
+
+                    NextQuiz quiz ->
+                        ViewQuiz quiz
+
+                    NextGiveTicket ->
+                        GiveTicketAndViewMap
         }
 
 
@@ -342,7 +377,7 @@ viewDialogLine personIsh text =
         [ Border.width borderWidth
         , width fill
         ]
-        (row [ spacing rythm ]
+        (row [ spacing rythm, width fill ]
             [ avatar
                 [ width avatarSize
                 , height avatarSize
@@ -388,3 +423,159 @@ semiBox attrs =
          ]
             ++ attrs
         )
+
+
+
+-- Markdown renderer
+
+
+elmUiRenderer : Markdown.Renderer.Renderer (Element msg)
+elmUiRenderer =
+    { heading = heading
+    , paragraph = paragraph [ spacing rythm ]
+    , thematicBreak = Element.none
+    , text = Element.text
+    , strong = \content -> Element.row [ Font.bold ] content
+    , emphasis = \content -> Element.row [ Font.italic ] content
+    , strikethrough = \content -> Element.row [ Font.strike ] content
+    , codeSpan = code
+    , link =
+        \{ destination } body ->
+            Element.newTabLink
+                [ Element.htmlAttribute (Html.Attributes.style "display" "inline-flex") ]
+                { url = destination
+                , label =
+                    Element.paragraph
+                        [ Font.color (Element.rgb255 0 0 255)
+                        ]
+                        body
+                }
+    , hardLineBreak = Html.br [] [] |> Element.html
+    , image =
+        \image ->
+            Element.image [ Element.width Element.fill ] { src = image.src, description = image.alt }
+    , blockQuote =
+        \children ->
+            Element.column
+                [ Border.widthEach
+                    { top = Quantity.zero
+                    , right = Quantity.zero
+                    , bottom = Quantity.zero
+                    , left = rythm
+                    }
+                , Element.padding rythm
+                , Border.color (Element.rgb255 145 145 145)
+                , Background.color (Element.rgb255 245 245 245)
+                ]
+                children
+    , unorderedList =
+        \items ->
+            Element.column [ Element.spacing rythm ]
+                (items
+                    |> List.map
+                        (\(ListItem task children) ->
+                            Element.row [ Element.spacing rythm ]
+                                [ Element.row
+                                    [ Element.alignTop ]
+                                    ((case task of
+                                        IncompleteTask ->
+                                            Input.defaultCheckbox False
+
+                                        CompletedTask ->
+                                            Input.defaultCheckbox True
+
+                                        NoTask ->
+                                            Element.text "•"
+                                     )
+                                        :: Element.text " "
+                                        :: children
+                                    )
+                                ]
+                        )
+                )
+    , orderedList =
+        \startingIndex items ->
+            Element.column [ Element.spacing rythm ]
+                (items
+                    |> List.indexedMap
+                        (\index itemBlocks ->
+                            Element.row [ Element.spacing (Quantity.multiplyBy 0.5 rythm) ]
+                                [ Element.row [ Element.alignTop ]
+                                    (Element.text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
+                                ]
+                        )
+                )
+    , codeBlock = codeBlock
+    , html = Markdown.Html.oneOf []
+    , table = Element.column []
+    , tableHeader = Element.column []
+    , tableBody = Element.column []
+    , tableRow = Element.row []
+    , tableHeaderCell = \_ children -> Element.paragraph [] children
+    , tableCell = \_ children -> Element.paragraph [] children
+    }
+
+
+code : String -> Element msg
+code snippet =
+    Element.el
+        [ Background.color (Element.rgba 0 0 0 0.04)
+        , Border.rounded rythm
+        , padding rythm
+        , Font.family [ Font.monospace ]
+        ]
+        (Element.text snippet)
+
+
+codeBlock : { body : String, language : Maybe String } -> Element msg
+codeBlock details =
+    Element.el
+        [ Background.color (Element.rgba 0 0 0 0.03)
+        , Element.htmlAttribute (Html.Attributes.style "white-space" "pre")
+        , Element.padding rythm
+        , Font.family [ Font.monospace ]
+        ]
+        (Element.text details.body)
+
+
+heading : { level : Markdown.Block.HeadingLevel, rawText : String, children : List (Element msg) } -> Element msg
+heading { level, rawText, children } =
+    Element.paragraph
+        [ Font.size
+            (case level of
+                Markdown.Block.H1 ->
+                    Quantity.multiplyBy 1.8 baseFontSize
+
+                Markdown.Block.H2 ->
+                    Quantity.multiplyBy 1.2 baseFontSize
+
+                _ ->
+                    baseFontSize
+            )
+        , Font.bold
+        , Font.family [ Font.typeface "Montserrat" ]
+        , Element.htmlAttribute
+            (Html.Attributes.attribute "name" (rawTextToId rawText))
+        , Element.htmlAttribute
+            (Html.Attributes.id (rawTextToId rawText))
+        ]
+        children
+
+
+rawTextToId : String -> String
+rawTextToId rawText =
+    rawText
+        |> String.split " "
+        |> String.join "-"
+        |> String.toLower
+
+
+viewMarked : List (Attribute msg) -> String -> Element msg
+viewMarked attrs input =
+    input
+        |> String.replace "  " "\n\n"
+        |> Markdown.Parser.parse
+        |> Result.mapError (\_ -> "Parsing error")
+        |> Result.andThen (Markdown.Renderer.render elmUiRenderer)
+        |> Result.map (column attrs)
+        |> Result.withDefault (text input)
