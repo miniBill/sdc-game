@@ -26,10 +26,10 @@ calculateCoeffs : (Pin -> Angle) -> (Pin -> Length) -> ( Length, Quantity Float 
 calculateCoeffs xf yf =
     let
         xs =
-            List.map xf pins
+            List.map xf references
 
         ys =
-            List.map yf pins
+            List.map yf references
 
         xAverage =
             Quantity.sum xs
@@ -60,8 +60,8 @@ over2 d n =
     Quantity.unsafe (Quantity.unwrap n / Quantity.unwrap d)
 
 
-pins : List Pin
-pins =
+references : List Pin
+references =
     [ udine
     , london
     , paris
