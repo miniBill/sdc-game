@@ -111,19 +111,23 @@ updateFromBackend msg model =
 gotGameData : Data -> OuterGameModel
 gotGameData data =
     case
-        data
+        ( data
             |> Dict.toList
-            |> List.Extra.find (\( _, p ) -> p.name == "Orla")
+            |> List.Extra.find (\( id, p ) -> id /= "" && p.name == "Orla")
+        , Dict.get "" data
+        )
     of
-        Just ( orlaId, _ ) ->
+        ( Just ( orlaId, _ ), Just initial ) ->
             LoadedData data
-                { currentPerson = orlaId
+                { currentPerson = ""
                 , tickets = Set.singleton orlaId
                 }
-                ViewingPerson
+                (Talking { currentDialog = initial.dialog })
 
-        Nothing ->
-            -- Data must contain "Orla", as a starting point
+        ( Nothing, _ ) ->
+            DataEmpty
+
+        ( _, Nothing ) ->
             DataEmpty
 
 
@@ -410,7 +414,7 @@ pickNewTicket model =
         phase =
             EnglandPhase
     in
-    Debug.todo "TODO"
+    Debug.todo "pickNewTicket"
 
 
 view : FrontendModel -> Element FrontendMsg

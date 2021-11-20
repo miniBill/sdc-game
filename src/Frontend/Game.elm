@@ -463,20 +463,20 @@ elmUiRenderer =
                     , bottom = Quantity.zero
                     , left = rythm
                     }
-                , Element.padding rythm
+                , padding rythm
                 , Border.color (Element.rgb255 145 145 145)
                 , Background.color (Element.rgb255 245 245 245)
                 ]
                 children
     , unorderedList =
         \items ->
-            Element.column [ Element.spacing rythm ]
+            column [ spacing rythm ]
                 (items
                     |> List.map
                         (\(ListItem task children) ->
-                            Element.row [ Element.spacing rythm ]
-                                [ Element.row
-                                    [ Element.alignTop ]
+                            row [ spacing rythm ]
+                                [ row
+                                    [ alignTop ]
                                     ((case task of
                                         IncompleteTask ->
                                             Input.defaultCheckbox False
@@ -485,9 +485,9 @@ elmUiRenderer =
                                             Input.defaultCheckbox True
 
                                         NoTask ->
-                                            Element.text "•"
+                                            text "•"
                                      )
-                                        :: Element.text " "
+                                        :: text " "
                                         :: children
                                     )
                                 ]
@@ -495,24 +495,24 @@ elmUiRenderer =
                 )
     , orderedList =
         \startingIndex items ->
-            Element.column [ Element.spacing rythm ]
+            column [ spacing rythm ]
                 (items
                     |> List.indexedMap
                         (\index itemBlocks ->
-                            Element.row [ Element.spacing (Quantity.multiplyBy 0.5 rythm) ]
-                                [ Element.row [ Element.alignTop ]
-                                    (Element.text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
+                            row [ spacing (Quantity.multiplyBy 0.5 rythm) ]
+                                [ row [ alignTop ]
+                                    (text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
                                 ]
                         )
                 )
     , codeBlock = codeBlock
     , html = Markdown.Html.oneOf []
-    , table = Element.column []
-    , tableHeader = Element.column []
-    , tableBody = Element.column []
-    , tableRow = Element.row []
-    , tableHeaderCell = \_ children -> Element.paragraph [] children
-    , tableCell = \_ children -> Element.paragraph [] children
+    , table = column []
+    , tableHeader = column []
+    , tableBody = column []
+    , tableRow = row []
+    , tableHeaderCell = \_ children -> paragraph [] children
+    , tableCell = \_ children -> paragraph [] children
     }
 
 
@@ -577,5 +577,5 @@ viewMarked attrs input =
         |> Markdown.Parser.parse
         |> Result.mapError (\_ -> "Parsing error")
         |> Result.andThen (Markdown.Renderer.render elmUiRenderer)
-        |> Result.map (column attrs)
+        |> Result.map (column (spacing rythm :: attrs))
         |> Result.withDefault (text input)
