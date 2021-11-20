@@ -30,7 +30,7 @@ view maybeData editorModel =
                         |> Maybe.map (\( id, person ) -> viewPerson id person)
                         |> Maybe.withDefault Element.none
 
-                peopleViews =
+                scrollableView =
                     Theme.column
                         [ scrollbars
                         , height fill
@@ -59,7 +59,7 @@ view maybeData editorModel =
                         ]
                         (controls data editorModel)
                 ]
-                peopleViews
+                scrollableView
 
 
 controls : Data -> EditorModel -> Element EditorMsg
@@ -83,6 +83,7 @@ controls data model =
         people =
             data
                 |> Dict.toList
+                |> List.sortBy (\( _, { name } ) -> name)
                 |> List.map
                     (\( id, person ) ->
                         Theme.button
