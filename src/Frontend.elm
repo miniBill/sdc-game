@@ -111,9 +111,7 @@ updateFromBackend msg model =
 gotGameData : Data -> OuterGameModel
 gotGameData data =
     case
-        ( data
-            |> Dict.toList
-            |> List.Extra.find (\( id, p ) -> id /= "" && p.name == "Orla")
+        ( findOrla data
         , Dict.get "" data
         )
     of
@@ -129,6 +127,13 @@ gotGameData data =
 
         ( _, Nothing ) ->
             DataEmpty
+
+
+findOrla : Data -> Maybe ( Id, Person )
+findOrla data =
+    data
+        |> Dict.toList
+        |> List.Extra.find (\( id, p ) -> id /= "" && p.name == "Orla")
 
 
 updatePersonInModel : Id -> Maybe Person -> FrontendModel -> FrontendModel
@@ -371,7 +376,19 @@ updateGame msg outerModel =
                             ( { sharedModel | currentPerson = id }, ViewingPerson, Cmd.none )
 
                         ViewMap ->
-                            ( sharedModel, ViewingMap, Cmd.none )
+                            ( { sharedModel
+                                | currentPerson =
+                                    if String.isEmpty sharedModel.currentPerson then
+                                        findOrla data
+                                            |> Maybe.map Tuple.first
+                                            |> Maybe.withDefault ""
+
+                                    else
+                                        sharedModel.currentPerson
+                              }
+                            , ViewingMap
+                            , Cmd.none
+                            )
 
                         ViewDialog dialog ->
                             ( sharedModel, Talking { currentDialog = dialog }, Cmd.none )
@@ -397,7 +414,19 @@ updateGame msg outerModel =
                             ( sharedModel, Quizzing quiz, Cmd.none )
 
                         GiveTicketAndViewMap ->
-                            ( sharedModel, ViewingMap, pickNewTicket sharedModel )
+                            ( { sharedModel
+                                | currentPerson =
+                                    if String.isEmpty sharedModel.currentPerson then
+                                        findOrla data
+                                            |> Maybe.map Tuple.first
+                                            |> Maybe.withDefault ""
+
+                                    else
+                                        sharedModel.currentPerson
+                              }
+                            , ViewingMap
+                            , pickNewTicket sharedModel
+                            )
             in
             ( LoadedData data sharedModel_ model_, cmd )
 
@@ -414,7 +443,7 @@ pickNewTicket model =
         phase =
             EnglandPhase
     in
-    Debug.todo "pickNewTicket"
+    Cmd.none
 
 
 view : FrontendModel -> Element FrontendMsg
