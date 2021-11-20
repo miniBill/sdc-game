@@ -9,7 +9,7 @@ import Frontend.Common
 import Html.Attributes
 import Model exposing (Data, Id, Person)
 import Theme
-import Types exposing (EditorModel, EditorMsg(..), FrontendMsg(..))
+import Types exposing (EditorModel, EditorMsg(..))
 
 
 view : Maybe Data -> EditorModel -> Element EditorMsg

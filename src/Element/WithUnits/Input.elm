@@ -1,7 +1,7 @@
 module Element.WithUnits.Input exposing (button, defaultCheckbox)
 
 import Element.Input
-import Element.WithUnits.Internal exposing (Attribute(..), Element(..), wrapAttrs)
+import Element.WithUnits.Internal exposing (Attribute, Element(..), wrapAttrs)
 
 
 button :

@@ -22,7 +22,7 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (Data, Id, Next(..), Person)
+import Model exposing (Data, Id, Person)
 import Pixels
 import Random
 import Set

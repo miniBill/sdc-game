@@ -20,7 +20,7 @@ import Pins exposing (mapSize)
 import Quantity
 import Set
 import Theme
-import Types exposing (FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel)
+import Types exposing (GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel)
 
 
 rythm : Length

@@ -2,7 +2,7 @@ module Pins exposing (mapSize, northEastToXY)
 
 import Angle exposing (Angle, Radians)
 import Length exposing (Length, Meters)
-import Quantity exposing (Product, Quantity(..), Rate)
+import Quantity exposing (Product, Quantity, Rate)
 
 
 northEastToXY : Angle -> Angle -> ( Length, Length )

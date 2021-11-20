@@ -23,21 +23,7 @@ type alias Data =
     Dict Id Person
 
 
-type alias City =
-    { name : CityName
-    , text : String
-    , image : String
-    , coordinates : Coordinates
-    }
-
-
-type alias Coordinates =
-    { north : Float
-    , east : Float
-    }
-
-
-type alias CityName =
+type alias Id =
     String
 
 
@@ -50,17 +36,22 @@ type alias Person =
     }
 
 
-type alias Quiz =
-    { question : String
-    , correctAnswer : String
-    , messageIfCorrect : String
-    , messageIfWrong : String
-    , wrongAnswers : List String
+type alias City =
+    { name : CityName
+    , text : String
+    , image : String
+    , coordinates : Coordinates
     }
 
 
-type alias Id =
+type alias CityName =
     String
+
+
+type alias Coordinates =
+    { north : Float
+    , east : Float
+    }
 
 
 type alias Dialog =
@@ -81,6 +72,15 @@ type Next
     | NextRandomQuiz
     | NextQuiz Quiz
     | NextGiveTicket
+
+
+type alias Quiz =
+    { question : String
+    , correctAnswer : String
+    , messageIfCorrect : String
+    , messageIfWrong : String
+    , wrongAnswers : List String
+    }
 
 
 type Consequence
