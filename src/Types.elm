@@ -27,7 +27,7 @@ type alias Size =
 
 type Page
     = Editor (Maybe Data) EditorModel
-    | Game GameModel
+    | Game OuterGameModel
 
 
 type alias EditorModel =
@@ -36,12 +36,21 @@ type alias EditorModel =
     }
 
 
-type GameModel
+type OuterGameModel
     = LoadingData
     | DataEmpty
-    | ViewingMap Data { currentPerson : Id }
-    | ViewingPerson Data { currentPerson : Id }
-    | Talking Data { currentPerson : Id, currentDialog : Dialog }
+    | LoadedData Data SharedGameModel GameModel
+
+
+type alias SharedGameModel =
+    { currentPerson : Id }
+
+
+type GameModel
+    = ViewingMap
+    | ViewingPerson
+    | Talking { currentDialog : Dialog }
+    | Quizzing {}
 
 
 type alias BackendModel =
@@ -58,19 +67,26 @@ type FrontendMsg
       -- URL management
     | UrlClicked UrlRequest
     | UrlChanged Url
+      -- Page-specific messages
+    | EditorMsg EditorMsg
+    | GameMsg GameMsg
+
+
+type EditorMsg
+    = AddPerson
+    | UpdatePerson Id (Maybe Person)
+    | EditPerson Id
       -- File management
     | FileSelect
     | FileSelected File
     | ReadFile String
     | DownloadJson
-      -- Cities editor
-    | AddPerson
-    | UpdatePerson Id (Maybe Person)
-    | EditPerson Id
-      -- Game
-    | ViewPerson Id
-    | TalkTo Id Dialog
-    | ViewMap Id
+
+
+type GameMsg
+    = ViewPerson Id
+    | ViewDialog Dialog
+    | ViewMap
 
 
 type ToBackend

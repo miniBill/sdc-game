@@ -9,10 +9,10 @@ import Frontend.Common
 import Html.Attributes
 import Model exposing (Data, Id, Person)
 import Theme
-import Types exposing (EditorModel, FrontendMsg(..))
+import Types exposing (EditorModel, EditorMsg(..), FrontendMsg(..))
 
 
-view : Maybe Data -> EditorModel -> Element FrontendMsg
+view : Maybe Data -> EditorModel -> Element EditorMsg
 view maybeData editorModel =
     case maybeData of
         Nothing ->
@@ -62,7 +62,7 @@ view maybeData editorModel =
                 peopleViews
 
 
-controls : Data -> EditorModel -> Element FrontendMsg
+controls : Data -> EditorModel -> Element EditorMsg
 controls data model =
     let
         btn msg color label =
@@ -180,7 +180,7 @@ controls data model =
         (common ++ people ++ error ++ delete)
 
 
-viewPerson : Id -> Person -> Element FrontendMsg
+viewPerson : Id -> Person -> Element EditorMsg
 viewPerson id person =
     el [ width fill ] <|
         Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|

@@ -27,7 +27,7 @@ import Pixels
 import Random
 import Task
 import Theme
-import Types exposing (EditorModel, FrontendModel, FrontendMsg(..), GameModel(..), Page(..), ToBackend(..), ToFrontend(..))
+import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -100,20 +100,14 @@ updateFromBackend msg model =
                         DataEmpty ->
                             gotGameData data
 
-                        ViewingMap _ m ->
-                            ViewingMap data m
-
-                        ViewingPerson _ m ->
-                            ViewingPerson data m
-
-                        Talking _ m ->
-                            Talking data m
+                        LoadedData _ shared inner ->
+                            LoadedData data shared inner
                 )
             , Cmd.none
             )
 
 
-gotGameData : Data -> GameModel
+gotGameData : Data -> OuterGameModel
 gotGameData data =
     case
         data
@@ -121,9 +115,10 @@ gotGameData data =
             |> List.Extra.find (\( _, p ) -> p.name == "Orla")
     of
         Just ( id, _ ) ->
-            ViewingPerson data { currentPerson = id }
+            LoadedData data { currentPerson = id } ViewingPerson
 
         Nothing ->
+            -- Data must contain "Orla", as a starting point
             DataEmpty
 
 
@@ -148,25 +143,17 @@ updatePersonInModel id person model =
                             DataEmpty
 
                         Just p ->
-                            ViewingMap
-                                (Dict.singleton id p)
-                                { currentPerson = id }
+                            gotGameData (Dict.singleton id p)
 
-                ViewingMap data m ->
-                    ViewingMap (updater data) m
-
-                ViewingPerson data m ->
-                    ViewingPerson (updater data) m
-
-                Talking data m ->
-                    Talking (updater data) m
+                LoadedData data shared inner ->
+                    LoadedData (updater data) shared inner
         )
 
 
 updatePage :
     FrontendModel
     -> (Maybe Data -> EditorModel -> ( Maybe Data, EditorModel ))
-    -> (GameModel -> GameModel)
+    -> (OuterGameModel -> OuterGameModel)
     -> FrontendModel
 updatePage model editor game =
     { model
@@ -233,50 +220,7 @@ subscriptions _ =
 update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
 update msg model =
     case ( msg, model.page ) of
-        ( GotResized, _ ) ->
-            ( model, getSizeCmd )
-
-        ( Resized width height, _ ) ->
-            ( { model
-                | size =
-                    Just
-                        { width = width
-                        , height = height
-                        }
-              }
-            , Cmd.none
-            )
-
-        ( _, Editor Nothing _ ) ->
-            ( model, Cmd.none )
-
-        ( _, Game LoadingData ) ->
-            ( model, Cmd.none )
-
-        ( _, Game DataEmpty ) ->
-            ( model, Cmd.none )
-
-        ( EditPerson _, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( DownloadJson, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( AddPerson, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( ReadFile _, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( ViewPerson _, Editor _ _ ) ->
-            ( model, Cmd.none )
-
-        ( ViewMap _, Editor _ _ ) ->
-            ( model, Cmd.none )
-
-        ( TalkTo _ _, Editor _ _ ) ->
-            ( model, Cmd.none )
-
+        -- Handle generic messages
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
@@ -292,116 +236,139 @@ update msg model =
         ( UrlChanged url, _ ) ->
             ( { model | page = urlToPage url }, Cmd.none )
 
+        ( Resized width height, _ ) ->
+            ( { model
+                | size =
+                    Just
+                        { width = width
+                        , height = height
+                        }
+              }
+            , Cmd.none
+            )
+
+        ( GotResized, _ ) ->
+            ( model, getSizeCmd )
+
+        -- Ignore stray cross-page messages
+        ( EditorMsg _, Game _ ) ->
+            ( model, Cmd.none )
+
+        ( GameMsg _, Editor _ _ ) ->
+            ( model, Cmd.none )
+
+        -- Handle page-specifc messages
+        ( _, Editor Nothing _ ) ->
+            -- Ignore messages received while loading
+            -- TODO: queue them instead?
+            ( model, Cmd.none )
+
+        ( EditorMsg editorMsg, Editor (Just data) editorModel ) ->
+            let
+                ( data_, editorModel_, cmd ) =
+                    updateEditor editorMsg data editorModel
+            in
+            ( { model | page = Editor (Just data_) editorModel_ }
+            , Cmd.map EditorMsg cmd
+            )
+
+        ( GameMsg gameMsg, Game gameModel ) ->
+            let
+                ( gameModel_, gameCmd ) =
+                    updateGame gameMsg gameModel
+            in
+            ( { model | page = Game gameModel_ }
+            , Cmd.map GameMsg gameCmd
+            )
+
+
+updateEditor : EditorMsg -> Data -> EditorModel -> ( Data, EditorModel, Cmd EditorMsg )
+updateEditor msg data model =
+    case ( msg, model ) of
         ( FileSelect, _ ) ->
-            ( model, File.Select.file [ "application/json" ] FileSelected )
+            ( data
+            , model
+            , File.Select.file [ "application/json" ] FileSelected
+            )
 
         ( FileSelected file, _ ) ->
-            ( model, Task.perform ReadFile <| File.toString file )
+            ( data
+            , model
+            , Task.perform ReadFile <| File.toString file
+            )
 
         ( UpdatePerson id person, _ ) ->
-            ( updatePersonInModel id person model
+            ( Dict.update id (always person) data
+            , model
             , Lamdera.sendToBackend <| TBUpdatePerson id person
             )
 
-        ( ReadFile str, Editor data _ ) ->
-            let
-                ( data_, editorModel_, cmd ) =
-                    case Codec.decodeString Codecs.dataCodec str of
-                        Err err ->
-                            ( data
-                            , { lastError = Json.Decode.errorToString err
-                              , currentPerson = Nothing
-                              }
-                            , Cmd.none
-                            )
+        ( ReadFile str, _ ) ->
+            case Codec.decodeString Codecs.dataCodec str of
+                Err err ->
+                    ( data
+                    , { lastError = Json.Decode.errorToString err
+                      , currentPerson = Nothing
+                      }
+                    , Cmd.none
+                    )
 
-                        Ok newData ->
-                            ( Just newData
-                            , { lastError = ""
-                              , currentPerson = Nothing
-                              }
-                            , Lamdera.sendToBackend <| TBData newData
-                            )
-            in
-            ( { model | page = Editor data_ editorModel_ }
-            , cmd
-            )
+                Ok newData ->
+                    ( newData
+                    , { lastError = ""
+                      , currentPerson = Nothing
+                      }
+                    , Lamdera.sendToBackend <| TBData newData
+                    )
 
-        ( DownloadJson, Editor (Just data) _ ) ->
-            ( model
+        ( DownloadJson, _ ) ->
+            ( data
+            , model
             , File.Download.string "sdc-game.json" "application/json" <|
                 Codec.encodeToString 0 Codecs.dataCodec data
             )
 
-        ( AddPerson, Editor (Just _) _ ) ->
-            ( model
+        ( AddPerson, _ ) ->
+            ( data
+            , model
             , Random.int 0 Random.maxInt
                 |> Random.map Hex.toString
                 |> Random.generate (\newId -> UpdatePerson newId (Just Editors.personDefault))
             )
 
-        ( EditPerson id, Editor data editorModel ) ->
-            ( { model
-                | page =
-                    Editor data
-                        { editorModel | currentPerson = Just id }
-              }
+        ( EditPerson id, editorModel ) ->
+            ( data
+            , { editorModel | currentPerson = Just id }
             , Cmd.none
             )
 
-        ( ViewPerson id, Game (ViewingMap data _) ) ->
-            ( { model
-                | page =
-                    Game
-                        (ViewingPerson data { currentPerson = id })
-              }
-            , Cmd.none
-            )
 
-        ( ViewMap id, Game (ViewingPerson data _) ) ->
-            ( { model
-                | page =
-                    Game
-                        (ViewingMap data { currentPerson = id })
-              }
-            , Cmd.none
-            )
+updateGame : GameMsg -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg )
+updateGame msg outerModel =
+    case outerModel of
+        LoadingData ->
+            -- Ignore messages received while loading
+            -- TODO: queue them instead?
+            ( outerModel, Cmd.none )
 
-        ( ViewMap id, Game (Talking data _) ) ->
-            ( { model
-                | page =
-                    Game
-                        (ViewingMap data { currentPerson = id })
-              }
-            , Cmd.none
-            )
+        DataEmpty ->
+            ( outerModel, Cmd.none )
 
-        ( TalkTo id dialog, Game (ViewingPerson data _) ) ->
-            ( { model
-                | page =
-                    Game
-                        (Talking data { currentPerson = id, currentDialog = dialog })
-              }
-            , Cmd.none
-            )
+        LoadedData data sharedModel model ->
+            let
+                ( sharedModel_, model_, cmd ) =
+                    case ( msg, model ) of
+                        -- Handle messages
+                        ( ViewPerson id, _ ) ->
+                            ( { sharedModel | currentPerson = id }, ViewingPerson, Cmd.none )
 
-        ( TalkTo id dialog, Game (Talking data _) ) ->
-            ( { model
-                | page =
-                    Game
-                        (Talking data { currentPerson = id, currentDialog = dialog })
-              }
-            , Cmd.none
-            )
+                        ( ViewMap, _ ) ->
+                            ( sharedModel, ViewingMap, Cmd.none )
 
-        ( TalkTo _ _, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( ViewPerson _, Game _ ) ->
-            ( model, Cmd.none )
-
-        ( ViewMap _, Game _ ) ->
-            ( model, Cmd.none )
+                        ( ViewDialog dialog, _ ) ->
+                            ( sharedModel, Talking { currentDialog = dialog }, Cmd.none )
+            in
+            ( LoadedData data sharedModel_ model_, cmd )
 
 
 view : FrontendModel -> Element FrontendMsg
@@ -411,7 +378,7 @@ view model =
             Frontend.Common.loading
 
         ( Game gameModel, Just size ) ->
-            Element.WithUnits.run size <| Frontend.Game.view gameModel
+            Element.map GameMsg <| Element.WithUnits.run size <| Frontend.Game.view gameModel
 
         ( Editor data editorModel, _ ) ->
-            Frontend.Editor.view data editorModel
+            Element.map EditorMsg <| Frontend.Editor.view data editorModel

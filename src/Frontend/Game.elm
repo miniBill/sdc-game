@@ -14,7 +14,7 @@ import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person)
 import Pins exposing (mapSize)
 import Quantity
 import Theme
-import Types exposing (FrontendMsg(..), GameModel(..))
+import Types exposing (FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..))
 
 
 rythm : Length
@@ -32,7 +32,7 @@ borderWidth =
     Length.millimeters 3
 
 
-view : GameModel -> Element FrontendMsg
+view : OuterGameModel -> Element GameMsg
 view model =
     case model of
         LoadingData ->
@@ -41,17 +41,27 @@ view model =
         DataEmpty ->
             text "branch 'DataEmpty' not implemented"
 
-        ViewingMap data submodel ->
-            viewMap data submodel
+        LoadedData data sharedModel submodel ->
+            case Dict.get sharedModel.currentPerson data of
+                Nothing ->
+                    text "TODO - MISSING PERSON"
 
-        ViewingPerson data submodel ->
-            viewPerson data submodel
+                Just person ->
+                    case submodel of
+                        ViewingMap ->
+                            viewMap data sharedModel
 
-        Talking data submodel ->
-            viewTalking data submodel
+                        ViewingPerson ->
+                            viewPerson person
+
+                        Talking talkingModel ->
+                            viewTalking person talkingModel
+
+                        Quizzing _ ->
+                            Debug.todo "branch 'Quizzing _' not implemented"
 
 
-viewMap : Data -> { currentPerson : Id } -> Element FrontendMsg
+viewMap : Data -> { currentPerson : Id } -> Element GameMsg
 viewMap data { currentPerson } =
     let
         normalAttrs =
@@ -83,7 +93,7 @@ viewMap data { currentPerson } =
         }
 
 
-viewPinOnMap : Bool -> Id -> Person -> List (Element FrontendMsg)
+viewPinOnMap : Bool -> Id -> Person -> List (Element GameMsg)
 viewPinOnMap selected id person =
     let
         city =
@@ -143,65 +153,67 @@ viewPinOnMap selected id person =
     ]
 
 
-viewPerson : Data -> { currentPerson : Id } -> Element FrontendMsg
-viewPerson data { currentPerson } =
-    case Dict.get currentPerson data of
-        Nothing ->
-            text "TODO - MISSING PERSON"
+viewPerson : Person -> Element GameMsg
+viewPerson person =
+    let
+        leftBox orientation =
+            viewCityDescription
+                (if orientation == Portrait then
+                    [ width fill ]
 
-        Just person ->
-            Element.withOrientation
-                (\orientation ->
-                    orientationContainer
-                        [ padding rythm
-                        , spacing rythm
-                        , width fill
-                        , height fill
-                        , cityBackground person.city
-                        , Font.size baseFontSize
+                 else
+                    [ width fill
+                    , height fill
+                    ]
+                )
+                person.city
+
+        rightBox orientation =
+            semiBox
+                [ height fill
+                , if orientation == Portrait then
+                    width fill
+
+                  else
+                    width shrink
+                ]
+                (column
+                    [ centerX
+                    , centerY
+                    , spacing rythm
+                    , width fill
+                    ]
+                    [ avatar
+                        [ width fill
+                        , Element.htmlAttribute <| Html.Attributes.style "height" "100%"
                         ]
-                        [ viewCityDescription
-                            (if orientation == Portrait then
-                                [ width fill ]
-
-                             else
-                                [ width fill
-                                , height fill
-                                ]
-                            )
-                            person.city
-                        , semiBox
-                            [ height fill
-                            , if orientation == Portrait then
-                                width fill
-
-                              else
-                                width shrink
-                            ]
-                            (column
-                                [ centerX
-                                , centerY
-                                , spacing rythm
+                        person
+                    , Input.button [ centerX, centerY ]
+                        { onPress = Just <| ViewDialog person.dialog
+                        , label =
+                            semiBox
+                                [ Border.width borderWidth
                                 , width fill
                                 ]
-                                [ avatar
-                                    [ width fill
-                                    , Element.htmlAttribute <| Html.Attributes.style "height" "100%"
-                                    ]
-                                    person
-                                , Input.button [ centerX, centerY ]
-                                    { onPress = Just <| TalkTo currentPerson person.dialog
-                                    , label =
-                                        semiBox
-                                            [ Border.width borderWidth
-                                            , width fill
-                                            ]
-                                            (text <| "Talk to " ++ person.name)
-                                    }
-                                ]
-                            )
-                        ]
+                                (text <| "Talk to " ++ person.name)
+                        }
+                    ]
                 )
+    in
+    Element.withOrientation
+        (\orientation ->
+            orientationContainer
+                [ padding rythm
+                , spacing rythm
+                , width fill
+                , height fill
+                , cityBackground person.city
+                , Font.size baseFontSize
+                ]
+                [ leftBox orientation
+                , rightBox orientation
+                ]
+        )
 
 
 orientationContainer : List (Attribute msg) -> List (Element msg) -> Element msg
@@ -217,23 +229,13 @@ orientationContainer attrs children =
         )
 
 
-viewTalking : Data -> { currentDialog : Dialog, currentPerson : Id } -> Element FrontendMsg
-viewTalking data { currentDialog, currentPerson } =
-    case Dict.get currentPerson data of
-        Nothing ->
-            text "TODO - MISSING PERSON"
-
-        Just person ->
-            viewDialog currentPerson person currentDialog
-
-
 avatarSize : Element.Length
 avatarSize =
     px <| Quantity.multiplyBy 6 rythm
 
 
-viewDialog : Id -> Person -> Dialog -> Element FrontendMsg
-viewDialog currentPerson person { text, choices } =
+viewTalking : Person -> { currentDialog : Dialog } -> Element GameMsg
+viewTalking person { currentDialog } =
     column
         [ spacing rythm
         , padding rythm
@@ -252,10 +254,10 @@ viewDialog currentPerson person { text, choices } =
                     , height avatarSize
                     ]
                     person
-                , viewMarked [ width fill ] text
+                , viewMarked [ width fill ] currentDialog.text
                 ]
-        , choices
-            |> List.map (viewChoice currentPerson)
+        , currentDialog.choices
+            |> List.map viewChoice
             |> row []
         ]
 
@@ -277,8 +279,8 @@ avatar attrs person =
         )
 
 
-viewChoice : Id -> Choice -> Element FrontendMsg
-viewChoice currentPerson { text, next } =
+viewChoice : Choice -> Element GameMsg
+viewChoice { text, next } =
     Input.button [ width fill ]
         { label =
             semiBox
@@ -298,14 +300,14 @@ viewChoice currentPerson { text, next } =
             Just <|
                 case next of
                     NextDialog n ->
-                        TalkTo currentPerson n
+                        ViewDialog n
 
                     NextViewMap ->
-                        ViewMap currentPerson
+                        ViewMap
         }
 
 
-cityBackground : City -> Attribute FrontendMsg
+cityBackground : City -> Attribute msg
 cityBackground city =
     Element.behindContent <|
         el
