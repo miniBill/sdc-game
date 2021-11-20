@@ -6,7 +6,7 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (Data, Dialog, Id, Person)
+import Model exposing (Data, Dialog, Id, Person, Quiz)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -50,7 +50,7 @@ type GameModel
     = ViewingMap
     | ViewingPerson
     | Talking { currentDialog : Dialog }
-    | Quizzing {}
+    | Quizzing Quiz
 
 
 type alias BackendModel =
@@ -87,7 +87,10 @@ type GameMsg
     = ViewPerson Id
     | ViewDialog Dialog
     | ViewMap
-    | ViewQuiz
+    | PickQuiz
+    | ViewQuiz Quiz
+    | GaveCorrectAnswer
+    | GaveWrongAnswer
 
 
 type ToBackend

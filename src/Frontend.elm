@@ -367,13 +367,31 @@ updateGame msg outerModel =
                         ViewDialog dialog ->
                             ( sharedModel, Talking { currentDialog = dialog }, Cmd.none )
 
-                        ViewQuiz ->
+                        PickQuiz ->
                             case Dict.get sharedModel.currentPerson data of
                                 Nothing ->
                                     ( sharedModel, model, Cmd.none )
 
                                 Just person ->
-                                    ( sharedModel, model, Debug.todo "Pick a quiz" )
+                                    ( sharedModel
+                                    , model
+                                    , case person.quizzes of
+                                        [] ->
+                                            Cmd.none
+
+                                        h :: t ->
+                                            Random.uniform h t
+                                                |> Random.generate ViewQuiz
+                                    )
+
+                        ViewQuiz quiz ->
+                            ( sharedModel, Quizzing quiz, Cmd.none )
+
+                        GaveCorrectAnswer ->
+                            ( sharedModel, model, Cmd.none )
+
+                        GaveWrongAnswer ->
+                            ( sharedModel, model, Cmd.none )
             in
             ( LoadedData data sharedModel_ model_, cmd )
 

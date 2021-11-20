@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, px, row, shrink, spacing, text, width, wrappedRow)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -10,7 +10,7 @@ import Element.WithUnits.Input as Input
 import Frontend.Common exposing (viewMarked)
 import Html.Attributes
 import Length exposing (Length)
-import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person)
+import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person, Quiz)
 import Pins exposing (mapSize)
 import Quantity
 import Theme
@@ -57,8 +57,8 @@ view model =
                         Talking talkingModel ->
                             viewTalking person talkingModel
 
-                        Quizzing _ ->
-                            Debug.todo "branch 'Quizzing _' not implemented"
+                        Quizzing quiz ->
+                            viewQuizzing person quiz
 
 
 viewMap : Data -> { currentPerson : Id } -> Element GameMsg
@@ -244,6 +244,23 @@ viewTalking person { currentDialog } =
         , cityBackground person.city
         , Font.size baseFontSize
         ]
+        [ viewDialogLine person currentDialog.text
+        , currentDialog.choices
+            |> List.map viewChoice
+            |> wrappedRow [ spacing rythm ]
+        ]
+
+
+viewQuizzing : Person -> Quiz -> Element GameMsg
+viewQuizzing person { question, correctAnswer, wrongAnswers } =
+    column
+        [ spacing rythm
+        , padding rythm
+        , height fill
+        , width fill
+        , cityBackground person.city
+        , Font.size baseFontSize
+        ]
         [ semiBox [ width fill ] <|
             row
                 [ height fill
@@ -254,12 +271,34 @@ viewTalking person { currentDialog } =
                     , height avatarSize
                     ]
                     person
-                , viewMarked [ width fill ] currentDialog.text
+                , viewMarked [ width fill ] question
                 ]
-        , currentDialog.choices
-            |> List.map viewChoice
-            |> row []
+        , (correctAnswer :: wrongAnswers)
+            |> List.sort
+            |> List.map (viewQuizAnswer correctAnswer)
+            |> wrappedRow [ spacing rythm ]
         ]
+
+
+duckPerson : { image : String, name : String }
+duckPerson =
+    { image = "/art/duck.jpg"
+    , name = "DUCK"
+    }
+
+
+viewQuizAnswer : String -> String -> Element GameMsg
+viewQuizAnswer correctAnswer answer =
+    Input.button [ width fill ]
+        { label = viewDialogLine duckPerson answer
+        , onPress =
+            Just <|
+                if answer == correctAnswer then
+                    GaveCorrectAnswer
+
+                else
+                    GaveWrongAnswer
+        }
 
 
 avatar : List (Attribute msg) -> { a | image : String, name : String } -> Element msg
@@ -282,20 +321,7 @@ avatar attrs person =
 viewChoice : Choice -> Element GameMsg
 viewChoice { text, next } =
     Input.button [ width fill ]
-        { label =
-            semiBox
-                [ Border.width borderWidth
-                , width fill
-                ]
-                (row [ spacing rythm ]
-                    [ avatar
-                        [ width avatarSize
-                        , height avatarSize
-                        ]
-                        { image = "/art/duck.jpg", name = "DUCK" }
-                    , viewMarked [ width fill ] text
-                    ]
-                )
+        { label = viewDialogLine duckPerson text
         , onPress =
             Just <|
                 case next of
@@ -306,8 +332,25 @@ viewChoice { text, next } =
                         ViewMap
 
                     NextQuiz ->
-                        ViewQuiz
+                        PickQuiz
         }
+
+
+viewDialogLine : { a | image : String, name : String } -> String -> Element msg
+viewDialogLine personIsh text =
+    semiBox
+        [ Border.width borderWidth
+        , width fill
+        ]
+        (row [ spacing rythm ]
+            [ avatar
+                [ width avatarSize
+                , height avatarSize
+                ]
+                personIsh
+            , viewMarked [ width fill ] text
+            ]
+        )
 
 
 cityBackground : City -> Attribute msg

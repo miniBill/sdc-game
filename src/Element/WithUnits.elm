@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize)
+module Element.WithUnits exposing (Attribute, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
 
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
@@ -160,6 +160,11 @@ column =
 row : List (Attribute msg) -> List (Element msg) -> Element msg
 row =
     wrapContainer Element.row
+
+
+wrappedRow : List (Attribute msg) -> List (Element msg) -> Element msg
+wrappedRow =
+    wrapContainer Element.wrappedRow
 
 
 el : List (Attribute msg) -> Element msg -> Element msg
