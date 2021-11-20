@@ -92,6 +92,7 @@ type GameMsg
     | PickQuiz
     | ViewQuiz Quiz
     | GiveTicketAndViewMap
+    | GotRandomTicket Id
 
 
 type ToBackend

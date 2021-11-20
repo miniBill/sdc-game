@@ -1,8 +1,8 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nextDefault, nextEditor, personDefault, personEditor, quizDefault, quizEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nationDefault, nationEditor, nextDefault, nextEditor, personDefault, personEditor, quizDefault, quizEditor, transportKindDefault, transportKindEditor)
 
 {-| 
 
-@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, quizEditor, idEditor, dialogEditor, choiceEditor, nextEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, quizDefault, idDefault, dialogDefault, choiceDefault, nextDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
+@docs dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
 
 -}
@@ -26,220 +26,8 @@ dataEditor level value =
     dictEditor idEditor idDefault personEditor personDefault level value
 
 
-cityEditor : Int -> Model.City -> ( Element.Element Model.City, Bool )
-cityEditor level value =
-    let
-        raw =
-            [ let
-                ( editor, simple ) =
-                  cityNameEditor (level + 1) value.name
-              in
-              ( "Name"
-              , Element.map
-                  (\lambdaArg0 -> { value | name = lambdaArg0 })
-                  editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                  stringEditor (level + 1) value.text
-              in
-              ( "Text"
-              , Element.map
-                  (\lambdaArg0 -> { value | text = lambdaArg0 })
-                  editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                  stringEditor (level + 1) value.image
-              in
-              ( "Image"
-              , Element.map
-                  (\lambdaArg0 -> { value | image = lambdaArg0 })
-                  editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                  coordinatesEditor (level + 1) value.coordinates
-              in
-              ( "Coordinates"
-              , Element.map
-                  (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
-                  editor
-              , simple
-              )
-            ]
-
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
-    in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Theme.rythm
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
-
-
-coordinatesEditor :
-    Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
-coordinatesEditor level value =
-    let
-        raw =
-            [ let
-                ( editor, simple ) =
-                  floatEditor (level + 1) value.north
-              in
-              ( "North"
-              , Element.map
-                  (\lambdaArg0 -> { value | north = lambdaArg0 })
-                  editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                  floatEditor (level + 1) value.east
-              in
-              ( "East"
-              , Element.map
-                  (\lambdaArg0 -> { value | east = lambdaArg0 })
-                  editor
-              , simple
-              )
-            ]
-
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
-    in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Theme.rythm
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
-
-
-cityNameEditor :
-    Int -> Model.CityName -> ( Element.Element Model.CityName, Bool )
-cityNameEditor level value =
+idEditor : Int -> Model.Id -> ( Element.Element Model.Id, Bool )
+idEditor level value =
     stringEditor level value
 
 
@@ -373,62 +161,57 @@ personEditor level value =
     )
 
 
-quizEditor : Int -> Model.Quiz -> ( Element.Element Model.Quiz, Bool )
-quizEditor level value =
+cityEditor : Int -> Model.City -> ( Element.Element Model.City, Bool )
+cityEditor level value =
     let
         raw =
             [ let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.question
+                  cityNameEditor (level + 1) value.name
               in
-              ( "Question"
+              ( "Name"
               , Element.map
-                  (\lambdaArg0 -> { value | question = lambdaArg0 })
+                  (\lambdaArg0 -> { value | name = lambdaArg0 })
                   editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.correctAnswer
+                  stringEditor (level + 1) value.text
               in
-              ( "Correct answer"
+              ( "Text"
               , Element.map
-                  (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
+                  (\lambdaArg0 -> { value | text = lambdaArg0 })
                   editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.messageIfCorrect
+                  stringEditor (level + 1) value.image
               in
-              ( "Message if correct"
+              ( "Image"
               , Element.map
-                  (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
+                  (\lambdaArg0 -> { value | image = lambdaArg0 })
                   editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.messageIfWrong
+                  coordinatesEditor (level + 1) value.coordinates
               in
-              ( "Message if wrong"
+              ( "Coordinates"
               , Element.map
-                  (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
+                  (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
                   editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  listEditor
-                      "String"
-                      stringEditor
-                      ""
-                      (level + 1)
-                      value.wrongAnswers
+                  nationEditor (level + 1) value.nation
               in
-              ( "Wrong answers"
+              ( "Nation"
               , Element.map
-                  (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
+                  (\lambdaArg0 -> { value | nation = lambdaArg0 })
                   editor
               , simple
               )
@@ -503,9 +286,141 @@ quizEditor level value =
     )
 
 
-idEditor : Int -> Model.Id -> ( Element.Element Model.Id, Bool )
-idEditor level value =
+cityNameEditor :
+    Int -> Model.CityName -> ( Element.Element Model.CityName, Bool )
+cityNameEditor level value =
     stringEditor level value
+
+
+coordinatesEditor :
+    Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
+coordinatesEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  floatEditor (level + 1) value.north
+              in
+              ( "North"
+              , Element.map
+                  (\lambdaArg0 -> { value | north = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  floatEditor (level + 1) value.east
+              in
+              ( "East"
+              , Element.map
+                  (\lambdaArg0 -> { value | east = lambdaArg0 })
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
+    ( Element.column
+        [ Element.width Element.fill
+        , Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        (simplesTable :: complexes)
+    , Basics.False
+    )
+
+
+nationEditor : Int -> Model.Nation -> ( Element.Element Model.Nation, Bool )
+nationEditor level value =
+    ( let
+        variantRow =
+          Input.radioRow
+              [ Theme.spacing ]
+              { onChange = Basics.identity
+              , options =
+                  [ Input.option Model.Austria (Element.text "Austria")
+                  , Input.option Model.Belgium (Element.text "Belgium")
+                  , Input.option Model.England (Element.text "England")
+                  , Input.option Model.France (Element.text "France")
+                  , Input.option Model.Germany (Element.text "Germany")
+                  , Input.option Model.Italy (Element.text "Italy")
+                  , Input.option Model.Netherlands (Element.text "Netherlands")
+                  , Input.option Model.Norway (Element.text "Norway")
+                  ]
+              , selected = Maybe.Just value
+              , label = Input.labelHidden ""
+              }
+      in
+      Element.el
+          [ Background.color (Theme.getColor level)
+          , Element.width Element.fill
+          , Theme.spacing
+          , Theme.padding
+          , Element.alignTop
+          , Border.width 1
+          , Border.rounded Theme.rythm
+          ]
+          variantRow
+    , Basics.False
+    )
 
 
 dialogEditor : Int -> Model.Dialog -> ( Element.Element Model.Dialog, Bool )
@@ -524,10 +439,11 @@ dialogEditor level value =
               )
             , let
                 ( editor, simple ) =
-                  listEditor
-                      "Choice"
+                  tupleEditor
                       choiceEditor
                       choiceDefault
+                      (listEditor "Choice" choiceEditor choiceDefault)
+                      []
                       (level + 1)
                       value.choices
               in
@@ -784,6 +700,136 @@ nextEditor level value =
           [ variantRow
           , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
           ]
+    , Basics.False
+    )
+
+
+quizEditor : Int -> Model.Quiz -> ( Element.Element Model.Quiz, Bool )
+quizEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.question
+              in
+              ( "Question"
+              , Element.map
+                  (\lambdaArg0 -> { value | question = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.correctAnswer
+              in
+              ( "Correct answer"
+              , Element.map
+                  (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.messageIfCorrect
+              in
+              ( "Message if correct"
+              , Element.map
+                  (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.messageIfWrong
+              in
+              ( "Message if wrong"
+              , Element.map
+                  (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "String"
+                      stringEditor
+                      ""
+                      (level + 1)
+                      value.wrongAnswers
+              in
+              ( "Wrong answers"
+              , Element.map
+                  (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
+    ( Element.column
+        [ Element.width Element.fill
+        , Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        (simplesTable :: complexes)
     , Basics.False
     )
 
@@ -1614,22 +1660,8 @@ dataDefault =
     Dict.empty
 
 
-cityDefault : Model.City
-cityDefault =
-    { name = cityNameDefault
-    , text = ""
-    , image = ""
-    , coordinates = coordinatesDefault
-    }
-
-
-coordinatesDefault : Model.Coordinates
-coordinatesDefault =
-    { north = 0, east = 0 }
-
-
-cityNameDefault : Model.CityName
-cityNameDefault =
+idDefault : Model.Id
+idDefault =
     ""
 
 
@@ -1643,24 +1675,34 @@ personDefault =
     }
 
 
-quizDefault : Model.Quiz
-quizDefault =
-    { question = ""
-    , correctAnswer = ""
-    , messageIfCorrect = ""
-    , messageIfWrong = ""
-    , wrongAnswers = []
+cityDefault : Model.City
+cityDefault =
+    { name = cityNameDefault
+    , text = ""
+    , image = ""
+    , coordinates = coordinatesDefault
+    , nation = nationDefault
     }
 
 
-idDefault : Model.Id
-idDefault =
+cityNameDefault : Model.CityName
+cityNameDefault =
     ""
+
+
+coordinatesDefault : Model.Coordinates
+coordinatesDefault =
+    { north = 0, east = 0 }
+
+
+nationDefault : Model.Nation
+nationDefault =
+    Model.Austria
 
 
 dialogDefault : Model.Dialog
 dialogDefault =
-    { text = "", choices = [] }
+    { text = "", choices = ( choiceDefault, [] ) }
 
 
 choiceDefault : Model.Choice
@@ -1670,7 +1712,17 @@ choiceDefault =
 
 nextDefault : Model.Next
 nextDefault =
-    Model.NextDialog dialogDefault
+    Model.NextViewMap
+
+
+quizDefault : Model.Quiz
+quizDefault =
+    { question = ""
+    , correctAnswer = ""
+    , messageIfCorrect = ""
+    , messageIfWrong = ""
+    , wrongAnswers = []
+    }
 
 
 consequenceDefault : Model.Consequence

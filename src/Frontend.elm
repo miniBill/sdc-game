@@ -22,7 +22,7 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (Data, Id, Person)
+import Model exposing (Data, Id, Nation(..), Person)
 import Pixels
 import Random
 import Set
@@ -425,25 +425,92 @@ updateGame msg outerModel =
                                         sharedModel.currentPerson
                               }
                             , ViewingMap
-                            , pickNewTicket sharedModel
+                            , pickNewTicket data sharedModel
                             )
+
+                        GotRandomTicket id ->
+                            ( { sharedModel | tickets = Set.insert id sharedModel.tickets }, model, Cmd.none )
             in
             ( LoadedData data sharedModel_ model_, cmd )
 
 
-type GamePhase
-    = EnglandPhase
-    | EuropePhase
-    | NetherlandPhase
+type Region
+    = EnglandRegion
+    | EuropeRegion
+    | NetherlandsRegion
 
 
-pickNewTicket : SharedGameModel -> Cmd GameMsg
-pickNewTicket model =
+pickNewTicket : Data -> SharedGameModel -> Cmd GameMsg
+pickNewTicket data model =
     let
-        phase =
-            EnglandPhase
+        { ownedEngland, missingEngland, ownedEurope, missingEurope, ownedNetherlands, missingNetherlands } =
+            data
+                |> Dict.toList
+                |> List.foldr
+                    (\( id, { city } ) acc ->
+                        if String.isEmpty id then
+                            acc
+
+                        else
+                            let
+                                region =
+                                    toRegion city.nation
+                            in
+                            if Set.member id model.tickets then
+                                case region of
+                                    EnglandRegion ->
+                                        { acc | ownedEngland = id :: acc.ownedEngland }
+
+                                    EuropeRegion ->
+                                        { acc | ownedEurope = id :: acc.ownedEurope }
+
+                                    NetherlandsRegion ->
+                                        { acc | ownedNetherlands = id :: acc.ownedNetherlands }
+
+                            else
+                                case region of
+                                    EnglandRegion ->
+                                        { acc | missingEngland = id :: acc.missingEngland }
+
+                                    EuropeRegion ->
+                                        { acc | missingEurope = id :: acc.missingEurope }
+
+                                    NetherlandsRegion ->
+                                        { acc | missingNetherlands = id :: acc.missingNetherlands }
+                    )
+                    { ownedEngland = [], ownedEurope = [], ownedNetherlands = [], missingEngland = [], missingEurope = [], missingNetherlands = [] }
+
+        candidates =
+            if List.length ownedEngland < List.length missingEngland then
+                missingEngland
+
+            else if List.length ownedEurope < List.length missingEurope then
+                missingEurope
+
+            else
+                missingNetherlands
     in
-    Cmd.none
+    case candidates of
+        [] ->
+            -- This is actually impossible
+            Cmd.none
+
+        h :: t ->
+            Random.uniform h t
+                |> Random.generate GotRandomTicket
+
+
+toRegion : Nation -> Region
+toRegion nation =
+    case nation of
+        England ->
+            EnglandRegion
+
+        Netherlands ->
+            NetherlandsRegion
+
+        _ ->
+            EuropeRegion
 
 
 view : FrontendModel -> Element FrontendMsg

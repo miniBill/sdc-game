@@ -253,6 +253,7 @@ viewTalking person { currentDialog } =
         ]
         [ viewDialogLine person currentDialog.text
         , currentDialog.choices
+            |> (\( h, t ) -> h :: t)
             |> List.map viewChoice
             |> wrappedRow [ width fill, spacing rythm ]
         ]
@@ -309,19 +310,21 @@ viewQuizAnswer quiz answer =
             if answer == quiz.correctAnswer then
                 { text = quiz.messageIfCorrect
                 , choices =
-                    [ { text = "Thank you!"
+                    ( { text = "Thank you!"
                       , next = NextGiveTicket
                       }
-                    ]
+                    , []
+                    )
                 }
 
             else
                 { text = quiz.messageIfWrong
                 , choices =
-                    [ { text = "Let me try again!"
+                    ( { text = "Let me try again!"
                       , next = NextQuiz quiz
                       }
-                    ]
+                    , []
+                    )
                 }
     in
     Input.button [ width fill ]

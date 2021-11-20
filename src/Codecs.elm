@@ -1,8 +1,8 @@
-module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, nextCodec, personCodec, quizCodec, transportKindCodec)
+module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, nationCodec, nextCodec, personCodec, quizCodec, transportKindCodec)
 
 {-| 
 
-@docs dataCodec, cityCodec, coordinatesCodec, cityNameCodec, personCodec, quizCodec, idCodec, dialogCodec, choiceCodec, nextCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+@docs dataCodec, idCodec, personCodec, cityCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
 
 
 -}
@@ -18,72 +18,8 @@ dataCodec =
     Codec.dict personCodec
 
 
-cityCodec : Codec.Codec Model.City
-cityCodec =
-    Codec.object
-     (\name text image coordinates ->
-         { name = name
-         , text = Maybe.withDefault "" text
-         , image = Maybe.withDefault "" image
-         , coordinates = coordinates
-         }
-     )
-        |> Codec.field "name" .name cityNameCodec
-        |> Codec.maybeField
-            "text"
-            (\lambdaArg0 ->
-                if lambdaArg0.text == "" then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.text
-            )
-            Codec.string
-        |> Codec.maybeField
-            "image"
-            (\lambdaArg0 ->
-                if lambdaArg0.image == "" then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.image
-            )
-            Codec.string
-        |> Codec.field "coordinates" .coordinates coordinatesCodec
-        |> Codec.buildObject
-
-
-coordinatesCodec : Codec.Codec Model.Coordinates
-coordinatesCodec =
-    Codec.object
-     (\north east ->
-         { north = Maybe.withDefault 0 north, east = Maybe.withDefault 0 east }
-     )
-        |> Codec.maybeField
-            "north"
-            (\lambdaArg0 ->
-                if lambdaArg0.north == 0 then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.north
-            )
-            Codec.float
-        |> Codec.maybeField
-            "east"
-            (\lambdaArg0 ->
-                if lambdaArg0.east == 0 then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.east
-            )
-            Codec.float
-        |> Codec.buildObject
-
-
-cityNameCodec : Codec.Codec Model.CityName
-cityNameCodec =
+idCodec : Codec.Codec Model.Id
+idCodec =
     Codec.string
 
 
@@ -131,6 +67,188 @@ personCodec =
             )
             (Codec.list quizCodec)
         |> Codec.buildObject
+
+
+cityCodec : Codec.Codec Model.City
+cityCodec =
+    Codec.object
+     (\name text image coordinates nation ->
+         { name = name
+         , text = Maybe.withDefault "" text
+         , image = Maybe.withDefault "" image
+         , coordinates = coordinates
+         , nation = nation
+         }
+     )
+        |> Codec.field "name" .name cityNameCodec
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
+        |> Codec.maybeField
+            "image"
+            (\lambdaArg0 ->
+                if lambdaArg0.image == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.image
+            )
+            Codec.string
+        |> Codec.field "coordinates" .coordinates coordinatesCodec
+        |> Codec.field "nation" .nation nationCodec
+        |> Codec.buildObject
+
+
+cityNameCodec : Codec.Codec Model.CityName
+cityNameCodec =
+    Codec.string
+
+
+coordinatesCodec : Codec.Codec Model.Coordinates
+coordinatesCodec =
+    Codec.object
+     (\north east ->
+         { north = Maybe.withDefault 0 north, east = Maybe.withDefault 0 east }
+     )
+        |> Codec.maybeField
+            "north"
+            (\lambdaArg0 ->
+                if lambdaArg0.north == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.north
+            )
+            Codec.float
+        |> Codec.maybeField
+            "east"
+            (\lambdaArg0 ->
+                if lambdaArg0.east == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.east
+            )
+            Codec.float
+        |> Codec.buildObject
+
+
+nationCodec : Codec.Codec Model.Nation
+nationCodec =
+    Codec.lazy <|
+        \() ->
+            Codec.custom
+             (\faustria fbelgium fengland ffrance fgermany fitaly fnetherlands fnorway value ->
+                 case value of
+                     Model.Austria ->
+                         faustria
+
+                     Model.Belgium ->
+                         fbelgium
+
+                     Model.England ->
+                         fengland
+
+                     Model.France ->
+                         ffrance
+
+                     Model.Germany ->
+                         fgermany
+
+                     Model.Italy ->
+                         fitaly
+
+                     Model.Netherlands ->
+                         fnetherlands
+
+                     Model.Norway ->
+                         fnorway
+             )
+                |> Codec.variant0 "Austria" Model.Austria
+                |> Codec.variant0 "Belgium" Model.Belgium
+                |> Codec.variant0 "England" Model.England
+                |> Codec.variant0 "France" Model.France
+                |> Codec.variant0 "Germany" Model.Germany
+                |> Codec.variant0 "Italy" Model.Italy
+                |> Codec.variant0 "Netherlands" Model.Netherlands
+                |> Codec.variant0 "Norway" Model.Norway
+                |> Codec.buildCustom
+
+
+dialogCodec : Codec.Codec Model.Dialog
+dialogCodec =
+    Codec.object
+     (\text choices -> { text = Maybe.withDefault "" text, choices = choices })
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
+        |> Codec.field
+            "choices"
+            .choices
+            (Codec.tuple choiceCodec (Codec.list choiceCodec))
+        |> Codec.buildObject
+
+
+choiceCodec : Codec.Codec Model.Choice
+choiceCodec =
+    Codec.object
+     (\text next -> { text = Maybe.withDefault "" text, next = next })
+        |> Codec.maybeField
+            "text"
+            (\lambdaArg0 ->
+                if lambdaArg0.text == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.text
+            )
+            Codec.string
+        |> Codec.field "next" .next nextCodec
+        |> Codec.buildObject
+
+
+nextCodec : Codec.Codec Model.Next
+nextCodec =
+    Codec.lazy <|
+        \() ->
+            Codec.custom
+             (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
+                 case value of
+                     Model.NextDialog arg0 ->
+                         fnextDialog arg0
+
+                     Model.NextViewMap ->
+                         fnextViewMap
+
+                     Model.NextRandomQuiz ->
+                         fnextRandomQuiz
+
+                     Model.NextQuiz arg0 ->
+                         fnextQuiz arg0
+
+                     Model.NextGiveTicket ->
+                         fnextGiveTicket
+             )
+                |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
+                |> Codec.variant0 "NextViewMap" Model.NextViewMap
+                |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
+                |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
+                |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
+                |> Codec.buildCustom
 
 
 quizCodec : Codec.Codec Model.Quiz
@@ -195,90 +313,6 @@ quizCodec =
             )
             (Codec.list Codec.string)
         |> Codec.buildObject
-
-
-idCodec : Codec.Codec Model.Id
-idCodec =
-    Codec.string
-
-
-dialogCodec : Codec.Codec Model.Dialog
-dialogCodec =
-    Codec.object
-     (\text choices ->
-         { text = Maybe.withDefault "" text
-         , choices = Maybe.withDefault [] choices
-         }
-     )
-        |> Codec.maybeField
-            "text"
-            (\lambdaArg0 ->
-                if lambdaArg0.text == "" then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.text
-            )
-            Codec.string
-        |> Codec.maybeField
-            "choices"
-            (\lambdaArg0 ->
-                if lambdaArg0.choices == [] then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.choices
-            )
-            (Codec.list choiceCodec)
-        |> Codec.buildObject
-
-
-choiceCodec : Codec.Codec Model.Choice
-choiceCodec =
-    Codec.object
-     (\text next -> { text = Maybe.withDefault "" text, next = next })
-        |> Codec.maybeField
-            "text"
-            (\lambdaArg0 ->
-                if lambdaArg0.text == "" then
-                    Maybe.Nothing
-
-                else
-                    Maybe.Just lambdaArg0.text
-            )
-            Codec.string
-        |> Codec.field "next" .next nextCodec
-        |> Codec.buildObject
-
-
-nextCodec : Codec.Codec Model.Next
-nextCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-             (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
-                 case value of
-                     Model.NextDialog arg0 ->
-                         fnextDialog arg0
-
-                     Model.NextViewMap ->
-                         fnextViewMap
-
-                     Model.NextRandomQuiz ->
-                         fnextRandomQuiz
-
-                     Model.NextQuiz arg0 ->
-                         fnextQuiz arg0
-
-                     Model.NextGiveTicket ->
-                         fnextGiveTicket
-             )
-                |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
-                |> Codec.variant0 "NextViewMap" Model.NextViewMap
-                |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
-                |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
-                |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
-                |> Codec.buildCustom
 
 
 consequenceCodec : Codec.Codec Model.Consequence

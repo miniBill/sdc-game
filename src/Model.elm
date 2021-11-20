@@ -10,6 +10,7 @@ module Model exposing
     , Id
     , Item(..)
     , ItemName(..)
+    , Nation(..)
     , Next(..)
     , Person
     , Quiz
@@ -41,6 +42,7 @@ type alias City =
     , text : String
     , image : String
     , coordinates : Coordinates
+    , nation : Nation
     }
 
 
@@ -54,9 +56,20 @@ type alias Coordinates =
     }
 
 
+type Nation
+    = Austria
+    | Belgium
+    | England
+    | France
+    | Germany
+    | Italy
+    | Netherlands
+    | Norway
+
+
 type alias Dialog =
     { text : String
-    , choices : List Choice
+    , choices : ( Choice, List Choice )
     }
 
 
