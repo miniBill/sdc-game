@@ -1,8 +1,8 @@
-module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, nextCodec, personCodec, transportKindCodec)
+module Codecs exposing (choiceCodec, cityCodec, cityNameCodec, conditionCodec, consequenceCodec, coordinatesCodec, dataCodec, dialogCodec, idCodec, itemCodec, itemNameCodec, nextCodec, personCodec, quizCodec, transportKindCodec)
 
 {-| 
 
-@docs dataCodec, cityCodec, coordinatesCodec, cityNameCodec, personCodec, idCodec, dialogCodec, choiceCodec, nextCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+@docs dataCodec, cityCodec, coordinatesCodec, cityNameCodec, personCodec, quizCodec, idCodec, dialogCodec, choiceCodec, nextCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
 
 
 -}
@@ -90,11 +90,12 @@ cityNameCodec =
 personCodec : Codec.Codec Model.Person
 personCodec =
     Codec.object
-     (\name city image dialog ->
+     (\name city image dialog quizzes ->
          { name = Maybe.withDefault "" name
          , city = city
          , image = Maybe.withDefault "" image
          , dialog = dialog
+         , quizzes = Maybe.withDefault [] quizzes
          }
      )
         |> Codec.maybeField
@@ -119,6 +120,58 @@ personCodec =
             )
             Codec.string
         |> Codec.field "dialog" .dialog dialogCodec
+        |> Codec.maybeField
+            "quizzes"
+            (\lambdaArg0 ->
+                if lambdaArg0.quizzes == [] then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.quizzes
+            )
+            (Codec.list quizCodec)
+        |> Codec.buildObject
+
+
+quizCodec : Codec.Codec Model.Quiz
+quizCodec =
+    Codec.object
+     (\question correctAnswer wrongAnswers ->
+         { question = Maybe.withDefault "" question
+         , correctAnswer = Maybe.withDefault "" correctAnswer
+         , wrongAnswers = Maybe.withDefault [] wrongAnswers
+         }
+     )
+        |> Codec.maybeField
+            "question"
+            (\lambdaArg0 ->
+                if lambdaArg0.question == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.question
+            )
+            Codec.string
+        |> Codec.maybeField
+            "correctAnswer"
+            (\lambdaArg0 ->
+                if lambdaArg0.correctAnswer == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.correctAnswer
+            )
+            Codec.string
+        |> Codec.maybeField
+            "wrongAnswers"
+            (\lambdaArg0 ->
+                if lambdaArg0.wrongAnswers == [] then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.wrongAnswers
+            )
+            (Codec.list Codec.string)
         |> Codec.buildObject
 
 
@@ -181,16 +234,20 @@ nextCodec =
     Codec.lazy <|
         \() ->
             Codec.custom
-             (\fnextDialog fnextViewMap value ->
+             (\fnextDialog fnextViewMap fnextQuiz value ->
                  case value of
                      Model.NextDialog arg0 ->
                          fnextDialog arg0
 
                      Model.NextViewMap ->
                          fnextViewMap
+
+                     Model.NextQuiz ->
+                         fnextQuiz
              )
                 |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
                 |> Codec.variant0 "NextViewMap" Model.NextViewMap
+                |> Codec.variant0 "NextQuiz" Model.NextQuiz
                 |> Codec.buildCustom
 
 

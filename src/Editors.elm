@@ -1,8 +1,8 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nextDefault, nextEditor, personDefault, personEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nextDefault, nextEditor, personDefault, personEditor, quizDefault, quizEditor, transportKindDefault, transportKindEditor)
 
 {-| 
 
-@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, idEditor, dialogEditor, choiceEditor, nextEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, idDefault, dialogDefault, choiceDefault, nextDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
+@docs dataEditor, cityEditor, coordinatesEditor, cityNameEditor, personEditor, quizEditor, idEditor, dialogEditor, choiceEditor, nextEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, cityDefault, coordinatesDefault, cityNameDefault, personDefault, quizDefault, idDefault, dialogDefault, choiceDefault, nextDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
 
 -}
@@ -284,6 +284,131 @@ personEditor level value =
               ( "Dialog"
               , Element.map
                   (\lambdaArg0 -> { value | dialog = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "Quiz"
+                      quizEditor
+                      quizDefault
+                      (level + 1)
+                      value.quizzes
+              in
+              ( "Quizzes"
+              , Element.map
+                  (\lambdaArg0 -> { value | quizzes = lambdaArg0 })
+                  editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
+    ( Element.column
+        [ Element.width Element.fill
+        , Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        (simplesTable :: complexes)
+    , Basics.False
+    )
+
+
+quizEditor : Int -> Model.Quiz -> ( Element.Element Model.Quiz, Bool )
+quizEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.question
+              in
+              ( "Question"
+              , Element.map
+                  (\lambdaArg0 -> { value | question = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  stringEditor (level + 1) value.correctAnswer
+              in
+              ( "Correct answer"
+              , Element.map
+                  (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                  listEditor
+                      "String"
+                      stringEditor
+                      ""
+                      (level + 1)
+                      value.wrongAnswers
+              in
+              ( "Wrong answers"
+              , Element.map
+                  (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
                   editor
               , simple
               )
@@ -569,6 +694,9 @@ nextEditor level value =
               Model.NextViewMap ->
                   extractedDefault
 
+              Model.NextQuiz ->
+                  extractedDefault
+
         extractedDefault =
           { dialogExtracted = dialogDefault }
 
@@ -581,6 +709,7 @@ nextEditor level value =
                       (Model.NextDialog dialogExtracted)
                       (Element.text "Dialog")
                   , Input.option Model.NextViewMap (Element.text "View map")
+                  , Input.option Model.NextQuiz (Element.text "Quiz")
                   ]
               , selected = Maybe.Just value
               , label = Input.labelHidden ""
@@ -595,6 +724,9 @@ nextEditor level value =
                   ]
 
               Model.NextViewMap ->
+                  []
+
+              Model.NextQuiz ->
                   []
       in
       Element.column
@@ -1460,7 +1592,17 @@ cityNameDefault =
 
 personDefault : Model.Person
 personDefault =
-    { name = "", city = cityDefault, image = "", dialog = dialogDefault }
+    { name = ""
+    , city = cityDefault
+    , image = ""
+    , dialog = dialogDefault
+    , quizzes = []
+    }
+
+
+quizDefault : Model.Quiz
+quizDefault =
+    { question = "", correctAnswer = "", wrongAnswers = [] }
 
 
 idDefault : Model.Id

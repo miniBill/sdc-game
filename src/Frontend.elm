@@ -357,16 +357,23 @@ updateGame msg outerModel =
         LoadedData data sharedModel model ->
             let
                 ( sharedModel_, model_, cmd ) =
-                    case ( msg, model ) of
-                        -- Handle messages
-                        ( ViewPerson id, _ ) ->
+                    case msg of
+                        ViewPerson id ->
                             ( { sharedModel | currentPerson = id }, ViewingPerson, Cmd.none )
 
-                        ( ViewMap, _ ) ->
+                        ViewMap ->
                             ( sharedModel, ViewingMap, Cmd.none )
 
-                        ( ViewDialog dialog, _ ) ->
+                        ViewDialog dialog ->
                             ( sharedModel, Talking { currentDialog = dialog }, Cmd.none )
+
+                        ViewQuiz ->
+                            case Dict.get sharedModel.currentPerson data of
+                                Nothing ->
+                                    ( sharedModel, model, Cmd.none )
+
+                                Just person ->
+                                    ( sharedModel, model, Debug.todo "Pick a quiz" )
             in
             ( LoadedData data sharedModel_ model_, cmd )
 

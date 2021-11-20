@@ -87,6 +87,7 @@ type GameMsg
     = ViewPerson Id
     | ViewDialog Dialog
     | ViewMap
+    | ViewQuiz
 
 
 type ToBackend

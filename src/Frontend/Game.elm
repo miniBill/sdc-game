@@ -304,6 +304,9 @@ viewChoice { text, next } =
 
                     NextViewMap ->
                         ViewMap
+
+                    NextQuiz ->
+                        ViewQuiz
         }
 
 

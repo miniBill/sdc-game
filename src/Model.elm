@@ -12,6 +12,7 @@ module Model exposing
     , ItemName(..)
     , Next(..)
     , Person
+    , Quiz
     , TransportKind(..)
     )
 
@@ -45,6 +46,14 @@ type alias Person =
     , city : City
     , image : String
     , dialog : Dialog
+    , quizzes : List Quiz
+    }
+
+
+type alias Quiz =
+    { question : String
+    , correctAnswer : String
+    , wrongAnswers : List String
     }
 
 
@@ -67,6 +76,7 @@ type alias Choice =
 type Next
     = NextDialog Dialog
     | NextViewMap
+    | NextQuiz
 
 
 type Consequence
