@@ -22,7 +22,7 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (Data, Id, Nation(..), Person)
+import Model exposing (City, Data, Id, Nation(..), Person)
 import Pixels
 import Random
 import Set
@@ -438,12 +438,13 @@ type Region
     = EnglandRegion
     | EuropeRegion
     | NetherlandsRegion
+    | Nijmegen
 
 
 pickNewTicket : Data -> SharedGameModel -> Cmd GameMsg
 pickNewTicket data model =
     let
-        { ownedEngland, missingEngland, ownedEurope, missingEurope, ownedNetherlands, missingNetherlands } =
+        { ownedEngland, missingEngland, ownedEurope, missingEurope, ownedNetherlands, missingNetherlands, ownedNijmegen, missingNijmegen } =
             data
                 |> Dict.toList
                 |> List.foldr
@@ -454,7 +455,7 @@ pickNewTicket data model =
                         else
                             let
                                 region =
-                                    toRegion city.nation
+                                    toRegion city
                             in
                             if Set.member id model.tickets then
                                 case region of
@@ -467,6 +468,9 @@ pickNewTicket data model =
                                     NetherlandsRegion ->
                                         { acc | ownedNetherlands = id :: acc.ownedNetherlands }
 
+                                    Nijmegen ->
+                                        { acc | ownedNijmegen = id :: acc.ownedNijmegen }
+
                             else
                                 case region of
                                     EnglandRegion ->
@@ -477,8 +481,19 @@ pickNewTicket data model =
 
                                     NetherlandsRegion ->
                                         { acc | missingNetherlands = id :: acc.missingNetherlands }
+
+                                    Nijmegen ->
+                                        { acc | missingNijmegen = id :: acc.missingNijmegen }
                     )
-                    { ownedEngland = [], ownedEurope = [], ownedNetherlands = [], missingEngland = [], missingEurope = [], missingNetherlands = [] }
+                    { ownedEngland = []
+                    , ownedEurope = []
+                    , ownedNetherlands = []
+                    , missingEngland = []
+                    , missingEurope = []
+                    , missingNetherlands = []
+                    , ownedNijmegen = []
+                    , missingNijmegen = []
+                    }
 
         candidates =
             if List.length ownedEngland < List.length missingEngland then
@@ -487,12 +502,18 @@ pickNewTicket data model =
             else if List.length ownedEurope < List.length missingEurope then
                 missingEurope
 
-            else
+            else if List.length ownedNetherlands < List.length missingNetherlands then
                 missingNetherlands
+
+            else if List.length ownedNijmegen < List.length missingNijmegen then
+                missingNijmegen
+
+            else
+                missingEngland ++ missingEurope ++ missingNetherlands
     in
     case candidates of
         [] ->
-            -- This is actually impossible
+            -- This means you've visited everyone. Nothing to do.
             Cmd.none
 
         h :: t ->
@@ -500,17 +521,21 @@ pickNewTicket data model =
                 |> Random.generate GotRandomTicket
 
 
-toRegion : Nation -> Region
-toRegion nation =
-    case nation of
-        England ->
-            EnglandRegion
+toRegion : City -> Region
+toRegion city =
+    if city.name == "Nijmegen" then
+        Nijmegen
 
-        Netherlands ->
-            NetherlandsRegion
+    else
+        case city.nation of
+            England ->
+                EnglandRegion
 
-        _ ->
-            EuropeRegion
+            Netherlands ->
+                NetherlandsRegion
+
+            _ ->
+                EuropeRegion
 
 
 view : FrontendModel -> Element FrontendMsg
