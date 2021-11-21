@@ -6,7 +6,7 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (Data, Dialog, Id, Person, Quiz)
+import Model exposing (Choice, Data, Dialog, Id, Person, Quiz)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -51,8 +51,18 @@ type alias SharedGameModel =
 type GameModel
     = ViewingMap
     | ViewingPerson
-    | Talking { currentDialog : Dialog }
+    | Talking TalkingModel
     | Quizzing Quiz
+
+
+type alias TalkingModel =
+    { chatHistory : ChatHistory
+    , currentDialog : Dialog
+    }
+
+
+type alias ChatHistory =
+    List ( Maybe { image : String, name : String }, String )
 
 
 type alias BackendModel =
@@ -87,7 +97,7 @@ type EditorMsg
 
 type GameMsg
     = ViewPerson Id
-    | ViewDialog Dialog
+    | ViewDialog Dialog ChatHistory
     | ViewMap
     | PickQuiz
     | ViewQuiz Quiz

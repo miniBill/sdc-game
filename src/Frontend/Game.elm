@@ -16,12 +16,12 @@ import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Choice, City, Data, Dialog, Id, Next(..), Person, Quiz)
+import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz)
 import Pins exposing (mapSize)
 import Quantity
 import Set
 import Theme
-import Types exposing (GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel)
+import Types exposing (ChatHistory, GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel, TalkingModel)
 
 
 rythm : Length
@@ -31,7 +31,7 @@ rythm =
 
 baseFontSize : Length
 baseFontSize =
-    Length.millimeters 100
+    Length.millimeters 50
 
 
 borderWidth : Length
@@ -190,7 +190,7 @@ viewPerson person =
                         ]
                         person
                     , Input.button [ centerX, centerY ]
-                        { onPress = Just <| ViewDialog person.dialog
+                        { onPress = Just <| ViewDialog person.dialog []
                         , label =
                             semiBox
                                 [ Border.width borderWidth
@@ -235,8 +235,36 @@ avatarSize =
     px <| Quantity.multiplyBy 6 rythm
 
 
-viewTalking : Person -> { currentDialog : Dialog } -> Element GameMsg
-viewTalking person { currentDialog } =
+viewTalking : Person -> TalkingModel -> Element GameMsg
+viewTalking person { chatHistory, currentDialog } =
+    let
+        history =
+            List.map
+                (\( p, t ) ->
+                    viewDialogLine True
+                        (Maybe.withDefault duckPerson p)
+                        t
+                )
+                (List.reverse chatHistory)
+
+        current =
+            [ viewDialogLine False person currentDialog.text
+            , currentDialog.choices
+                |> (\( h, t ) -> h :: t)
+                |> List.map
+                    (viewChoice
+                        (( Just
+                            { name = person.name
+                            , image = person.image
+                            }
+                         , currentDialog.text
+                         )
+                            :: chatHistory
+                        )
+                    )
+                |> wrappedRow [ width fill, spacing rythm ]
+            ]
+    in
     column
         [ spacing rythm
         , padding rythm
@@ -245,12 +273,7 @@ viewTalking person { currentDialog } =
         , cityBackground person.city
         , Font.size baseFontSize
         ]
-        [ viewDialogLine person currentDialog.text
-        , currentDialog.choices
-            |> (\( h, t ) -> h :: t)
-            |> List.map viewChoice
-            |> wrappedRow [ width fill, spacing rythm ]
-        ]
+        (history ++ current)
 
 
 viewQuizzing : Person -> Quiz -> Element GameMsg
@@ -322,8 +345,8 @@ viewQuizAnswer quiz answer =
                 }
     in
     Input.button [ width fill ]
-        { label = viewDialogLine duckPerson answer
-        , onPress = Just <| ViewDialog next
+        { label = viewDialogLine False duckPerson answer
+        , onPress = Just <| ViewDialog next []
         }
 
 
@@ -344,15 +367,15 @@ avatar attrs person =
         )
 
 
-viewChoice : Choice -> Element GameMsg
-viewChoice { text, next } =
+viewChoice : ChatHistory -> Choice -> Element GameMsg
+viewChoice chatHistory { text, next } =
     Input.button [ width fill ]
-        { label = viewDialogLine duckPerson text
+        { label = viewDialogLine False duckPerson text
         , onPress =
             Just <|
                 case next of
                     NextDialog n ->
-                        ViewDialog n
+                        ViewDialog n (( Nothing, text ) :: chatHistory)
 
                     NextViewMap ->
                         ViewMap
@@ -368,11 +391,16 @@ viewChoice { text, next } =
         }
 
 
-viewDialogLine : { a | image : String, name : String } -> String -> Element msg
-viewDialogLine personIsh text =
+viewDialogLine : Bool -> { a | image : String, name : String } -> String -> Element msg
+viewDialogLine historical personIsh text =
     semiBox
         [ Border.width borderWidth
         , width fill
+        , if historical then
+            Background.color (Element.rgba 0.6 0.6 0.6 0.6)
+
+          else
+            Background.color (Element.rgba 1 1 1 0.8)
         ]
         (row [ spacing rythm, width fill ]
             [ avatar

@@ -120,7 +120,7 @@ gotGameData data =
                 { currentPerson = ""
                 , tickets = Set.singleton orlaId
                 }
-                (Talking { currentDialog = initial.dialog })
+                (Talking { chatHistory = [], currentDialog = initial.dialog })
 
         ( Nothing, _ ) ->
             DataEmpty
@@ -390,8 +390,14 @@ updateGame msg outerModel =
                             , Cmd.none
                             )
 
-                        ViewDialog dialog ->
-                            ( sharedModel, Talking { currentDialog = dialog }, Cmd.none )
+                        ViewDialog dialog chatHistory ->
+                            ( sharedModel
+                            , Talking
+                                { chatHistory = chatHistory
+                                , currentDialog = dialog
+                                }
+                            , Cmd.none
+                            )
 
                         PickQuiz ->
                             case Dict.get sharedModel.currentPerson data of
