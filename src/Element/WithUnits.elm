@@ -1,5 +1,6 @@
-module Element.WithUnits exposing (Attribute, Color, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, rgb255, rgba, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
+module Element.WithUnits exposing (Attribute, Color, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, rgb255, rgba, rotate, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
 
+import Angle exposing (Angle)
 import Element
 import Element.WithUnits.Internal exposing (Attribute(..), Element(..), Length(..), wrap, wrapAttribute, wrapAttributeF, wrapAttrs, wrapContainer)
 import Html
@@ -220,6 +221,11 @@ moveLeft =
 moveRight : Length.Length -> Attribute msg
 moveRight =
     wrapAttributeF Element.moveRight
+
+
+rotate : Angle -> Attribute msg
+rotate angle =
+    Attribute <| \_ -> Element.rotate (Angle.inRadians angle)
 
 
 type Orientation
