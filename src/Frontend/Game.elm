@@ -31,7 +31,7 @@ rythm =
 
 baseFontSize : Length
 baseFontSize =
-    Length.millimeters 50
+    Length.millimeters 30
 
 
 borderWidth : Length
@@ -76,7 +76,7 @@ viewMap data sharedGameModel =
             , height <| px mapSize.height
             , centerX
             , centerY
-            , Font.size (Quantity.multiplyBy 0.2 baseFontSize)
+            , Font.size (Quantity.multiplyBy (2 / 3) baseFontSize)
             ]
 
         attrs =
