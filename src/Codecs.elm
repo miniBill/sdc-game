@@ -72,8 +72,10 @@ personCodec =
 cityCodec : Codec.Codec Model.City
 cityCodec =
     Codec.object
-     (\name text image coordinates nation ->
+     (\name showNameOnTheRightInTheMap text image coordinates nation ->
          { name = name
+         , showNameOnTheRightInTheMap =
+             Maybe.withDefault True showNameOnTheRightInTheMap
          , text = Maybe.withDefault "" text
          , image = Maybe.withDefault "" image
          , coordinates = coordinates
@@ -81,6 +83,16 @@ cityCodec =
          }
      )
         |> Codec.field "name" .name cityNameCodec
+        |> Codec.maybeField
+            "showNameOnTheRightInTheMap"
+            (\lambdaArg0 ->
+                if lambdaArg0.showNameOnTheRightInTheMap == True then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.showNameOnTheRightInTheMap
+            )
+            Codec.bool
         |> Codec.maybeField
             "text"
             (\lambdaArg0 ->

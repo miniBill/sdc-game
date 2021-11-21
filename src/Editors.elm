@@ -177,6 +177,18 @@ cityEditor level value =
               )
             , let
                 ( editor, simple ) =
+                  boolEditor (level + 1) value.showNameOnTheRightInTheMap
+              in
+              ( "Show name on the right in the map"
+              , Element.map
+                  (\lambdaArg0 ->
+                      { value | showNameOnTheRightInTheMap = lambdaArg0 }
+                  )
+                  editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
                   stringEditor (level + 1) value.text
               in
               ( "Text"
@@ -1678,6 +1690,7 @@ personDefault =
 cityDefault : Model.City
 cityDefault =
     { name = cityNameDefault
+    , showNameOnTheRightInTheMap = True
     , text = ""
     , image = ""
     , coordinates = coordinatesDefault

@@ -2,7 +2,7 @@ module Frontend.Game exposing (view)
 
 import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
+import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
 import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
@@ -76,7 +76,7 @@ viewMap data sharedGameModel =
             , height <| px mapSize.height
             , centerX
             , centerY
-            , Font.size (Quantity.multiplyBy (2 / 3) baseFontSize)
+            , Font.size (Quantity.multiplyBy 1 baseFontSize)
             ]
 
         attrs =
@@ -85,7 +85,16 @@ viewMap data sharedGameModel =
         inFronts =
             data
                 |> Dict.toList
-                |> List.filter (\( personId, _ ) -> Set.member personId sharedGameModel.tickets)
+                |> List.filter
+                    (\( personId, _ ) ->
+                        (let
+                            _ =
+                                Debug.todo
+                         in
+                         always (not <| String.isEmpty personId)
+                        )
+                            (Set.member personId sharedGameModel.tickets)
+                    )
                 |> List.concatMap
                     (\( personId, person ) ->
                         viewPinOnMap
@@ -134,22 +143,46 @@ viewPinOnMap sharedGameModel id { city } =
         Element.none
     , Element.withSize
         (\size ->
-            btn
-                [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.3 rythm
-                , Element.moveRight <| Quantity.plus x <| Quantity.multiplyBy 2 radius
-                , if selected then
-                    Font.bold
+            let
+                w =
+                    Quantity.multiplyBy 8 rythm
+            in
+            el
+                [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.45 rythm
+                , Element.moveRight <|
+                    if city.showNameOnTheRightInTheMap then
+                        Quantity.plus x <| Quantity.multiplyBy 2 radius
 
-                  else
-                    Font.regular
-                , Element.htmlAttribute <|
-                    Html.Attributes.style "text-shadow" <|
-                        String.join "," <|
-                            List.map
-                                (\b -> "0px 0px " ++ wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px #ffffff")
-                                [ 0.05, 0.1, 0.15, 0.2 ]
+                    else
+                        x |> Quantity.minus (Quantity.plus w <| Quantity.multiplyBy 2 radius)
+                , width <| px w
+                , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "none"
                 ]
-                (text city.name)
+            <|
+                btn
+                    [ if city.showNameOnTheRightInTheMap then
+                        alignLeft
+
+                      else
+                        alignRight
+                    , if selected then
+                        Font.bold
+
+                      else
+                        Font.regular
+                    , Element.htmlAttribute <|
+                        Html.Attributes.style "text-shadow" <|
+                            String.join "," <|
+                                List.map
+                                    (\( dx, dy, b ) -> String.fromFloat dx ++ "px " ++ String.fromFloat dy ++ "px " ++ wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px #ffffff")
+                                    [ ( -2, -2, 0.1 )
+                                    , ( 2, -2, 0.1 )
+                                    , ( -2, 2, 0.1 )
+                                    , ( 2, 2, 0.1 )
+                                    ]
+                    , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "initial"
+                    ]
+                    (text city.name)
         )
     ]
 

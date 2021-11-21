@@ -1,4 +1,4 @@
-module Element.WithUnits exposing (Attribute, Color, Element, Length, Orientation(..), alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, rgb255, rgba, rotate, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
+module Element.WithUnits exposing (Attribute, Color, Element, Length, Orientation(..), alignLeft, alignRight, alignTop, behindContent, centerX, centerY, column, el, element, fill, fillPortion, height, html, htmlAttribute, image, inFront, maximum, minimum, moveDown, moveLeft, moveRight, moveUp, newTabLink, none, padding, paddingEach, paragraph, px, rgb255, rgba, rotate, row, run, shrink, spacing, text, textColumn, transparent, width, withOrientation, withSize, wrappedRow)
 
 import Angle exposing (Angle)
 import Element
@@ -130,6 +130,11 @@ transparent b =
 alignRight : Attribute msg
 alignRight =
     Attribute <| always Element.alignRight
+
+
+alignLeft : Attribute msg
+alignLeft =
+    Attribute <| always Element.alignLeft
 
 
 alignTop : Attribute msg
