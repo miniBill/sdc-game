@@ -9,6 +9,7 @@ import Codecs
 import Dict
 import Editors
 import Element exposing (Element, fill, height, width)
+import Element.Font as Font
 import Element.WithUnits
 import File
 import File.Download
@@ -56,6 +57,7 @@ app =
                         [ Theme.fontSizes.normal
                         , height fill
                         , width fill
+                        , Font.family [ Font.typeface "Aniron" ]
                         , Element.htmlAttribute <| Html.Attributes.id "main"
                         ]
                         (view model)
@@ -72,6 +74,11 @@ css =
     let
         content =
             """
+            @font-face {
+                font-family: Aniron;
+                src: url(/art/Aniron-Regular.ttf);
+            }
+
             select {
                 font-size: """ ++ String.fromInt Theme.fontSize ++ """px;
             }

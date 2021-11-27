@@ -105,7 +105,7 @@ viewMap data sharedGameModel =
                 |> List.map inFront
     in
     Element.image attrs
-        { src = "/art/europe.jpg"
+        { src = "/art/lotr-europe.jpg"
         , description = "A map of Europe"
         }
 
@@ -135,7 +135,7 @@ viewPinOnMap sharedGameModel id { city } =
         [ Element.moveDown <| Quantity.plus y <| Quantity.negate radius
         , Element.moveRight <| Quantity.plus x <| Quantity.negate radius
         , Border.width borderWidth
-        , Background.color Theme.colors.delete
+        , Background.color Theme.colors.delete --<| Element.rgb255 255 0 0
         , Border.rounded radius
         , width <| px <| Quantity.multiplyBy 2 radius
         , height <| px <| Quantity.multiplyBy 2 radius
@@ -148,7 +148,8 @@ viewPinOnMap sharedGameModel id { city } =
                     Quantity.multiplyBy 8 rythm
             in
             el
-                [ Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.45 rythm
+                [ Element.transparent True
+                , Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.45 rythm
                 , Element.moveRight <|
                     if city.showNameOnTheRightInTheMap then
                         Quantity.plus x <| Quantity.multiplyBy 2 radius
