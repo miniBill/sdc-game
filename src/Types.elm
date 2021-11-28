@@ -1,12 +1,13 @@
 module Types exposing (..)
 
+import AltMath.Matrix3 exposing (Mat3)
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
 import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (Choice, Data, Dialog, Id, Person, Quiz)
+import Model exposing (Data, Dialog, Id, Person, Quiz)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -49,10 +50,14 @@ type alias SharedGameModel =
 
 
 type GameModel
-    = ViewingMap
+    = ViewingMap MapModel
     | ViewingPerson
     | Talking TalkingModel
     | Quizzing Quiz
+
+
+type alias MapModel =
+    { transformation : Mat3 }
 
 
 type alias TalkingModel =

@@ -1,5 +1,6 @@
 module Frontend exposing (app)
 
+import AltMath.Matrix3 as Mat3
 import Browser exposing (UrlRequest(..))
 import Browser.Dom
 import Browser.Events
@@ -127,7 +128,15 @@ gotGameData data =
                 { currentPerson = ""
                 , tickets = Set.singleton orlaId
                 }
-                (Talking { chatHistory = [], currentDialog = initial.dialog })
+                (let
+                    _ =
+                        Talking { chatHistory = [], currentDialog = initial.dialog }
+
+                    _ =
+                        Debug.todo
+                 in
+                 ViewingMap { transformation = Mat3.identity }
+                )
 
         ( Nothing, _ ) ->
             DataEmpty
@@ -393,7 +402,7 @@ updateGame msg outerModel =
                                     else
                                         sharedModel.currentPerson
                               }
-                            , ViewingMap
+                            , ViewingMap { transformation = Mat3.identity }
                             , Cmd.none
                             )
 
@@ -437,7 +446,7 @@ updateGame msg outerModel =
                                     else
                                         sharedModel.currentPerson
                               }
-                            , ViewingMap
+                            , ViewingMap { transformation = Mat3.identity }
                             , pickNewTicket data sharedModel
                             )
 

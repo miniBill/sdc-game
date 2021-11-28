@@ -1,19 +1,16 @@
-module Editors exposing (choiceDefault, choiceEditor, cityDefault, cityEditor, cityNameDefault, cityNameEditor, conditionDefault, conditionEditor, consequenceDefault, consequenceEditor, coordinatesDefault, coordinatesEditor, dataDefault, dataEditor, dialogDefault, dialogEditor, idDefault, idEditor, itemDefault, itemEditor, itemNameDefault, itemNameEditor, nationDefault, nationEditor, nextDefault, nextEditor, personDefault, personEditor, quizDefault, quizEditor, transportKindDefault, transportKindEditor)
+module Editors exposing (dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
 
-{-| 
+{-|
 
 @docs dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
-
 -}
-
 
 import Dict
 import Element
 import Element.Background as Background
 import Element.Border as Border
 import Element.Input as Input
-import Html
 import Html.Attributes
 import List.Extra
 import Model
@@ -37,57 +34,57 @@ personEditor level value =
         raw =
             [ let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.name
+                    stringEditor (level + 1) value.name
               in
               ( "Name"
               , Element.map
-                  (\lambdaArg0 -> { value | name = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | name = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  cityEditor (level + 1) value.city
+                    cityEditor (level + 1) value.city
               in
               ( "City"
               , Element.map
-                  (\lambdaArg0 -> { value | city = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | city = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.image
+                    stringEditor (level + 1) value.image
               in
               ( "Image"
               , Element.map
-                  (\lambdaArg0 -> { value | image = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | image = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  dialogEditor (level + 1) value.dialog
+                    dialogEditor (level + 1) value.dialog
               in
               ( "Dialog"
               , Element.map
-                  (\lambdaArg0 -> { value | dialog = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | dialog = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  listEditor
-                      "Quiz"
-                      quizEditor
-                      quizDefault
-                      (level + 1)
-                      value.quizzes
+                    listEditor
+                        "Quiz"
+                        quizEditor
+                        quizDefault
+                        (level + 1)
+                        value.quizzes
               in
               ( "Quizzes"
               , Element.map
-                  (\lambdaArg0 -> { value | quizzes = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | quizzes = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -167,64 +164,64 @@ cityEditor level value =
         raw =
             [ let
                 ( editor, simple ) =
-                  cityNameEditor (level + 1) value.name
+                    cityNameEditor (level + 1) value.name
               in
               ( "Name"
               , Element.map
-                  (\lambdaArg0 -> { value | name = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | name = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  boolEditor (level + 1) value.showNameOnTheRightInTheMap
+                    boolEditor (level + 1) value.showNameOnTheRightInTheMap
               in
               ( "Show name on the right in the map"
               , Element.map
-                  (\lambdaArg0 ->
-                      { value | showNameOnTheRightInTheMap = lambdaArg0 }
-                  )
-                  editor
+                    (\lambdaArg0 ->
+                        { value | showNameOnTheRightInTheMap = lambdaArg0 }
+                    )
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.text
+                    stringEditor (level + 1) value.text
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 -> { value | text = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.image
+                    stringEditor (level + 1) value.image
               in
               ( "Image"
               , Element.map
-                  (\lambdaArg0 -> { value | image = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | image = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  coordinatesEditor (level + 1) value.coordinates
+                    coordinatesEditor (level + 1) value.coordinates
               in
               ( "Coordinates"
               , Element.map
-                  (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  nationEditor (level + 1) value.nation
+                    nationEditor (level + 1) value.nation
               in
               ( "Nation"
               , Element.map
-                  (\lambdaArg0 -> { value | nation = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | nation = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -298,35 +295,33 @@ cityEditor level value =
     )
 
 
-cityNameEditor :
-    Int -> Model.CityName -> ( Element.Element Model.CityName, Bool )
+cityNameEditor : Int -> Model.CityName -> ( Element.Element Model.CityName, Bool )
 cityNameEditor level value =
     stringEditor level value
 
 
-coordinatesEditor :
-    Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
+coordinatesEditor : Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
 coordinatesEditor level value =
     let
         raw =
             [ let
                 ( editor, simple ) =
-                  floatEditor (level + 1) value.north
+                    floatEditor (level + 1) value.north
               in
               ( "North"
               , Element.map
-                  (\lambdaArg0 -> { value | north = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | north = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  floatEditor (level + 1) value.east
+                    floatEditor (level + 1) value.east
               in
               ( "East"
               , Element.map
-                  (\lambdaArg0 -> { value | east = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | east = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -404,33 +399,33 @@ nationEditor : Int -> Model.Nation -> ( Element.Element Model.Nation, Bool )
 nationEditor level value =
     ( let
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option Model.Austria (Element.text "Austria")
-                  , Input.option Model.Belgium (Element.text "Belgium")
-                  , Input.option Model.England (Element.text "England")
-                  , Input.option Model.France (Element.text "France")
-                  , Input.option Model.Germany (Element.text "Germany")
-                  , Input.option Model.Italy (Element.text "Italy")
-                  , Input.option Model.Netherlands (Element.text "Netherlands")
-                  , Input.option Model.Norway (Element.text "Norway")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option Model.Austria (Element.text "Austria")
+                    , Input.option Model.Belgium (Element.text "Belgium")
+                    , Input.option Model.England (Element.text "England")
+                    , Input.option Model.France (Element.text "France")
+                    , Input.option Model.Germany (Element.text "Germany")
+                    , Input.option Model.Italy (Element.text "Italy")
+                    , Input.option Model.Netherlands (Element.text "Netherlands")
+                    , Input.option Model.Norway (Element.text "Norway")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
       in
       Element.el
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          variantRow
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        variantRow
     , Basics.False
     )
 
@@ -441,28 +436,28 @@ dialogEditor level value =
         raw =
             [ let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.text
+                    stringEditor (level + 1) value.text
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 -> { value | text = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  tupleEditor
-                      choiceEditor
-                      choiceDefault
-                      (listEditor "Choice" choiceEditor choiceDefault)
-                      []
-                      (level + 1)
-                      value.choices
+                    tupleEditor
+                        choiceEditor
+                        choiceDefault
+                        (listEditor "Choice" choiceEditor choiceDefault)
+                        []
+                        (level + 1)
+                        value.choices
               in
               ( "Choices"
               , Element.map
-                  (\lambdaArg0 -> { value | choices = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | choices = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -542,22 +537,22 @@ choiceEditor level value =
         raw =
             [ let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.text
+                    stringEditor (level + 1) value.text
               in
               ( "Text"
               , Element.map
-                  (\lambdaArg0 -> { value | text = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | text = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  nextEditor (level + 1) value.next
+                    nextEditor (level + 1) value.next
               in
               ( "Next"
               , Element.map
-                  (\lambdaArg0 -> { value | next = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | next = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -635,83 +630,83 @@ nextEditor : Int -> Model.Next -> ( Element.Element Model.Next, Bool )
 nextEditor level value =
     ( let
         { dialogExtracted, quizExtracted } =
-          case value of
-              Model.NextDialog dialog ->
-                  { extractedDefault | dialogExtracted = dialog }
+            case value of
+                Model.NextDialog dialog ->
+                    { extractedDefault | dialogExtracted = dialog }
 
-              Model.NextViewMap ->
-                  extractedDefault
+                Model.NextViewMap ->
+                    extractedDefault
 
-              Model.NextRandomQuiz ->
-                  extractedDefault
+                Model.NextRandomQuiz ->
+                    extractedDefault
 
-              Model.NextQuiz quiz ->
-                  { extractedDefault | quizExtracted = quiz }
+                Model.NextQuiz quiz ->
+                    { extractedDefault | quizExtracted = quiz }
 
-              Model.NextGiveTicket ->
-                  extractedDefault
+                Model.NextGiveTicket ->
+                    extractedDefault
 
         extractedDefault =
-          { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
+            { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
 
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option
-                      (Model.NextDialog dialogExtracted)
-                      (Element.text "Dialog")
-                  , Input.option Model.NextViewMap (Element.text "View map")
-                  , Input.option
-                      Model.NextRandomQuiz
-                      (Element.text "Random quiz")
-                  , Input.option
-                      (Model.NextQuiz quizExtracted)
-                      (Element.text "Quiz")
-                  , Input.option
-                      Model.NextGiveTicket
-                      (Element.text "Give ticket")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option
+                        (Model.NextDialog dialogExtracted)
+                        (Element.text "Dialog")
+                    , Input.option Model.NextViewMap (Element.text "View map")
+                    , Input.option
+                        Model.NextRandomQuiz
+                        (Element.text "Random quiz")
+                    , Input.option
+                        (Model.NextQuiz quizExtracted)
+                        (Element.text "Quiz")
+                    , Input.option
+                        Model.NextGiveTicket
+                        (Element.text "Give ticket")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
 
         inputsRow =
-          case value of
-              Model.NextDialog dialog ->
-                  [ Element.map
-                      Model.NextDialog
-                      (Tuple.first (dialogEditor (level + 1) dialog))
-                  ]
+            case value of
+                Model.NextDialog dialog ->
+                    [ Element.map
+                        Model.NextDialog
+                        (Tuple.first (dialogEditor (level + 1) dialog))
+                    ]
 
-              Model.NextViewMap ->
-                  []
+                Model.NextViewMap ->
+                    []
 
-              Model.NextRandomQuiz ->
-                  []
+                Model.NextRandomQuiz ->
+                    []
 
-              Model.NextQuiz quiz ->
-                  [ Element.map
-                      Model.NextQuiz
-                      (Tuple.first (quizEditor (level + 1) quiz))
-                  ]
+                Model.NextQuiz quiz ->
+                    [ Element.map
+                        Model.NextQuiz
+                        (Tuple.first (quizEditor (level + 1) quiz))
+                    ]
 
-              Model.NextGiveTicket ->
-                  []
+                Model.NextGiveTicket ->
+                    []
       in
       Element.column
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          [ variantRow
-          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-          ]
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
     , Basics.False
     )
 
@@ -722,57 +717,57 @@ quizEditor level value =
         raw =
             [ let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.question
+                    stringEditor (level + 1) value.question
               in
               ( "Question"
               , Element.map
-                  (\lambdaArg0 -> { value | question = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | question = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.correctAnswer
+                    stringEditor (level + 1) value.correctAnswer
               in
               ( "Correct answer"
               , Element.map
-                  (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.messageIfCorrect
+                    stringEditor (level + 1) value.messageIfCorrect
               in
               ( "Message if correct"
               , Element.map
-                  (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  stringEditor (level + 1) value.messageIfWrong
+                    stringEditor (level + 1) value.messageIfWrong
               in
               ( "Message if wrong"
               , Element.map
-                  (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
+                    editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                  listEditor
-                      "String"
-                      stringEditor
-                      ""
-                      (level + 1)
-                      value.wrongAnswers
+                    listEditor
+                        "String"
+                        stringEditor
+                        ""
+                        (level + 1)
+                        value.wrongAnswers
               in
               ( "Wrong answers"
               , Element.map
-                  (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
-                  editor
+                    (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
+                    editor
               , simple
               )
             ]
@@ -846,114 +841,113 @@ quizEditor level value =
     )
 
 
-consequenceEditor :
-    Int -> Model.Consequence -> ( Element.Element Model.Consequence, Bool )
+consequenceEditor : Int -> Model.Consequence -> ( Element.Element Model.Consequence, Bool )
 consequenceEditor level value =
     ( let
         { boolExtracted, intExtracted, itemExtracted, stringExtracted } =
-          case value of
-              Model.ConsequenceGetMoney int ->
-                  { extractedDefault | intExtracted = int }
+            case value of
+                Model.ConsequenceGetMoney int ->
+                    { extractedDefault | intExtracted = int }
 
-              Model.ConsequenceLoseMoney int ->
-                  { extractedDefault | intExtracted = int }
+                Model.ConsequenceLoseMoney int ->
+                    { extractedDefault | intExtracted = int }
 
-              Model.ConsequenceGetItem item ->
-                  { extractedDefault | itemExtracted = item }
+                Model.ConsequenceGetItem item ->
+                    { extractedDefault | itemExtracted = item }
 
-              Model.ConsequenceLoseItem string ->
-                  { extractedDefault | stringExtracted = string }
+                Model.ConsequenceLoseItem string ->
+                    { extractedDefault | stringExtracted = string }
 
-              Model.ConsequenceSetLocalFlag string bool ->
-                  { extractedDefault
-                      | stringExtracted = string
-                      , boolExtracted = bool
-                  }
+                Model.ConsequenceSetLocalFlag string bool ->
+                    { extractedDefault
+                        | stringExtracted = string
+                        , boolExtracted = bool
+                    }
 
         extractedDefault =
-          { boolExtracted = True
-          , intExtracted = 0
-          , itemExtracted = itemDefault
-          , stringExtracted = ""
-          }
+            { boolExtracted = True
+            , intExtracted = 0
+            , itemExtracted = itemDefault
+            , stringExtracted = ""
+            }
 
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option
-                      (Model.ConsequenceGetMoney intExtracted)
-                      (Element.text "Get money")
-                  , Input.option
-                      (Model.ConsequenceLoseMoney intExtracted)
-                      (Element.text "Lose money")
-                  , Input.option
-                      (Model.ConsequenceGetItem itemExtracted)
-                      (Element.text "Get item")
-                  , Input.option
-                      (Model.ConsequenceLoseItem stringExtracted)
-                      (Element.text "Lose item")
-                  , Input.option
-                      (Model.ConsequenceSetLocalFlag
-                          stringExtracted
-                          boolExtracted
-                      )
-                      (Element.text "Set local flag")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option
+                        (Model.ConsequenceGetMoney intExtracted)
+                        (Element.text "Get money")
+                    , Input.option
+                        (Model.ConsequenceLoseMoney intExtracted)
+                        (Element.text "Lose money")
+                    , Input.option
+                        (Model.ConsequenceGetItem itemExtracted)
+                        (Element.text "Get item")
+                    , Input.option
+                        (Model.ConsequenceLoseItem stringExtracted)
+                        (Element.text "Lose item")
+                    , Input.option
+                        (Model.ConsequenceSetLocalFlag
+                            stringExtracted
+                            boolExtracted
+                        )
+                        (Element.text "Set local flag")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
 
         inputsRow =
-          case value of
-              Model.ConsequenceGetMoney int ->
-                  [ Element.map
-                      Model.ConsequenceGetMoney
-                      (Tuple.first (intEditor (level + 1) int))
-                  ]
+            case value of
+                Model.ConsequenceGetMoney int ->
+                    [ Element.map
+                        Model.ConsequenceGetMoney
+                        (Tuple.first (intEditor (level + 1) int))
+                    ]
 
-              Model.ConsequenceLoseMoney int ->
-                  [ Element.map
-                      Model.ConsequenceLoseMoney
-                      (Tuple.first (intEditor (level + 1) int))
-                  ]
+                Model.ConsequenceLoseMoney int ->
+                    [ Element.map
+                        Model.ConsequenceLoseMoney
+                        (Tuple.first (intEditor (level + 1) int))
+                    ]
 
-              Model.ConsequenceGetItem item ->
-                  [ Element.map
-                      Model.ConsequenceGetItem
-                      (Tuple.first (itemEditor (level + 1) item))
-                  ]
+                Model.ConsequenceGetItem item ->
+                    [ Element.map
+                        Model.ConsequenceGetItem
+                        (Tuple.first (itemEditor (level + 1) item))
+                    ]
 
-              Model.ConsequenceLoseItem string ->
-                  [ Element.map
-                      Model.ConsequenceLoseItem
-                      (Tuple.first (stringEditor (level + 1) string))
-                  ]
+                Model.ConsequenceLoseItem string ->
+                    [ Element.map
+                        Model.ConsequenceLoseItem
+                        (Tuple.first (stringEditor (level + 1) string))
+                    ]
 
-              Model.ConsequenceSetLocalFlag string bool ->
-                  [ Element.map
-                      (\lambdaArg0 ->
-                          Model.ConsequenceSetLocalFlag lambdaArg0 bool
-                      )
-                      (Tuple.first (stringEditor (level + 1) string))
-                  , Element.map
-                      (Model.ConsequenceSetLocalFlag string)
-                      (Tuple.first (boolEditor (level + 1) bool))
-                  ]
+                Model.ConsequenceSetLocalFlag string bool ->
+                    [ Element.map
+                        (\lambdaArg0 ->
+                            Model.ConsequenceSetLocalFlag lambdaArg0 bool
+                        )
+                        (Tuple.first (stringEditor (level + 1) string))
+                    , Element.map
+                        (Model.ConsequenceSetLocalFlag string)
+                        (Tuple.first (boolEditor (level + 1) bool))
+                    ]
       in
       Element.column
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          [ variantRow
-          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-          ]
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
     , Basics.False
     )
 
@@ -962,707 +956,701 @@ itemEditor : Int -> Model.Item -> ( Element.Element Model.Item, Bool )
 itemEditor level value =
     ( let
         { fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted, nameStringimageStringExtracted } =
-          case value of
-              Model.GenericItem nameStringimageString ->
-                  { extractedDefault
-                      | nameStringimageStringExtracted = nameStringimageString
-                  }
+            case value of
+                Model.GenericItem nameStringimageString ->
+                    { extractedDefault
+                        | nameStringimageStringExtracted = nameStringimageString
+                    }
 
-              Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
-                  { extractedDefault
-                      | fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted =
-                          fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                  }
+                Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
+                    { extractedDefault
+                        | fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted =
+                            fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                    }
 
         extractedDefault =
-          { fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted =
-              { from = cityNameDefault
-              , to = cityNameDefault
-              , kind = transportKindDefault
-              , consequences = []
-              }
-          , nameStringimageStringExtracted = { name = "", image = "" }
-          }
+            { fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted =
+                { from = cityNameDefault
+                , to = cityNameDefault
+                , kind = transportKindDefault
+                , consequences = []
+                }
+            , nameStringimageStringExtracted = { name = "", image = "" }
+            }
 
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option
-                      (Model.GenericItem nameStringimageStringExtracted)
-                      (Element.text "Generic item")
-                  , Input.option
-                      (Model.Ticket
-                          fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted
-                      )
-                      (Element.text "Ticket")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option
+                        (Model.GenericItem nameStringimageStringExtracted)
+                        (Element.text "Generic item")
+                    , Input.option
+                        (Model.Ticket
+                            fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted
+                        )
+                        (Element.text "Ticket")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
 
         inputsRow =
-          case value of
-              Model.GenericItem nameStringimageString ->
-                  [ Element.map
-                      Model.GenericItem
-                      (Tuple.first
-                          (let
-                              raw =
-                                 [ let
-                                     ( editor, simple ) =
-                                       stringEditor
-                                           (level + 1 + 1)
-                                           nameStringimageString.name
-                                   in
-                                   ( "Name"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { nameStringimageString
-                                               | name = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       stringEditor
-                                           (level + 1 + 1)
-                                           nameStringimageString.image
-                                   in
-                                   ( "Image"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { nameStringimageString
-                                               | image = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 ]
+            case value of
+                Model.GenericItem nameStringimageString ->
+                    [ Element.map
+                        Model.GenericItem
+                        (Tuple.first
+                            (let
+                                raw =
+                                    [ let
+                                        ( editor, simple ) =
+                                            stringEditor
+                                                (level + 1 + 1)
+                                                nameStringimageString.name
+                                      in
+                                      ( "Name"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { nameStringimageString
+                                                    | name = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            stringEditor
+                                                (level + 1 + 1)
+                                                nameStringimageString.image
+                                      in
+                                      ( "Image"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { nameStringimageString
+                                                    | image = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    ]
 
-                              simples =
-                                 raw
-                                     |> List.filterMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 Maybe.Just
-                                                     ( Element.el
-                                                         [ Element.centerY ]
-                                                         (Element.text fieldName
-                                                         )
-                                                     , fieldEditor
-                                                     )
+                                simples =
+                                    raw
+                                        |> List.filterMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    Maybe.Just
+                                                        ( Element.el
+                                                            [ Element.centerY ]
+                                                            (Element.text fieldName)
+                                                        , fieldEditor
+                                                        )
 
-                                             else
-                                                 Maybe.Nothing
-                                         )
+                                                else
+                                                    Maybe.Nothing
+                                            )
 
-                              simplesTable =
-                                 if List.length simples <= 2 then
-                                     simples
-                                         |> List.map
-                                             (\pair ->
-                                                 Element.row
-                                                     [ Theme.spacing
-                                                     , Element.width
-                                                         Element.fill
-                                                     ]
-                                                     [ Tuple.first pair
-                                                     , Tuple.second pair
-                                                     ]
-                                             )
-                                         |> Element.row
-                                             [ Theme.spacing
-                                             , Element.width Element.fill
-                                             ]
+                                simplesTable =
+                                    if List.length simples <= 2 then
+                                        simples
+                                            |> List.map
+                                                (\pair ->
+                                                    Element.row
+                                                        [ Theme.spacing
+                                                        , Element.width
+                                                            Element.fill
+                                                        ]
+                                                        [ Tuple.first pair
+                                                        , Tuple.second pair
+                                                        ]
+                                                )
+                                            |> Element.row
+                                                [ Theme.spacing
+                                                , Element.width Element.fill
+                                                ]
 
-                                 else
-                                     Element.table
-                                         [ Theme.spacing
-                                         , Element.width Element.fill
-                                         ]
-                                         { columns =
-                                             [ { header = Element.none
-                                               , width = Element.shrink
-                                               , view =
-                                                   \pair -> Tuple.first pair
-                                               }
-                                             , { header = Element.none
-                                               , width = Element.fill
-                                               , view =
-                                                   \pair -> Tuple.second pair
-                                               }
-                                             ]
-                                         , data = simples
-                                         }
+                                    else
+                                        Element.table
+                                            [ Theme.spacing
+                                            , Element.width Element.fill
+                                            ]
+                                            { columns =
+                                                [ { header = Element.none
+                                                  , width = Element.shrink
+                                                  , view =
+                                                        \pair -> Tuple.first pair
+                                                  }
+                                                , { header = Element.none
+                                                  , width = Element.fill
+                                                  , view =
+                                                        \pair -> Tuple.second pair
+                                                  }
+                                                ]
+                                            , data = simples
+                                            }
 
-                              complexes =
-                                 raw
-                                     |> List.concatMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 []
+                                complexes =
+                                    raw
+                                        |> List.concatMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    []
 
-                                             else
-                                                 [ Element.text fieldName
-                                                 , fieldEditor
-                                                 ]
-                                         )
-                           in
-                           ( Element.column
-                               [ Element.width Element.fill
-                               , Background.color (Theme.getColor (level + 1))
-                               , Element.width Element.fill
-                               , Theme.spacing
-                               , Theme.padding
-                               , Element.alignTop
-                               , Border.width 1
-                               , Border.rounded Theme.rythm
-                               ]
-                               (simplesTable :: complexes)
-                           , Basics.False
-                           )
-                          )
-                      )
-                  ]
+                                                else
+                                                    [ Element.text fieldName
+                                                    , fieldEditor
+                                                    ]
+                                            )
+                             in
+                             ( Element.column
+                                [ Element.width Element.fill
+                                , Background.color (Theme.getColor (level + 1))
+                                , Element.width Element.fill
+                                , Theme.spacing
+                                , Theme.padding
+                                , Element.alignTop
+                                , Border.width 1
+                                , Border.rounded Theme.rythm
+                                ]
+                                (simplesTable :: complexes)
+                             , Basics.False
+                             )
+                            )
+                        )
+                    ]
 
-              Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
-                  [ Element.map
-                      Model.Ticket
-                      (Tuple.first
-                          (let
-                              raw =
-                                 [ let
-                                     ( editor, simple ) =
-                                       cityNameEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
-                                   in
-                                   ( "From"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                               | from = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       cityNameEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
-                                   in
-                                   ( "To"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                               | to = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       transportKindEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
-                                   in
-                                   ( "Kind"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                               | kind = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       listEditor
-                                           "Consequence"
-                                           consequenceEditor
-                                           consequenceDefault
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
-                                   in
-                                   ( "Consequences"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
-                                               | consequences = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 ]
+                Model.Ticket fromCityNametoCityNamekindTransportKindconsequencesListConsequence ->
+                    [ Element.map
+                        Model.Ticket
+                        (Tuple.first
+                            (let
+                                raw =
+                                    [ let
+                                        ( editor, simple ) =
+                                            cityNameEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKindconsequencesListConsequence.from
+                                      in
+                                      ( "From"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                                    | from = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            cityNameEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKindconsequencesListConsequence.to
+                                      in
+                                      ( "To"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                                    | to = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            transportKindEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKindconsequencesListConsequence.kind
+                                      in
+                                      ( "Kind"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                                    | kind = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            listEditor
+                                                "Consequence"
+                                                consequenceEditor
+                                                consequenceDefault
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKindconsequencesListConsequence.consequences
+                                      in
+                                      ( "Consequences"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKindconsequencesListConsequence
+                                                    | consequences = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    ]
 
-                              simples =
-                                 raw
-                                     |> List.filterMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 Maybe.Just
-                                                     ( Element.el
-                                                         [ Element.centerY ]
-                                                         (Element.text fieldName
-                                                         )
-                                                     , fieldEditor
-                                                     )
+                                simples =
+                                    raw
+                                        |> List.filterMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    Maybe.Just
+                                                        ( Element.el
+                                                            [ Element.centerY ]
+                                                            (Element.text fieldName)
+                                                        , fieldEditor
+                                                        )
 
-                                             else
-                                                 Maybe.Nothing
-                                         )
+                                                else
+                                                    Maybe.Nothing
+                                            )
 
-                              simplesTable =
-                                 if List.length simples <= 2 then
-                                     simples
-                                         |> List.map
-                                             (\pair ->
-                                                 Element.row
-                                                     [ Theme.spacing
-                                                     , Element.width
-                                                         Element.fill
-                                                     ]
-                                                     [ Tuple.first pair
-                                                     , Tuple.second pair
-                                                     ]
-                                             )
-                                         |> Element.row
-                                             [ Theme.spacing
-                                             , Element.width Element.fill
-                                             ]
+                                simplesTable =
+                                    if List.length simples <= 2 then
+                                        simples
+                                            |> List.map
+                                                (\pair ->
+                                                    Element.row
+                                                        [ Theme.spacing
+                                                        , Element.width
+                                                            Element.fill
+                                                        ]
+                                                        [ Tuple.first pair
+                                                        , Tuple.second pair
+                                                        ]
+                                                )
+                                            |> Element.row
+                                                [ Theme.spacing
+                                                , Element.width Element.fill
+                                                ]
 
-                                 else
-                                     Element.table
-                                         [ Theme.spacing
-                                         , Element.width Element.fill
-                                         ]
-                                         { columns =
-                                             [ { header = Element.none
-                                               , width = Element.shrink
-                                               , view =
-                                                   \pair -> Tuple.first pair
-                                               }
-                                             , { header = Element.none
-                                               , width = Element.fill
-                                               , view =
-                                                   \pair -> Tuple.second pair
-                                               }
-                                             ]
-                                         , data = simples
-                                         }
+                                    else
+                                        Element.table
+                                            [ Theme.spacing
+                                            , Element.width Element.fill
+                                            ]
+                                            { columns =
+                                                [ { header = Element.none
+                                                  , width = Element.shrink
+                                                  , view =
+                                                        \pair -> Tuple.first pair
+                                                  }
+                                                , { header = Element.none
+                                                  , width = Element.fill
+                                                  , view =
+                                                        \pair -> Tuple.second pair
+                                                  }
+                                                ]
+                                            , data = simples
+                                            }
 
-                              complexes =
-                                 raw
-                                     |> List.concatMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 []
+                                complexes =
+                                    raw
+                                        |> List.concatMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    []
 
-                                             else
-                                                 [ Element.text fieldName
-                                                 , fieldEditor
-                                                 ]
-                                         )
-                           in
-                           ( Element.column
-                               [ Element.width Element.fill
-                               , Background.color (Theme.getColor (level + 1))
-                               , Element.width Element.fill
-                               , Theme.spacing
-                               , Theme.padding
-                               , Element.alignTop
-                               , Border.width 1
-                               , Border.rounded Theme.rythm
-                               ]
-                               (simplesTable :: complexes)
-                           , Basics.False
-                           )
-                          )
-                      )
-                  ]
+                                                else
+                                                    [ Element.text fieldName
+                                                    , fieldEditor
+                                                    ]
+                                            )
+                             in
+                             ( Element.column
+                                [ Element.width Element.fill
+                                , Background.color (Theme.getColor (level + 1))
+                                , Element.width Element.fill
+                                , Theme.spacing
+                                , Theme.padding
+                                , Element.alignTop
+                                , Border.width 1
+                                , Border.rounded Theme.rythm
+                                ]
+                                (simplesTable :: complexes)
+                             , Basics.False
+                             )
+                            )
+                        )
+                    ]
       in
       Element.column
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          [ variantRow
-          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-          ]
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
     , Basics.False
     )
 
 
-transportKindEditor :
-    Int -> Model.TransportKind -> ( Element.Element Model.TransportKind, Bool )
+transportKindEditor : Int -> Model.TransportKind -> ( Element.Element Model.TransportKind, Bool )
 transportKindEditor level value =
     ( let
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option Model.Plane (Element.text "Plane")
-                  , Input.option Model.Train (Element.text "Train")
-                  , Input.option Model.Coach (Element.text "Coach")
-                  , Input.option Model.Bike (Element.text "Bike")
-                  , Input.option Model.Boat (Element.text "Boat")
-                  , Input.option Model.Ferry (Element.text "Ferry")
-                  , Input.option Model.DuckWalk (Element.text "Duck walk")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option Model.Plane (Element.text "Plane")
+                    , Input.option Model.Train (Element.text "Train")
+                    , Input.option Model.Coach (Element.text "Coach")
+                    , Input.option Model.Bike (Element.text "Bike")
+                    , Input.option Model.Boat (Element.text "Boat")
+                    , Input.option Model.Ferry (Element.text "Ferry")
+                    , Input.option Model.DuckWalk (Element.text "Duck walk")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
       in
       Element.el
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          variantRow
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        variantRow
     , Basics.False
     )
 
 
-conditionEditor :
-    Int -> Model.Condition -> ( Element.Element Model.Condition, Bool )
+conditionEditor : Int -> Model.Condition -> ( Element.Element Model.Condition, Bool )
 conditionEditor level value =
     ( let
         { conditionExtracted, itemNameExtracted, listConditionExtracted, stringExtracted } =
-          case value of
-              Model.ConditionNot condition ->
-                  { extractedDefault | conditionExtracted = condition }
+            case value of
+                Model.ConditionNot condition ->
+                    { extractedDefault | conditionExtracted = condition }
 
-              Model.ConditionAnd listCondition ->
-                  { extractedDefault | listConditionExtracted = listCondition }
+                Model.ConditionAnd listCondition ->
+                    { extractedDefault | listConditionExtracted = listCondition }
 
-              Model.ConditionOr listCondition ->
-                  { extractedDefault | listConditionExtracted = listCondition }
+                Model.ConditionOr listCondition ->
+                    { extractedDefault | listConditionExtracted = listCondition }
 
-              Model.HasItem itemName ->
-                  { extractedDefault | itemNameExtracted = itemName }
+                Model.HasItem itemName ->
+                    { extractedDefault | itemNameExtracted = itemName }
 
-              Model.LocalFlag string ->
-                  { extractedDefault | stringExtracted = string }
+                Model.LocalFlag string ->
+                    { extractedDefault | stringExtracted = string }
 
         extractedDefault =
-          { conditionExtracted = conditionDefault
-          , itemNameExtracted = itemNameDefault
-          , listConditionExtracted = []
-          , stringExtracted = ""
-          }
+            { conditionExtracted = conditionDefault
+            , itemNameExtracted = itemNameDefault
+            , listConditionExtracted = []
+            , stringExtracted = ""
+            }
 
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option
-                      (Model.ConditionNot conditionExtracted)
-                      (Element.text "Not")
-                  , Input.option
-                      (Model.ConditionAnd listConditionExtracted)
-                      (Element.text "And")
-                  , Input.option
-                      (Model.ConditionOr listConditionExtracted)
-                      (Element.text "Or")
-                  , Input.option
-                      (Model.HasItem itemNameExtracted)
-                      (Element.text "Has item")
-                  , Input.option
-                      (Model.LocalFlag stringExtracted)
-                      (Element.text "Local flag")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option
+                        (Model.ConditionNot conditionExtracted)
+                        (Element.text "Not")
+                    , Input.option
+                        (Model.ConditionAnd listConditionExtracted)
+                        (Element.text "And")
+                    , Input.option
+                        (Model.ConditionOr listConditionExtracted)
+                        (Element.text "Or")
+                    , Input.option
+                        (Model.HasItem itemNameExtracted)
+                        (Element.text "Has item")
+                    , Input.option
+                        (Model.LocalFlag stringExtracted)
+                        (Element.text "Local flag")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
 
         inputsRow =
-          case value of
-              Model.ConditionNot condition ->
-                  [ Element.map
-                      Model.ConditionNot
-                      (Tuple.first (conditionEditor (level + 1) condition))
-                  ]
+            case value of
+                Model.ConditionNot condition ->
+                    [ Element.map
+                        Model.ConditionNot
+                        (Tuple.first (conditionEditor (level + 1) condition))
+                    ]
 
-              Model.ConditionAnd listCondition ->
-                  [ Element.map
-                      Model.ConditionAnd
-                      (Tuple.first
-                          (listEditor
-                              "Condition"
-                              conditionEditor
-                              conditionDefault
-                              (level + 1)
-                              listCondition
-                          )
-                      )
-                  ]
+                Model.ConditionAnd listCondition ->
+                    [ Element.map
+                        Model.ConditionAnd
+                        (Tuple.first
+                            (listEditor
+                                "Condition"
+                                conditionEditor
+                                conditionDefault
+                                (level + 1)
+                                listCondition
+                            )
+                        )
+                    ]
 
-              Model.ConditionOr listCondition ->
-                  [ Element.map
-                      Model.ConditionOr
-                      (Tuple.first
-                          (listEditor
-                              "Condition"
-                              conditionEditor
-                              conditionDefault
-                              (level + 1)
-                              listCondition
-                          )
-                      )
-                  ]
+                Model.ConditionOr listCondition ->
+                    [ Element.map
+                        Model.ConditionOr
+                        (Tuple.first
+                            (listEditor
+                                "Condition"
+                                conditionEditor
+                                conditionDefault
+                                (level + 1)
+                                listCondition
+                            )
+                        )
+                    ]
 
-              Model.HasItem itemName ->
-                  [ Element.map
-                      Model.HasItem
-                      (Tuple.first (itemNameEditor (level + 1) itemName))
-                  ]
+                Model.HasItem itemName ->
+                    [ Element.map
+                        Model.HasItem
+                        (Tuple.first (itemNameEditor (level + 1) itemName))
+                    ]
 
-              Model.LocalFlag string ->
-                  [ Element.map
-                      Model.LocalFlag
-                      (Tuple.first (stringEditor (level + 1) string))
-                  ]
+                Model.LocalFlag string ->
+                    [ Element.map
+                        Model.LocalFlag
+                        (Tuple.first (stringEditor (level + 1) string))
+                    ]
       in
       Element.column
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          [ variantRow
-          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-          ]
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
     , Basics.False
     )
 
 
-itemNameEditor :
-    Int -> Model.ItemName -> ( Element.Element Model.ItemName, Bool )
+itemNameEditor : Int -> Model.ItemName -> ( Element.Element Model.ItemName, Bool )
 itemNameEditor level value =
     ( let
         { fromCityNametoCityNamekindTransportKindExtracted, stringExtracted } =
-          case value of
-              Model.GenericItemName string ->
-                  { extractedDefault | stringExtracted = string }
+            case value of
+                Model.GenericItemName string ->
+                    { extractedDefault | stringExtracted = string }
 
-              Model.TicketName fromCityNametoCityNamekindTransportKind ->
-                  { extractedDefault
-                      | fromCityNametoCityNamekindTransportKindExtracted =
-                          fromCityNametoCityNamekindTransportKind
-                  }
+                Model.TicketName fromCityNametoCityNamekindTransportKind ->
+                    { extractedDefault
+                        | fromCityNametoCityNamekindTransportKindExtracted =
+                            fromCityNametoCityNamekindTransportKind
+                    }
 
         extractedDefault =
-          { fromCityNametoCityNamekindTransportKindExtracted =
-              { from = cityNameDefault
-              , to = cityNameDefault
-              , kind = transportKindDefault
-              }
-          , stringExtracted = ""
-          }
+            { fromCityNametoCityNamekindTransportKindExtracted =
+                { from = cityNameDefault
+                , to = cityNameDefault
+                , kind = transportKindDefault
+                }
+            , stringExtracted = ""
+            }
 
         variantRow =
-          Input.radioRow
-              [ Theme.spacing ]
-              { onChange = Basics.identity
-              , options =
-                  [ Input.option
-                      (Model.GenericItemName stringExtracted)
-                      (Element.text "Generic item name")
-                  , Input.option
-                      (Model.TicketName
-                          fromCityNametoCityNamekindTransportKindExtracted
-                      )
-                      (Element.text "Ticket name")
-                  ]
-              , selected = Maybe.Just value
-              , label = Input.labelHidden ""
-              }
+            Input.radioRow
+                [ Theme.spacing ]
+                { onChange = Basics.identity
+                , options =
+                    [ Input.option
+                        (Model.GenericItemName stringExtracted)
+                        (Element.text "Generic item name")
+                    , Input.option
+                        (Model.TicketName
+                            fromCityNametoCityNamekindTransportKindExtracted
+                        )
+                        (Element.text "Ticket name")
+                    ]
+                , selected = Maybe.Just value
+                , label = Input.labelHidden ""
+                }
 
         inputsRow =
-          case value of
-              Model.GenericItemName string ->
-                  [ Element.map
-                      Model.GenericItemName
-                      (Tuple.first (stringEditor (level + 1) string))
-                  ]
+            case value of
+                Model.GenericItemName string ->
+                    [ Element.map
+                        Model.GenericItemName
+                        (Tuple.first (stringEditor (level + 1) string))
+                    ]
 
-              Model.TicketName fromCityNametoCityNamekindTransportKind ->
-                  [ Element.map
-                      Model.TicketName
-                      (Tuple.first
-                          (let
-                              raw =
-                                 [ let
-                                     ( editor, simple ) =
-                                       cityNameEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKind.from
-                                   in
-                                   ( "From"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKind
-                                               | from = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       cityNameEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKind.to
-                                   in
-                                   ( "To"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKind
-                                               | to = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 , let
-                                     ( editor, simple ) =
-                                       transportKindEditor
-                                           (level + 1 + 1)
-                                           fromCityNametoCityNamekindTransportKind.kind
-                                   in
-                                   ( "Kind"
-                                   , Element.map
-                                       (\lambdaArg0 ->
-                                           { fromCityNametoCityNamekindTransportKind
-                                               | kind = lambdaArg0
-                                           }
-                                       )
-                                       editor
-                                   , simple
-                                   )
-                                 ]
+                Model.TicketName fromCityNametoCityNamekindTransportKind ->
+                    [ Element.map
+                        Model.TicketName
+                        (Tuple.first
+                            (let
+                                raw =
+                                    [ let
+                                        ( editor, simple ) =
+                                            cityNameEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKind.from
+                                      in
+                                      ( "From"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKind
+                                                    | from = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            cityNameEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKind.to
+                                      in
+                                      ( "To"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKind
+                                                    | to = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    , let
+                                        ( editor, simple ) =
+                                            transportKindEditor
+                                                (level + 1 + 1)
+                                                fromCityNametoCityNamekindTransportKind.kind
+                                      in
+                                      ( "Kind"
+                                      , Element.map
+                                            (\lambdaArg0 ->
+                                                { fromCityNametoCityNamekindTransportKind
+                                                    | kind = lambdaArg0
+                                                }
+                                            )
+                                            editor
+                                      , simple
+                                      )
+                                    ]
 
-                              simples =
-                                 raw
-                                     |> List.filterMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 Maybe.Just
-                                                     ( Element.el
-                                                         [ Element.centerY ]
-                                                         (Element.text fieldName
-                                                         )
-                                                     , fieldEditor
-                                                     )
+                                simples =
+                                    raw
+                                        |> List.filterMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    Maybe.Just
+                                                        ( Element.el
+                                                            [ Element.centerY ]
+                                                            (Element.text fieldName)
+                                                        , fieldEditor
+                                                        )
 
-                                             else
-                                                 Maybe.Nothing
-                                         )
+                                                else
+                                                    Maybe.Nothing
+                                            )
 
-                              simplesTable =
-                                 if List.length simples <= 2 then
-                                     simples
-                                         |> List.map
-                                             (\pair ->
-                                                 Element.row
-                                                     [ Theme.spacing
-                                                     , Element.width
-                                                         Element.fill
-                                                     ]
-                                                     [ Tuple.first pair
-                                                     , Tuple.second pair
-                                                     ]
-                                             )
-                                         |> Element.row
-                                             [ Theme.spacing
-                                             , Element.width Element.fill
-                                             ]
+                                simplesTable =
+                                    if List.length simples <= 2 then
+                                        simples
+                                            |> List.map
+                                                (\pair ->
+                                                    Element.row
+                                                        [ Theme.spacing
+                                                        , Element.width
+                                                            Element.fill
+                                                        ]
+                                                        [ Tuple.first pair
+                                                        , Tuple.second pair
+                                                        ]
+                                                )
+                                            |> Element.row
+                                                [ Theme.spacing
+                                                , Element.width Element.fill
+                                                ]
 
-                                 else
-                                     Element.table
-                                         [ Theme.spacing
-                                         , Element.width Element.fill
-                                         ]
-                                         { columns =
-                                             [ { header = Element.none
-                                               , width = Element.shrink
-                                               , view =
-                                                   \pair -> Tuple.first pair
-                                               }
-                                             , { header = Element.none
-                                               , width = Element.fill
-                                               , view =
-                                                   \pair -> Tuple.second pair
-                                               }
-                                             ]
-                                         , data = simples
-                                         }
+                                    else
+                                        Element.table
+                                            [ Theme.spacing
+                                            , Element.width Element.fill
+                                            ]
+                                            { columns =
+                                                [ { header = Element.none
+                                                  , width = Element.shrink
+                                                  , view =
+                                                        \pair -> Tuple.first pair
+                                                  }
+                                                , { header = Element.none
+                                                  , width = Element.fill
+                                                  , view =
+                                                        \pair -> Tuple.second pair
+                                                  }
+                                                ]
+                                            , data = simples
+                                            }
 
-                              complexes =
-                                 raw
-                                     |> List.concatMap
-                                         (\( fieldName, fieldEditor, simple ) ->
-                                             if simple then
-                                                 []
+                                complexes =
+                                    raw
+                                        |> List.concatMap
+                                            (\( fieldName, fieldEditor, simple ) ->
+                                                if simple then
+                                                    []
 
-                                             else
-                                                 [ Element.text fieldName
-                                                 , fieldEditor
-                                                 ]
-                                         )
-                           in
-                           ( Element.column
-                               [ Element.width Element.fill
-                               , Background.color (Theme.getColor (level + 1))
-                               , Element.width Element.fill
-                               , Theme.spacing
-                               , Theme.padding
-                               , Element.alignTop
-                               , Border.width 1
-                               , Border.rounded Theme.rythm
-                               ]
-                               (simplesTable :: complexes)
-                           , Basics.False
-                           )
-                          )
-                      )
-                  ]
+                                                else
+                                                    [ Element.text fieldName
+                                                    , fieldEditor
+                                                    ]
+                                            )
+                             in
+                             ( Element.column
+                                [ Element.width Element.fill
+                                , Background.color (Theme.getColor (level + 1))
+                                , Element.width Element.fill
+                                , Theme.spacing
+                                , Theme.padding
+                                , Element.alignTop
+                                , Border.width 1
+                                , Border.rounded Theme.rythm
+                                ]
+                                (simplesTable :: complexes)
+                             , Basics.False
+                             )
+                            )
+                        )
+                    ]
       in
       Element.column
-          [ Background.color (Theme.getColor level)
-          , Element.width Element.fill
-          , Theme.spacing
-          , Theme.padding
-          , Element.alignTop
-          , Border.width 1
-          , Border.rounded Theme.rythm
-          ]
-          [ variantRow
-          , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-          ]
+        [ Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded Theme.rythm
+        ]
+        [ variantRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        ]
     , Basics.False
     )
 
@@ -1839,61 +1827,6 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
     ( editor, Basics.False )
 
 
-maybeEditor :
-    String
-    -> (Int -> e -> ( Element.Element e, Bool ))
-    -> e
-    -> Int
-    -> Maybe e
-    -> ( Element.Element (Maybe e), Bool )
-maybeEditor typeName valueEditor valueDefault level value =
-    let
-        extracted =
-            case value of
-                Nothing ->
-                    valueDefault
-
-                Just inner ->
-                    inner
-
-        variantRow =
-            Input.radioRow
-                [ Theme.spacing ]
-                { onChange = Basics.identity
-                , options =
-                    [ Input.option Nothing (Element.text "Nothing")
-                    , Input.option
-                        (Maybe.Just extracted)
-                        (Element.text typeName)
-                    ]
-                , selected = Maybe.Just value
-                , label = Input.labelHidden ""
-                }
-
-        inputsRow =
-            case value of
-                Nothing ->
-                    Element.none
-
-                Just inner ->
-                    Element.map
-                        Maybe.Just
-                        (Tuple.first (valueEditor (level + 1) inner))
-    in
-    ( Element.column
-        [ Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Theme.rythm
-        ]
-        [ variantRow, inputsRow ]
-    , Basics.False
-    )
-
-
 stringEditor : Int -> String -> ( Element.Element String.String, Bool )
 stringEditor level value =
     ( Input.text
@@ -1911,7 +1844,7 @@ stringEditor level value =
 
 
 boolEditor : Int -> Bool -> ( Element.Element Basics.Bool, Bool )
-boolEditor level value =
+boolEditor _ value =
     ( Input.radioRow
         [ Theme.spacing, Element.alignTop ]
         { onChange = Basics.identity
@@ -2089,8 +2022,7 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
                 \( key, memberValue ) ->
                     Element.map
                         (\lambdaArg0 ->
-                            if key == keyDefault && lambdaArg0 == valueDefault
-                            then
+                            if key == keyDefault && lambdaArg0 == valueDefault then
                                 Dict.remove key value
 
                             else
@@ -2113,5 +2045,3 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
         }
     , Basics.False
     )
-
-

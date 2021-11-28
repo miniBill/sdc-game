@@ -1,5 +1,6 @@
 module Frontend.Game exposing (view)
 
+import AltMath.Matrix3 as Mat3
 import Angle
 import Dict
 import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
@@ -7,7 +8,7 @@ import Element.WithUnits.Background as Background
 import Element.WithUnits.Border as Border
 import Element.WithUnits.Font as Font
 import Element.WithUnits.Input as Input
-import Element.WithUnits.Internal exposing (wrapF)
+import Element.WithUnits.Internal exposing (scale, wrapF)
 import Frontend.Common
 import Html
 import Html.Attributes
@@ -18,10 +19,11 @@ import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz)
 import Pins exposing (mapSize)
-import Quantity
+import Pixels exposing (Pixels)
+import Quantity exposing (Quantity)
 import Set
 import Theme
-import Types exposing (ChatHistory, GameModel(..), GameMsg(..), OuterGameModel(..), SharedGameModel, TalkingModel)
+import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, TalkingModel)
 
 
 rythm : Length
@@ -55,8 +57,8 @@ view model =
 
                 Just person ->
                     case submodel of
-                        ViewingMap ->
-                            viewMap data sharedModel
+                        ViewingMap mapModel ->
+                            viewMap data sharedModel mapModel
 
                         ViewingPerson ->
                             viewPerson person
@@ -68,15 +70,43 @@ view model =
                             viewQuizzing person quiz
 
 
-viewMap : Data -> SharedGameModel -> Element GameMsg
-viewMap data sharedGameModel =
+viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
+viewMap data sharedGameModel mapModel =
+    Element.withSize <| \screen ->
     let
+        scale =
+            Element.WithUnits.Internal.scale screen
+
+        w =
+            mapSize.width
+                |> Quantity.at scale
+
+        h =
+            mapSize.height
+                |> Quantity.at scale
+
+        dx =
+            screen.width
+                |> Quantity.minus w
+                |> Quantity.divideBy 2
+
+        dy =
+            screen.height
+                |> Quantity.minus h
+                |> Quantity.divideBy 2
+
+        style k v =
+            Element.htmlAttribute <| Html.Attributes.style k v
+
         normalAttrs =
-            [ width <| px mapSize.width
-            , height <| px mapSize.height
-            , centerX
-            , centerY
+            [ width fill
+            , height fill
             , Font.size (Quantity.multiplyBy 1 baseFontSize)
+            , style "background-image" "url(/art/lotr-europe.jpg)"
+            , style "background-position"
+                (pixelsToString dx ++ " " ++ pixelsToString dy)
+            , style "background-size" (pixelsToString w)
+            , style "background-repeat" "no-repeat"
             ]
 
         attrs =
@@ -104,10 +134,12 @@ viewMap data sharedGameModel =
                     )
                 |> List.map inFront
     in
-    Element.image attrs
-        { src = "/art/lotr-europe.jpg"
-        , description = "A map of Europe"
-        }
+    el attrs Element.none
+
+
+pixelsToString : Quantity Float Pixels -> String
+pixelsToString pixels =
+    String.fromFloat (Pixels.inPixels pixels) ++ "px"
 
 
 viewPinOnMap : SharedGameModel -> Id -> Person -> List (Element GameMsg)
@@ -175,11 +207,19 @@ viewPinOnMap sharedGameModel id { city } =
                         Html.Attributes.style "text-shadow" <|
                             String.join "," <|
                                 List.map
-                                    (\( dx, dy, b ) -> String.fromFloat dx ++ "px " ++ String.fromFloat dy ++ "px " ++ wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px #ffffff")
-                                    [ ( -2, -2, 0.1 )
-                                    , ( 2, -2, 0.1 )
-                                    , ( -2, 2, 0.1 )
-                                    , ( 2, 2, 0.1 )
+                                    (\( dx, dy, b ) ->
+                                        String.join " "
+                                            [ pixelsToString dx
+                                            , pixelsToString dy
+                                            , wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px"
+                                            , String.fromFloat <| Pixels.inPixels <| Quantity.at (scale size) (Quantity.multiplyBy b rythm)
+                                            , "#ffffff"
+                                            ]
+                                    )
+                                    [ ( Pixels.pixels -2, Pixels.pixels -2, 0.1 )
+                                    , ( Pixels.pixels 2, Pixels.pixels -2, 0.1 )
+                                    , ( Pixels.pixels -2, Pixels.pixels 2, 0.1 )
+                                    , ( Pixels.pixels 2, Pixels.pixels 2, 0.1 )
                                     ]
                     , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "initial"
                     ]

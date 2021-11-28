@@ -117,6 +117,6 @@ mapSize :
     , height : Length
     }
 mapSize =
-    { width = Length.millimeters 1820
-    , height = Length.millimeters 1140
+    { width = Length.millimeters 9933
+    , height = Length.millimeters 7016
     }

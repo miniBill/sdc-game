@@ -3,6 +3,7 @@ module Element.WithUnits.Internal exposing
     , Element(..)
     , Length(..)
     , run
+    , scale
     , wrap
     , wrapAttribute
     , wrapAttributeF
@@ -38,7 +39,7 @@ run size (Element f) =
 
 scale : Size -> Quantity Float (Rate Pixels Meters)
 scale size =
-    Quantity.min
+    Quantity.max
         (Quantity.per mapSize.width size.width)
         (Quantity.per mapSize.height size.height)
 
