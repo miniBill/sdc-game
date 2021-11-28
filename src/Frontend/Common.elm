@@ -1,16 +1,16 @@
 module Frontend.Common exposing (..)
 
-import Element as E
-import Element.Font
+import Element.WithContext as Element exposing (Element, centerX, centerY, el, text)
+import Element.WithContext.Font as Font
 import Theme
 
 
-loading : E.Element msg
+loading : Element context msg
 loading =
-    E.el
+    el
         [ Theme.fontSizes.huge
-        , E.centerX
-        , E.centerY
-        , Element.Font.center
+        , centerX
+        , centerY
+        , Font.center
         ]
-        (E.text "Loading...")
+        (text "Loading...")

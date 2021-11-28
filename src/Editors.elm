@@ -7,28 +7,28 @@ module Editors exposing (dataEditor, idEditor, personEditor, cityEditor, cityNam
 -}
 
 import Dict
-import Element
-import Element.Background as Background
-import Element.Border as Border
-import Element.Input as Input
+import Element.WithContext as Element
+import Element.WithContext.Background as Background
+import Element.WithContext.Border as Border
+import Element.WithContext.Input as Input
 import Html.Attributes
 import List.Extra
 import Model
-import Theme
+import Theme exposing (Element)
 import Tuple
 
 
-dataEditor : Int -> Model.Data -> ( Element.Element Model.Data, Bool )
+dataEditor : Int -> Model.Data -> ( Element Model.Data, Bool )
 dataEditor level value =
     dictEditor idEditor idDefault personEditor personDefault level value
 
 
-idEditor : Int -> Model.Id -> ( Element.Element Model.Id, Bool )
+idEditor : Int -> Model.Id -> ( Element Model.Id, Bool )
 idEditor level value =
     stringEditor level value
 
 
-personEditor : Int -> Model.Person -> ( Element.Element Model.Person, Bool )
+personEditor : Int -> Model.Person -> ( Element Model.Person, Bool )
 personEditor level value =
     let
         raw =
@@ -158,7 +158,7 @@ personEditor level value =
     )
 
 
-cityEditor : Int -> Model.City -> ( Element.Element Model.City, Bool )
+cityEditor : Int -> Model.City -> ( Element Model.City, Bool )
 cityEditor level value =
     let
         raw =
@@ -295,33 +295,29 @@ cityEditor level value =
     )
 
 
-cityNameEditor : Int -> Model.CityName -> ( Element.Element Model.CityName, Bool )
+cityNameEditor : Int -> Model.CityName -> ( Element Model.CityName, Bool )
 cityNameEditor level value =
     stringEditor level value
 
 
-coordinatesEditor : Int -> Model.Coordinates -> ( Element.Element Model.Coordinates, Bool )
+coordinatesEditor : Int -> Model.Coordinates -> ( Element Model.Coordinates, Bool )
 coordinatesEditor level value =
     let
         raw =
             [ let
                 ( editor, simple ) =
-                    floatEditor (level + 1) value.north
+                    floatEditor (level + 1) value.x
               in
-              ( "North"
-              , Element.map
-                    (\lambdaArg0 -> { value | north = lambdaArg0 })
-                    editor
+              ( "X"
+              , Element.map (\lambdaArg0 -> { value | x = lambdaArg0 }) editor
               , simple
               )
             , let
                 ( editor, simple ) =
-                    floatEditor (level + 1) value.east
+                    floatEditor (level + 1) value.y
               in
-              ( "East"
-              , Element.map
-                    (\lambdaArg0 -> { value | east = lambdaArg0 })
-                    editor
+              ( "Y"
+              , Element.map (\lambdaArg0 -> { value | y = lambdaArg0 }) editor
               , simple
               )
             ]
@@ -395,7 +391,7 @@ coordinatesEditor level value =
     )
 
 
-nationEditor : Int -> Model.Nation -> ( Element.Element Model.Nation, Bool )
+nationEditor : Int -> Model.Nation -> ( Element Model.Nation, Bool )
 nationEditor level value =
     ( let
         variantRow =
@@ -430,7 +426,7 @@ nationEditor level value =
     )
 
 
-dialogEditor : Int -> Model.Dialog -> ( Element.Element Model.Dialog, Bool )
+dialogEditor : Int -> Model.Dialog -> ( Element Model.Dialog, Bool )
 dialogEditor level value =
     let
         raw =
@@ -531,7 +527,7 @@ dialogEditor level value =
     )
 
 
-choiceEditor : Int -> Model.Choice -> ( Element.Element Model.Choice, Bool )
+choiceEditor : Int -> Model.Choice -> ( Element Model.Choice, Bool )
 choiceEditor level value =
     let
         raw =
@@ -626,7 +622,7 @@ choiceEditor level value =
     )
 
 
-nextEditor : Int -> Model.Next -> ( Element.Element Model.Next, Bool )
+nextEditor : Int -> Model.Next -> ( Element Model.Next, Bool )
 nextEditor level value =
     ( let
         { dialogExtracted, quizExtracted } =
@@ -711,7 +707,7 @@ nextEditor level value =
     )
 
 
-quizEditor : Int -> Model.Quiz -> ( Element.Element Model.Quiz, Bool )
+quizEditor : Int -> Model.Quiz -> ( Element Model.Quiz, Bool )
 quizEditor level value =
     let
         raw =
@@ -841,7 +837,7 @@ quizEditor level value =
     )
 
 
-consequenceEditor : Int -> Model.Consequence -> ( Element.Element Model.Consequence, Bool )
+consequenceEditor : Int -> Model.Consequence -> ( Element Model.Consequence, Bool )
 consequenceEditor level value =
     ( let
         { boolExtracted, intExtracted, itemExtracted, stringExtracted } =
@@ -952,7 +948,7 @@ consequenceEditor level value =
     )
 
 
-itemEditor : Int -> Model.Item -> ( Element.Element Model.Item, Bool )
+itemEditor : Int -> Model.Item -> ( Element Model.Item, Bool )
 itemEditor level value =
     ( let
         { fromCityNametoCityNamekindTransportKindconsequencesListConsequenceExtracted, nameStringimageStringExtracted } =
@@ -1299,7 +1295,7 @@ itemEditor level value =
     )
 
 
-transportKindEditor : Int -> Model.TransportKind -> ( Element.Element Model.TransportKind, Bool )
+transportKindEditor : Int -> Model.TransportKind -> ( Element Model.TransportKind, Bool )
 transportKindEditor level value =
     ( let
         variantRow =
@@ -1333,7 +1329,7 @@ transportKindEditor level value =
     )
 
 
-conditionEditor : Int -> Model.Condition -> ( Element.Element Model.Condition, Bool )
+conditionEditor : Int -> Model.Condition -> ( Element Model.Condition, Bool )
 conditionEditor level value =
     ( let
         { conditionExtracted, itemNameExtracted, listConditionExtracted, stringExtracted } =
@@ -1449,7 +1445,7 @@ conditionEditor level value =
     )
 
 
-itemNameEditor : Int -> Model.ItemName -> ( Element.Element Model.ItemName, Bool )
+itemNameEditor : Int -> Model.ItemName -> ( Element Model.ItemName, Bool )
 itemNameEditor level value =
     ( let
         { fromCityNametoCityNamekindTransportKindExtracted, stringExtracted } =
@@ -1693,7 +1689,7 @@ cityNameDefault =
 
 coordinatesDefault : Model.Coordinates
 coordinatesDefault =
-    { north = 0, east = 0 }
+    { x = 0, y = 0 }
 
 
 nationDefault : Model.Nation
@@ -1751,7 +1747,7 @@ itemNameDefault =
     Model.GenericItemName ""
 
 
-intEditor : Int -> Int -> ( Element.Element Basics.Int, Bool )
+intEditor : Int -> Int -> ( Element Basics.Int, Bool )
 intEditor level value =
     ( Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
@@ -1770,7 +1766,7 @@ intEditor level value =
     )
 
 
-floatEditor : Int -> Float -> ( Element.Element Basics.Float, Bool )
+floatEditor : Int -> Float -> ( Element Basics.Float, Bool )
 floatEditor level value =
     ( Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
@@ -1790,13 +1786,13 @@ floatEditor level value =
 
 
 tupleEditor :
-    (Int -> l -> ( Element.Element l, Bool ))
+    (Int -> l -> ( Element l, Bool ))
     -> l
-    -> (Int -> r -> ( Element.Element r, Bool ))
+    -> (Int -> r -> ( Element r, Bool ))
     -> r
     -> Int
     -> ( l, r )
-    -> ( Element.Element ( l, r ), Bool )
+    -> ( Element ( l, r ), Bool )
 tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
     let
         ( le, lb ) =
@@ -1827,7 +1823,7 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
     ( editor, Basics.False )
 
 
-stringEditor : Int -> String -> ( Element.Element String.String, Bool )
+stringEditor : Int -> String -> ( Element String.String, Bool )
 stringEditor level value =
     ( Input.text
         [ Element.width (Element.minimum 100 Element.fill)
@@ -1843,7 +1839,7 @@ stringEditor level value =
     )
 
 
-boolEditor : Int -> Bool -> ( Element.Element Basics.Bool, Bool )
+boolEditor : Int -> Bool -> ( Element Basics.Bool, Bool )
 boolEditor _ value =
     ( Input.radioRow
         [ Theme.spacing, Element.alignTop ]
@@ -1861,11 +1857,11 @@ boolEditor _ value =
 
 listEditor :
     String
-    -> (Int -> e -> ( Element.Element e, Bool ))
+    -> (Int -> e -> ( Element e, Bool ))
     -> e
     -> Int
     -> List e
-    -> ( Element.Element (List e), Bool )
+    -> ( Element (List e), Bool )
 listEditor typeName valueEditor valueDefault level value =
     let
         rows =
@@ -1982,13 +1978,13 @@ listEditor typeName valueEditor valueDefault level value =
 
 
 dictEditor :
-    (Int -> comparable -> ( Element.Element comparable, Bool ))
+    (Int -> comparable -> ( Element comparable, Bool ))
     -> comparable
-    -> (Int -> v -> ( Element.Element v, Bool ))
+    -> (Int -> v -> ( Element v, Bool ))
     -> v
     -> Int
     -> Dict.Dict comparable v
-    -> ( Element.Element (Dict.Dict comparable v), Bool )
+    -> ( Element (Dict.Dict comparable v), Bool )
 dictEditor keyEditor keyDefault valueEditor valueDefault level value =
     let
         keysColumn =

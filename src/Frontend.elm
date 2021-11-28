@@ -9,9 +9,8 @@ import Codec
 import Codecs
 import Dict
 import Editors
-import Element exposing (Element, fill, height, width)
-import Element.Font as Font
-import Element.WithUnits
+import Element.WithContext as Element exposing (fill, height, width)
+import Element.WithContext.Font as Font
 import File
 import File.Download
 import File.Select
@@ -29,7 +28,7 @@ import Pixels
 import Random
 import Set
 import Task
-import Theme
+import Theme exposing (Element)
 import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), Page(..), SharedGameModel, ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
@@ -54,14 +53,28 @@ app =
                 { title = "SDC Game"
                 , body =
                     [ css
-                    , Element.layout
-                        [ Theme.fontSizes.normal
-                        , height fill
-                        , width fill
-                        , Font.family [ Font.typeface "Aniron" ]
-                        , Element.htmlAttribute <| Html.Attributes.id "main"
-                        ]
-                        (view model)
+                    , case model.size of
+                        Nothing ->
+                            Element.layout
+                                ()
+                                [ Theme.fontSizes.normal
+                                , height fill
+                                , width fill
+                                , Font.family [ Font.typeface "Aniron" ]
+                                , Element.htmlAttribute <| Html.Attributes.id "main"
+                                ]
+                                Frontend.Common.loading
+
+                        Just size ->
+                            Element.layout
+                                { screenSize = size }
+                                [ Theme.fontSizes.normal
+                                , height fill
+                                , width fill
+                                , Font.family [ Font.typeface "Aniron" ]
+                                , Element.htmlAttribute <| Html.Attributes.id "main"
+                                ]
+                                (view model)
                     ]
                 }
         , update = update
@@ -563,12 +576,9 @@ toRegion city =
 
 view : FrontendModel -> Element FrontendMsg
 view model =
-    case ( model.page, model.size ) of
-        ( Game _, Nothing ) ->
-            Frontend.Common.loading
+    case model.page of
+        Game gameModel ->
+            Element.map GameMsg <| Frontend.Game.view gameModel
 
-        ( Game gameModel, Just size ) ->
-            Element.map GameMsg <| Element.WithUnits.run size <| Frontend.Game.view gameModel
-
-        ( Editor data editorModel, _ ) ->
+        Editor data editorModel ->
             Element.map EditorMsg <| Frontend.Editor.view data editorModel

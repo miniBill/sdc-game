@@ -2,13 +2,13 @@ module Frontend.Editor exposing (view)
 
 import Dict
 import Editors
-import Element exposing (Element, alignRight, alignTop, centerY, el, fill, height, image, inFront, padding, paddingEach, paddingXY, px, row, scrollbars, text, width)
-import Element.Background as Background
-import Element.Border as Border
+import Element.WithContext as Element exposing (alignRight, alignTop, centerY, el, fill, height, image, inFront, padding, paddingEach, paddingXY, px, row, scrollbars, text, width)
+import Element.WithContext.Background as Background
+import Element.WithContext.Border as Border
 import Frontend.Common
 import Html.Attributes
 import Model exposing (Data, Id, Person)
-import Theme
+import Theme exposing (Element)
 import Types exposing (EditorModel, EditorMsg(..))
 
 

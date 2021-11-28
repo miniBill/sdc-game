@@ -52,8 +52,8 @@ type alias CityName =
 
 
 type alias Coordinates =
-    { north : Float
-    , east : Float
+    { x : Float
+    , y : Float
     }
 
 

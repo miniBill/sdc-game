@@ -1,51 +1,32 @@
 module Frontend.Game exposing (view)
 
-import AltMath.Matrix3 as Mat3
-import Angle
 import Dict
-import Element.WithUnits as Element exposing (Attribute, Element, Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, padding, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
-import Element.WithUnits.Background as Background
-import Element.WithUnits.Border as Border
-import Element.WithUnits.Font as Font
-import Element.WithUnits.Input as Input
-import Element.WithUnits.Internal exposing (scale, wrapF)
+import Element.WithContext as Element exposing (Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
+import Element.WithContext.Background as Background
+import Element.WithContext.Border as Border
+import Element.WithContext.Font as Font
+import Element.WithContext.Input as Input
 import Frontend.Common
 import Html
 import Html.Attributes
-import Length exposing (Length)
+import MapPixels exposing (MapLength, MapPixel)
 import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz)
-import Pins exposing (mapSize)
 import Pixels exposing (Pixels)
-import Quantity exposing (Quantity)
+import Quantity exposing (Quantity, Rate)
 import Set
-import Theme
-import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, TalkingModel)
-
-
-rythm : Length
-rythm =
-    Length.millimeters 40
-
-
-baseFontSize : Length
-baseFontSize =
-    Length.millimeters 30
-
-
-borderWidth : Length
-borderWidth =
-    Length.millimeters 3
+import Theme exposing (Attribute, Element)
+import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
 
 
 view : OuterGameModel -> Element GameMsg
 view model =
     case model of
         LoadingData ->
-            Element.element Frontend.Common.loading
+            Frontend.Common.loading
 
         DataEmpty ->
             text "branch 'DataEmpty' not implemented"
@@ -70,30 +51,47 @@ view model =
                             viewQuizzing person quiz
 
 
+mapSize :
+    { width : MapLength
+    , height : MapLength
+    }
+mapSize =
+    { width = MapPixels.pixels 9933
+    , height = MapPixels.pixels 7016
+    }
+
+
+scale : Size -> Quantity Float (Rate Pixels MapPixel)
+scale size =
+    Quantity.max
+        (Quantity.per mapSize.width size.width)
+        (Quantity.per mapSize.height size.height)
+
+
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
-viewMap data sharedGameModel mapModel =
-    Element.withSize <| \screen ->
+viewMap data sharedGameModel _ =
+    Element.with .screenSize <| \screen ->
     let
-        scale =
-            Element.WithUnits.Internal.scale screen
+        s =
+            scale screen
 
         w =
             mapSize.width
-                |> Quantity.at scale
+                |> Quantity.at s
 
         h =
             mapSize.height
-                |> Quantity.at scale
+                |> Quantity.at s
 
         dx =
             screen.width
                 |> Quantity.minus w
-                |> Quantity.divideBy 2
+                |> Quantity.multiplyBy 0
 
         dy =
             screen.height
                 |> Quantity.minus h
-                |> Quantity.divideBy 2
+                |> Quantity.divideBy 0
 
         style k v =
             Element.htmlAttribute <| Html.Attributes.style k v
@@ -101,7 +99,7 @@ viewMap data sharedGameModel mapModel =
         normalAttrs =
             [ width fill
             , height fill
-            , Font.size (Quantity.multiplyBy 1 baseFontSize)
+            , Theme.fontSizes.normal
             , style "background-image" "url(/art/lotr-europe.jpg)"
             , style "background-position"
                 (pixelsToString dx ++ " " ++ pixelsToString dy)
@@ -149,12 +147,13 @@ viewPinOnMap sharedGameModel id { city } =
             id == sharedGameModel.currentPerson
 
         radius =
-            Quantity.multiplyBy 0.3 rythm
+            Theme.rythm * 0.3
 
-        ( x, y ) =
-            Pins.northEastToXY
-                (Angle.degrees city.coordinates.north)
-                (Angle.degrees city.coordinates.east)
+        x =
+            city.coordinates.x
+
+        y =
+            city.coordinates.y
 
         btn attrs child =
             Input.button
@@ -162,69 +161,64 @@ viewPinOnMap sharedGameModel id { city } =
                 { onPress = Just <| ViewPerson id
                 , label = el [] child
                 }
+
+        w =
+            8 * Theme.rythm
     in
     [ btn
-        [ Element.moveDown <| Quantity.plus y <| Quantity.negate radius
-        , Element.moveRight <| Quantity.plus x <| Quantity.negate radius
-        , Border.width borderWidth
+        [ Element.moveDown <| y - radius
+        , Element.moveRight <| x - radius
+        , Border.width Theme.borderWidth
         , Background.color Theme.colors.delete --<| Element.rgb255 255 0 0
-        , Border.rounded radius
-        , width <| px <| Quantity.multiplyBy 2 radius
-        , height <| px <| Quantity.multiplyBy 2 radius
+        , Border.rounded <| round radius
+        , width <| px <| round <| 2 * radius
+        , height <| px <| round <| 2 * radius
         ]
         Element.none
-    , Element.withSize
-        (\size ->
-            let
-                w =
-                    Quantity.multiplyBy 8 rythm
-            in
-            el
-                [ Element.transparent True
-                , Element.moveDown <| Quantity.plus y <| Quantity.multiplyBy -0.45 rythm
-                , Element.moveRight <|
-                    if city.showNameOnTheRightInTheMap then
-                        Quantity.plus x <| Quantity.multiplyBy 2 radius
+    , el
+        [ Element.transparent True
+        , Element.moveDown <| y - Theme.rythm / 2
+        , Element.moveRight <|
+            if city.showNameOnTheRightInTheMap then
+                x + 2 * radius
 
-                    else
-                        x |> Quantity.minus (Quantity.plus w <| Quantity.multiplyBy 2 radius)
-                , width <| px w
-                , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "none"
-                ]
-            <|
-                btn
-                    [ if city.showNameOnTheRightInTheMap then
-                        alignLeft
+            else
+                x - (w + 2 * radius)
+        , width <| px w
+        , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "none"
+        ]
+      <|
+        btn
+            [ if city.showNameOnTheRightInTheMap then
+                alignLeft
 
-                      else
-                        alignRight
-                    , if selected then
-                        Font.bold
+              else
+                alignRight
+            , if selected then
+                Font.bold
 
-                      else
-                        Font.regular
-                    , Element.htmlAttribute <|
-                        Html.Attributes.style "text-shadow" <|
-                            String.join "," <|
-                                List.map
-                                    (\( dx, dy, b ) ->
-                                        String.join " "
-                                            [ pixelsToString dx
-                                            , pixelsToString dy
-                                            , wrapF String.fromFloat (Quantity.multiplyBy b rythm) size ++ "px"
-                                            , String.fromFloat <| Pixels.inPixels <| Quantity.at (scale size) (Quantity.multiplyBy b rythm)
-                                            , "#ffffff"
-                                            ]
-                                    )
-                                    [ ( Pixels.pixels -2, Pixels.pixels -2, 0.1 )
-                                    , ( Pixels.pixels 2, Pixels.pixels -2, 0.1 )
-                                    , ( Pixels.pixels -2, Pixels.pixels 2, 0.1 )
-                                    , ( Pixels.pixels 2, Pixels.pixels 2, 0.1 )
+              else
+                Font.regular
+            , Element.htmlAttribute <|
+                Html.Attributes.style "text-shadow" <|
+                    String.join "," <|
+                        List.map
+                            (\( dx, dy, b ) ->
+                                String.join " "
+                                    [ pixelsToString dx
+                                    , pixelsToString dy
+                                    , pixelsToString b
+                                    , "#ffffff"
                                     ]
-                    , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "initial"
-                    ]
-                    (text city.name)
-        )
+                            )
+                            [ ( Pixels.pixels -2, Pixels.pixels -2, Pixels.pixels 0.1 )
+                            , ( Pixels.pixels 2, Pixels.pixels -2, Pixels.pixels 0.1 )
+                            , ( Pixels.pixels -2, Pixels.pixels 2, Pixels.pixels 0.1 )
+                            , ( Pixels.pixels 2, Pixels.pixels 2, Pixels.pixels 0.1 )
+                            ]
+            , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "initial"
+            ]
+            (text city.name)
     ]
 
 
@@ -255,7 +249,7 @@ viewPerson person =
                 (column
                     [ centerX
                     , centerY
-                    , spacing rythm
+                    , Theme.spacing
                     , width fill
                     ]
                     [ avatar
@@ -267,7 +261,7 @@ viewPerson person =
                         { onPress = Just <| ViewDialog person.dialog []
                         , label =
                             semiBox
-                                [ Border.width borderWidth
+                                [ Border.width Theme.borderWidth
                                 , width fill
                                 ]
                                 (text <| "Talk to " ++ person.name)
@@ -275,15 +269,15 @@ viewPerson person =
                     ]
                 )
     in
-    Element.withOrientation
+    Element.with (.screenSize >> getOrientation)
         (\orientation ->
             orientationContainer
-                [ padding rythm
-                , spacing rythm
+                [ Theme.padding
+                , Theme.spacing
                 , width fill
                 , height fill
                 , cityBackground person.city
-                , Font.size baseFontSize
+                , Theme.fontSizes.normal
                 ]
                 [ leftBox orientation
                 , rightBox orientation
@@ -291,9 +285,18 @@ viewPerson person =
         )
 
 
+getOrientation : Size -> Orientation
+getOrientation screen =
+    if screen.width |> Quantity.lessThan screen.height then
+        Portrait
+
+    else
+        Landscape
+
+
 orientationContainer : List (Attribute msg) -> List (Element msg) -> Element msg
 orientationContainer attrs children =
-    Element.withOrientation
+    Element.with (.screenSize >> getOrientation)
         (\orientation ->
             case orientation of
                 Portrait ->
@@ -306,7 +309,7 @@ orientationContainer attrs children =
 
 avatarSize : Element.Length
 avatarSize =
-    px <| Quantity.multiplyBy 6 rythm
+    px <| 6 * Theme.rythm
 
 
 viewTalking : Person -> TalkingModel -> Element GameMsg
@@ -336,16 +339,16 @@ viewTalking person { chatHistory, currentDialog } =
                             :: chatHistory
                         )
                     )
-                |> wrappedRow [ width fill, spacing rythm ]
+                |> wrappedRow [ width fill, Theme.spacing ]
             ]
     in
     column
-        [ spacing rythm
-        , padding rythm
+        [ Theme.spacing
+        , Theme.padding
         , height fill
         , width fill
         , cityBackground person.city
-        , Font.size baseFontSize
+        , Theme.fontSizes.normal
         ]
         (history ++ current)
 
@@ -353,25 +356,25 @@ viewTalking person { chatHistory, currentDialog } =
 viewQuizzing : Person -> Quiz -> Element GameMsg
 viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
     column
-        [ spacing rythm
-        , padding rythm
+        [ Theme.spacing
+        , Theme.padding
         , height fill
         , width fill
         , cityBackground person.city
-        , Font.size baseFontSize
+        , Theme.fontSizes.normal
         ]
         [ semiBox [ width fill ] <|
             el
                 [ Font.center
                 , Font.bold
                 , width fill
-                , Font.size <| Quantity.multiplyBy 2 baseFontSize
+                , Theme.fontSizes.big
                 ]
                 (text "QUIZ TIME!")
         , semiBox [ width fill ] <|
             row
                 [ height fill
-                , spacing rythm
+                , Theme.spacing
                 ]
                 [ avatar
                     [ width avatarSize
@@ -383,7 +386,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
         , (correctAnswer :: wrongAnswers)
             |> List.sort
             |> List.map (viewQuizAnswer quiz)
-            |> wrappedRow [ width fill, spacing rythm ]
+            |> wrappedRow [ width fill, Theme.spacing ]
         ]
 
 
@@ -427,8 +430,8 @@ viewQuizAnswer quiz answer =
 avatar : List (Attribute msg) -> { a | image : String, name : String } -> Element msg
 avatar attrs person =
     el
-        ([ Border.width borderWidth
-         , Border.rounded rythm
+        ([ Border.width Theme.borderWidth
+         , Border.rounded Theme.rythm
          , Background.image person.image
          , alignTop
          ]
@@ -468,7 +471,7 @@ viewChoice chatHistory { text, next } =
 viewDialogLine : Bool -> { a | image : String, name : String } -> String -> Element msg
 viewDialogLine historical personIsh text =
     semiBox
-        [ Border.width borderWidth
+        [ Border.width Theme.borderWidth
         , width fill
         , if historical then
             Background.color (Element.rgba 0.6 0.6 0.6 0.6)
@@ -476,7 +479,7 @@ viewDialogLine historical personIsh text =
           else
             Background.color (Element.rgba 1 1 1 0.8)
         ]
-        (row [ spacing rythm, width fill ]
+        (row [ Theme.spacing, width fill ]
             [ avatar
                 [ width avatarSize
                 , height avatarSize
@@ -504,7 +507,7 @@ viewCityDescription : List (Attribute msg) -> City -> Element msg
 viewCityDescription attrs city =
     semiBox attrs
         (column
-            [ spacing rythm
+            [ Theme.spacing
             , Font.center
             ]
             [ el [ centerX, Font.bold ] <| text city.name
@@ -516,8 +519,8 @@ viewCityDescription attrs city =
 semiBox : List (Attribute msg) -> Element msg -> Element msg
 semiBox attrs =
     el
-        ([ padding rythm
-         , Border.rounded rythm
+        ([ Theme.padding
+         , Border.rounded Theme.rythm
          , Background.color Theme.colors.semitransparent
          ]
             ++ attrs
@@ -531,7 +534,7 @@ semiBox attrs =
 elmUiRenderer : Markdown.Renderer.Renderer (Element msg)
 elmUiRenderer =
     { heading = heading
-    , paragraph = paragraph [ spacing rythm ]
+    , paragraph = paragraph [ Theme.spacing ]
     , thematicBreak = Element.none
     , text = Element.text
     , strong = \content -> Element.row [ Font.bold ] content
@@ -557,23 +560,23 @@ elmUiRenderer =
         \children ->
             Element.column
                 [ Border.widthEach
-                    { top = Quantity.zero
-                    , right = Quantity.zero
-                    , bottom = Quantity.zero
-                    , left = rythm
+                    { top = 0
+                    , right = 0
+                    , bottom = 0
+                    , left = Theme.rythm
                     }
-                , padding rythm
+                , Theme.padding
                 , Border.color (Element.rgb255 145 145 145)
                 , Background.color (Element.rgb255 245 245 245)
                 ]
                 children
     , unorderedList =
         \items ->
-            column [ spacing rythm ]
+            column [ Theme.spacing ]
                 (items
                     |> List.map
                         (\(ListItem task children) ->
-                            row [ spacing rythm ]
+                            row [ Theme.spacing ]
                                 [ row
                                     [ alignTop ]
                                     ((case task of
@@ -594,11 +597,11 @@ elmUiRenderer =
                 )
     , orderedList =
         \startingIndex items ->
-            column [ spacing rythm ]
+            column [ Theme.spacing ]
                 (items
                     |> List.indexedMap
                         (\index itemBlocks ->
-                            row [ spacing (Quantity.multiplyBy 0.5 rythm) ]
+                            row [ spacing (Theme.rythm // 2) ]
                                 [ row [ alignTop ]
                                     (text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
                                 ]
@@ -619,8 +622,8 @@ code : String -> Element msg
 code snippet =
     Element.el
         [ Background.color (Element.rgba 0 0 0 0.04)
-        , Border.rounded rythm
-        , padding rythm
+        , Border.rounded Theme.rythm
+        , Theme.padding
         , Font.family [ Font.monospace ]
         ]
         (Element.text snippet)
@@ -631,7 +634,7 @@ codeBlock details =
     Element.el
         [ Background.color (Element.rgba 0 0 0 0.03)
         , Element.htmlAttribute (Html.Attributes.style "white-space" "pre")
-        , Element.padding rythm
+        , Theme.padding
         , Font.family [ Font.monospace ]
         ]
         (Element.text details.body)
@@ -643,13 +646,13 @@ heading { level, rawText, children } =
         [ Font.size
             (case level of
                 Markdown.Block.H1 ->
-                    Quantity.multiplyBy 1.8 baseFontSize
+                    18 * Theme.fontSize // 10
 
                 Markdown.Block.H2 ->
-                    Quantity.multiplyBy 1.2 baseFontSize
+                    12 * Theme.fontSize // 10
 
                 _ ->
-                    baseFontSize
+                    Theme.fontSize
             )
         , Font.bold
         , Font.family [ Font.typeface "Montserrat" ]
@@ -676,5 +679,5 @@ viewMarked attrs input =
         |> Markdown.Parser.parse
         |> Result.mapError (\_ -> "Parsing error")
         |> Result.andThen (Markdown.Renderer.render elmUiRenderer)
-        |> Result.map (column (spacing rythm :: attrs))
+        |> Result.map (column (Theme.spacing :: attrs))
         |> Result.withDefault (text input)

@@ -1,17 +1,39 @@
-module Theme exposing (button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
+module Theme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
 
-import Element exposing (Attribute, Color, Element, el)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Element.Input as Input
+import Element.WithContext as Element exposing (Color)
+import Element.WithContext.Background as Background
+import Element.WithContext.Border as Border
+import Element.WithContext.Font as Font
+import Element.WithContext.Input as Input
 import Html
 import Html.Attributes
 import Html.Events
+import Types exposing (Size)
+
+
+type alias Context =
+    { screenSize : Size }
+
+
+type alias Element msg =
+    Element.Element Context msg
+
+
+type alias Attribute msg =
+    Element.Attribute Context msg
+
+
+type alias Attr decorative msg =
+    Element.Attr Context decorative msg
 
 
 
 -- Attributes
+
+
+borderWidth : number
+borderWidth =
+    1
 
 
 rythm : number
@@ -72,13 +94,13 @@ fontSize =
 
 
 fontSizes :
-    { huge : Element.Attr decorative msg
-    , bigger : Element.Attr decorative msg
-    , big : Element.Attr decorative msg
-    , normal : Element.Attr decorative msg
-    , small : Element.Attr decorative msg
-    , smaller : Element.Attr decorative msg
-    , tiny : Element.Attr decorative msg
+    { huge : Element.Attr context decorative msg
+    , bigger : Element.Attr context decorative msg
+    , big : Element.Attr context decorative msg
+    , normal : Element.Attr context decorative msg
+    , small : Element.Attr context decorative msg
+    , smaller : Element.Attr context decorative msg
+    , tiny : Element.Attr context decorative msg
     }
 fontSizes =
     let
@@ -137,7 +159,7 @@ select attrs { onInput, selected, options } =
                 ]
                 [ Html.text key ]
     in
-    el attrs <|
+    Element.el attrs <|
         Element.html <|
             Html.select
                 [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
@@ -209,7 +231,7 @@ button :
     -> Element msg
 button attrs =
     Input.button
-        ([ Border.width 1
+        ([ Border.width borderWidth
          , Border.rounded rythm
          , padding
          ]
@@ -218,7 +240,7 @@ button attrs =
 
 
 tabButton :
-    List (Element.Attribute msg)
+    List (Attribute msg)
     ->
         { onPress : Maybe msg
         , label : Element msg
@@ -226,7 +248,7 @@ tabButton :
     -> Element msg
 tabButton attrs =
     button
-        ([ Border.widthEach { left = 1, top = 1, right = 1, bottom = 0 }
+        ([ Border.widthEach { left = borderWidth, top = borderWidth, right = borderWidth, bottom = 0 }
          , Border.roundEach
             { topLeft = rythm
             , topRight = rythm
