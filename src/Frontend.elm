@@ -10,7 +10,6 @@ import Codecs
 import Dict
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
-import Element.WithContext.Font as Font
 import File
 import File.Download
 import File.Select
