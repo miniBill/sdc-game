@@ -18,6 +18,8 @@ import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity, Rate)
 import Set
+import Svg as S
+import Svg.Attributes as SA
 import Theme exposing (Attribute, Element)
 import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
 
@@ -99,7 +101,6 @@ viewMap data sharedGameModel _ =
         normalAttrs =
             [ width fill
             , height fill
-            , Theme.fontSizes.normal
             , style "background-image" "url(/art/lotr-europe.jpg)"
             , style "background-position"
                 (pixelsToString dx ++ " " ++ pixelsToString dy)
@@ -131,8 +132,31 @@ viewMap data sharedGameModel _ =
                             person
                     )
                 |> List.map inFront
+
+        mapPixelToString q =
+            String.fromFloat <| MapPixels.inPixels q
+
+        viewBox =
+            [ Quantity.zero, Quantity.zero, mapSize.width, mapSize.height ]
+                |> List.map mapPixelToString
+                |> String.join " "
+
+        children =
+            [ S.image
+                [ SA.xlinkHref "/art/lotr-europe.jpg"
+                , SA.height <| mapPixelToString mapSize.width
+                , SA.height <| mapPixelToString mapSize.height
+                ]
+                []
+            ]
     in
-    el attrs Element.none
+    children
+        |> S.svg
+            [ SA.viewBox viewBox
+            , SA.width <| pixelsToString w
+            , SA.height <| pixelsToString h
+            ]
+        |> Element.html
 
 
 pixelsToString : Quantity Float Pixels -> String
@@ -277,7 +301,6 @@ viewPerson person =
                 , width fill
                 , height fill
                 , cityBackground person.city
-                , Theme.fontSizes.normal
                 ]
                 [ leftBox orientation
                 , rightBox orientation
@@ -348,7 +371,6 @@ viewTalking person { chatHistory, currentDialog } =
         , height fill
         , width fill
         , cityBackground person.city
-        , Theme.fontSizes.normal
         ]
         (history ++ current)
 
@@ -361,7 +383,6 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
         , height fill
         , width fill
         , cityBackground person.city
-        , Theme.fontSizes.normal
         ]
         [ semiBox [ width fill ] <|
             el

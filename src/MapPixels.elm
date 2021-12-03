@@ -1,6 +1,7 @@
 module MapPixels exposing
     ( MapLength
     , MapPixel
+    , inPixels
     , pixels
     )
 
@@ -18,3 +19,8 @@ type MapPixel
 pixels : number -> Quantity number MapPixel
 pixels =
     Quantity.unsafe
+
+
+inPixels : Quantity number MapPixel -> number
+inPixels =
+    Quantity.unwrap

@@ -48,39 +48,34 @@ app =
         { init = init
         , onUrlRequest = UrlClicked
         , onUrlChange = UrlChanged
-        , view =
-            \model ->
-                { title = "SDC Game"
-                , body =
-                    [ css
-                    , case model.size of
-                        Nothing ->
-                            Element.layout
-                                ()
-                                [ Theme.fontSizes.normal
-                                , height fill
-                                , width fill
-                                , Font.family [ Font.typeface "Aniron" ]
-                                , Element.htmlAttribute <| Html.Attributes.id "main"
-                                ]
-                                Frontend.Common.loading
-
-                        Just size ->
-                            Element.layout
-                                { screenSize = size }
-                                [ Theme.fontSizes.normal
-                                , height fill
-                                , width fill
-                                , Font.family [ Font.typeface "Aniron" ]
-                                , Element.htmlAttribute <| Html.Attributes.id "main"
-                                ]
-                                (view model)
-                    ]
-                }
+        , view = outerView
         , update = update
         , subscriptions = subscriptions
         , updateFromBackend = updateFromBackend
         }
+
+
+outerView : FrontendModel -> { title : String, body : List (Html.Html FrontendMsg) }
+outerView model =
+    let
+        attrs =
+            [ Theme.fontSizes.normal
+            , height fill
+            , width fill
+            , Element.htmlAttribute <| Html.Attributes.id "main"
+            ]
+    in
+    { title = "SDC Game"
+    , body =
+        [ css
+        , case model.size of
+            Nothing ->
+                Element.layout () attrs Frontend.Common.loading
+
+            Just size ->
+                Element.layout { screenSize = size } attrs (view model)
+        ]
+    }
 
 
 css : Html.Html FrontendMsg
@@ -88,11 +83,6 @@ css =
     let
         content =
             """
-            @font-face {
-                font-family: Aniron;
-                src: url(/art/Aniron-Regular.ttf);
-            }
-
             select {
                 font-size: """ ++ String.fromInt Theme.fontSize ++ """px;
             }
