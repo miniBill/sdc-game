@@ -95,7 +95,7 @@ updateFromBackend msg model =
     case msg of
         TFUpdatePerson id person ->
             ( updatePersonInModel id person model
-            , Cmd.none
+            , getSizeCmd
             )
 
         TFData data ->
@@ -114,7 +114,7 @@ updateFromBackend msg model =
                         LoadedData _ shared inner ->
                             LoadedData data shared inner
                 )
-            , Cmd.none
+            , getSizeCmd
             )
 
 
@@ -256,14 +256,10 @@ update msg model =
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
-                    ( model
-                    , Nav.pushUrl model.key (Url.toString url)
-                    )
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
                 External url ->
-                    ( model
-                    , Nav.load url
-                    )
+                    ( model, Nav.load url )
 
         ( UrlChanged url, _ ) ->
             ( { model | page = urlToPage url }, Cmd.none )
@@ -271,10 +267,10 @@ update msg model =
         ( Resized width height, _ ) ->
             ( { model
                 | size =
-                    Just
-                        { width = width
-                        , height = height
-                        }
+                    { width = width
+                    , height = height
+                    }
+                        |> Just
               }
             , Cmd.none
             )
@@ -301,7 +297,7 @@ update msg model =
                     updateEditor editorMsg data editorModel
             in
             ( { model | page = Editor (Just data_) editorModel_ }
-            , Cmd.map EditorMsg cmd
+            , Cmd.batch [ getSizeCmd, Cmd.map EditorMsg cmd ]
             )
 
         ( GameMsg gameMsg, Game gameModel ) ->
@@ -310,7 +306,7 @@ update msg model =
                     updateGame gameMsg gameModel
             in
             ( { model | page = Game gameModel_ }
-            , Cmd.map GameMsg gameCmd
+            , Cmd.batch [ getSizeCmd, Cmd.map GameMsg gameCmd ]
             )
 
 

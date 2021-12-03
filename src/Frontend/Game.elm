@@ -85,32 +85,6 @@ viewMap data sharedGameModel _ =
             mapSize.height
                 |> Quantity.at s
 
-        dx =
-            screen.width
-                |> Quantity.minus w
-                |> Quantity.multiplyBy 0
-
-        dy =
-            screen.height
-                |> Quantity.minus h
-                |> Quantity.divideBy 0
-
-        style k v =
-            Element.htmlAttribute <| Html.Attributes.style k v
-
-        normalAttrs =
-            [ width fill
-            , height fill
-            , style "background-image" "url(/art/lotr-europe.jpg)"
-            , style "background-position"
-                (pixelsToString dx ++ " " ++ pixelsToString dy)
-            , style "background-size" (pixelsToString w)
-            , style "background-repeat" "no-repeat"
-            ]
-
-        attrs =
-            normalAttrs ++ inFronts
-
         inFronts =
             data
                 |> Dict.toList
