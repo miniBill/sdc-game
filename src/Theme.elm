@@ -90,7 +90,7 @@ getColor index =
 
 fontSize : number
 fontSize =
-    16
+    20
 
 
 fontSizes :
