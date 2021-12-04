@@ -14,7 +14,7 @@ import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz)
+import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz, mapSize)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity, Rate)
 import Set
@@ -51,16 +51,6 @@ view model =
 
                         Quizzing quiz ->
                             viewQuizzing person quiz
-
-
-mapSize :
-    { width : MapLength
-    , height : MapLength
-    }
-mapSize =
-    { width = MapPixels.pixels 1473
-    , height = MapPixels.pixels 1198
-    }
 
 
 scale : Size -> Quantity Float (Rate Pixels MapPixel)

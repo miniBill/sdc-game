@@ -15,9 +15,11 @@ module Model exposing
     , Person
     , Quiz
     , TransportKind(..)
+    , mapSize
     )
 
 import Dict exposing (Dict)
+import MapPixels exposing (MapLength)
 
 
 type alias Data =
@@ -143,3 +145,13 @@ type ItemName
         , to : CityName
         , kind : TransportKind
         }
+
+
+mapSize :
+    { width : MapLength
+    , height : MapLength
+    }
+mapSize =
+    { width = MapPixels.pixels 1473
+    , height = MapPixels.pixels 1198
+    }

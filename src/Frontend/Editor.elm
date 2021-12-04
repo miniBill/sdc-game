@@ -6,7 +6,13 @@ import Element.WithContext as Element exposing (alignTop, centerY, el, fill, hei
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Frontend.Common
-import Model exposing (Data, Id, Person)
+import Json.Decode as JD exposing (Decoder)
+import MapPixels
+import Model exposing (Data, Id, Person, mapSize)
+import Quantity
+import Svg as S
+import Svg.Attributes as SA
+import Svg.Events
 import Theme exposing (Element)
 import Types exposing (EditorModel, EditorMsg(..))
 
@@ -164,13 +170,65 @@ peopleButtons mode data model =
 
 viewPerson : Id -> Person -> Element EditorMsg
 viewPerson id person =
-    Element.column
-        [ alignTop
-        , Theme.spacing
-        , width fill
-        , height shrink
+    Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
+        Element.column
+            [ alignTop
+            , Theme.spacing
+            , width fill
+            , height shrink
+            ]
+            [ Tuple.first <| Editors.personEditor 0 person
+            , mapEditor person
+            ]
+
+
+mapEditor : Person -> Element Person
+mapEditor person =
+    let
+        mapPixelToString q =
+            String.fromFloat <| MapPixels.inPixels q
+    in
+    S.svg
+        [ [ Quantity.zero
+          , Quantity.zero
+          , Model.mapSize.width
+          , Model.mapSize.height
+          ]
+            |> List.map mapPixelToString
+            |> String.join " "
+            |> SA.viewBox
+        , Svg.Events.on "click" <|
+            JD.map
+                (\coords ->
+                    let
+                        city =
+                            person.city
+
+                        x =
+                            toFloat coords.x * MapPixels.inPixels mapSize.width / toFloat coords.w
+
+                        y =
+                            toFloat coords.y * MapPixels.inPixels mapSize.height / toFloat coords.h
+                    in
+                    { person | city = { city | coordinates = { x = x, y = y } } }
+                )
+                clickDecoder
         ]
-        [ Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
-            Tuple.first <|
-                Editors.personEditor 0 person
+        [ S.image
+            [ SA.xlinkHref "/art/europe.jpg"
+            , SA.height <| mapPixelToString mapSize.width
+            , SA.height <| mapPixelToString mapSize.height
+            ]
+            []
         ]
+        |> Element.html
+        |> el []
+
+
+clickDecoder : Decoder { x : Int, y : Int, w : Int, h : Int }
+clickDecoder =
+    JD.map4 (\x y w h -> { x = x, y = y, w = w, h = h })
+        (JD.field "offsetX" JD.int)
+        (JD.field "offsetY" JD.int)
+        (JD.at [ "target", "farthestViewportElement", "clientWidth" ] JD.int)
+        (JD.at [ "target", "farthestViewportElement", "clientHeight" ] JD.int)
