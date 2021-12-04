@@ -58,8 +58,8 @@ mapSize :
     , height : MapLength
     }
 mapSize =
-    { width = MapPixels.pixels 9933
-    , height = MapPixels.pixels 7016
+    { width = MapPixels.pixels 1473
+    , height = MapPixels.pixels 1198
     }
 
 
@@ -117,7 +117,7 @@ viewMap data sharedGameModel _ =
 
         children =
             [ S.image
-                [ SA.xlinkHref "/art/lotr-europe.jpg"
+                [ SA.xlinkHref "/art/europe.jpg"
                 , SA.height <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
