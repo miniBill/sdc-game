@@ -130,15 +130,7 @@ gotGameData data =
                 { currentPerson = ""
                 , tickets = Set.singleton orlaId
                 }
-                (let
-                    _ =
-                        Talking { chatHistory = [], currentDialog = initial.dialog }
-
-                    _ =
-                        Debug.todo
-                 in
-                 ViewingMap { transformation = Mat3.identity }
-                )
+                (Talking { chatHistory = [], currentDialog = initial.dialog })
 
         ( Nothing, _ ) ->
             DataEmpty
