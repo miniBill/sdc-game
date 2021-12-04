@@ -45,15 +45,10 @@ view model =
                     text "TODO - MISSING PERSON"
 
                 Just person ->
-                    Element.with .screenSize <| \size ->
                     el
                         [ width fill
                         , height fill
-                        , Font.size <|
-                            round <|
-                                0.04
-                                    * Pixels.inPixels
-                                        (Quantity.min size.width size.height)
+                        , fontSize 1
                         ]
                         (case submodel of
                             ViewingMap mapModel ->
@@ -68,6 +63,17 @@ view model =
                             Quizzing quiz ->
                                 viewQuizzing person quiz
                         )
+
+
+fontSize : Float -> Attribute msg
+fontSize k =
+    Element.withAttribute .screenSize <| \size ->
+    Font.size <|
+        round <|
+            0.04
+                * k
+                * Pixels.inPixels
+                    (Quantity.min size.width size.height)
 
 
 scale : Size -> Quantity Float (Rate Pixels MapPixel)
@@ -200,7 +206,8 @@ viewPerson person =
                                 , style "background-position" "center"
                                 ]
                                 Element.none
-                            , text <| "Talk to " ++ person.name
+                            , el [ width fill, Font.center ] <|
+                                (text <| "Talk to " ++ person.name)
                             ]
                         )
                 }
@@ -298,7 +305,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
                 [ Font.center
                 , Font.bold
                 , width fill
-                , Theme.fontSizes.big
+                , fontSize 3
                 ]
                 (text "QUIZ TIME!")
         , semiBox [ width fill ] <|
@@ -571,20 +578,23 @@ codeBlock details =
         (Element.text details.body)
 
 
-heading : { level : Markdown.Block.HeadingLevel, rawText : String, children : List (Element msg) } -> Element msg
+heading :
+    { level : Markdown.Block.HeadingLevel
+    , rawText : String
+    , children : List (Element msg)
+    }
+    -> Element msg
 heading { level, rawText, children } =
     Element.paragraph
-        [ Font.size
-            (case level of
-                Markdown.Block.H1 ->
-                    18 * Theme.fontSize // 10
+        [ case level of
+            Markdown.Block.H1 ->
+                fontSize 1.8
 
-                Markdown.Block.H2 ->
-                    12 * Theme.fontSize // 10
+            Markdown.Block.H2 ->
+                fontSize 1.2
 
-                _ ->
-                    Theme.fontSize
-            )
+            _ ->
+                fontSize 1
         , Font.bold
         , Font.family [ Font.typeface "Montserrat" ]
         , Element.htmlAttribute

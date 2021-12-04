@@ -41,7 +41,6 @@ type alias Person =
 
 type alias City =
     { name : CityName
-    , showNameOnTheRightInTheMap : Bool
     , text : String
     , image : String
     , coordinates : Coordinates
