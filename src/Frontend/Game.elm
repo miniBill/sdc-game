@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -154,62 +154,59 @@ viewPinOnMap sharedGameModel id { city } =
 viewPerson : Person -> Element GameMsg
 viewPerson person =
     let
-        leftBox orientation =
-            viewCityDescription
-                (if orientation == Portrait then
-                    [ width fill ]
+        style k v =
+            Element.htmlAttribute <| Html.Attributes.style k v
 
-                 else
+        rightBox attrs =
+            semiBox (width fill :: height fill :: attrs)
+                (el
                     [ width fill
                     , height fill
+                    , style "background-image" <| "url(\"" ++ person.image ++ "\")"
+                    , style "background-size" "contain"
+                    , style "background-repeat" "no-repeat"
+                    , style "background-position" "center"
                     ]
+                    Element.none
                 )
-                person.city
 
-        rightBox orientation =
-            semiBox
-                [ height fill
-                , if orientation == Portrait then
-                    width fill
+        mainAttrs =
+            [ Theme.padding
+            , Theme.spacing
+            , width fill
+            , height fill
+            , cityBackground person.city
+            ]
 
-                  else
-                    width shrink
-                ]
-                (column
-                    [ centerX
-                    , centerY
-                    , Theme.spacing
-                    , width fill
-                    ]
-                    [ avatar
-                        [ width fill
-                        , Element.htmlAttribute <| Html.Attributes.style "height" "100%"
+        talkButton attrs =
+            Input.button ([ centerX, centerY ] ++ attrs)
+                { onPress = Just <| ViewDialog person.dialog []
+                , label =
+                    semiBox
+                        [ Border.width Theme.borderWidth
+                        , width fill
                         ]
-                        person
-                    , Input.button [ centerX, centerY ]
-                        { onPress = Just <| ViewDialog person.dialog []
-                        , label =
-                            semiBox
-                                [ Border.width Theme.borderWidth
-                                , width fill
-                                ]
-                                (text <| "Talk to " ++ person.name)
-                        }
-                    ]
-                )
+                        (text <| "Talk to " ++ person.name)
+                }
     in
     Element.with (.screenSize >> getOrientation)
         (\orientation ->
-            orientationContainer
-                [ Theme.padding
-                , Theme.spacing
-                , width fill
-                , height fill
-                , cityBackground person.city
-                ]
-                [ leftBox orientation
-                , rightBox orientation
-                ]
+            case orientation of
+                Portrait ->
+                    Element.column mainAttrs
+                        [ viewCityDescription [ width fill ] person.city
+                        , talkButton []
+                        , rightBox []
+                        ]
+
+                Landscape ->
+                    Element.row mainAttrs
+                        [ Theme.column []
+                            [ viewCityDescription [] person.city
+                            , talkButton []
+                            ]
+                        , rightBox []
+                        ]
         )
 
 
@@ -220,19 +217,6 @@ getOrientation screen =
 
     else
         Landscape
-
-
-orientationContainer : List (Attribute msg) -> List (Element msg) -> Element msg
-orientationContainer attrs children =
-    Element.with (.screenSize >> getOrientation)
-        (\orientation ->
-            case orientation of
-                Portrait ->
-                    column attrs children
-
-                Landscape ->
-                    row attrs children
-        )
 
 
 avatarSize : Element.Length
