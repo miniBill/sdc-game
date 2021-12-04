@@ -187,6 +187,19 @@ mapEditor person =
     let
         mapPixelToString q =
             String.fromFloat <| MapPixels.inPixels q
+
+        radius k =
+            SA.r <|
+                String.fromFloat <|
+                    MapPixels.inPixels mapSize.width
+                        * 0.006
+                        * k
+
+        cx =
+            SA.cx <| String.fromFloat <| person.city.coordinates.x
+
+        cy =
+            SA.cy <| String.fromFloat <| person.city.coordinates.y
     in
     S.svg
         [ [ Quantity.zero
@@ -219,6 +232,12 @@ mapEditor person =
             , SA.height <| mapPixelToString mapSize.width
             , SA.height <| mapPixelToString mapSize.height
             ]
+            []
+        , S.circle
+            [ cy, cx, radius 1, SA.stroke "black", SA.fill "transparent" ]
+            []
+        , S.circle
+            [ cy, cx, radius 0.2, SA.fill "black" ]
             []
         ]
         |> Element.html

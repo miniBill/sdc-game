@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, inFront, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignLeft, alignRight, alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, shrink, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -9,7 +9,7 @@ import Element.WithContext.Input as Input
 import Frontend.Common
 import Html
 import Html.Attributes
-import MapPixels exposing (MapLength, MapPixel)
+import MapPixels exposing (MapPixel)
 import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
@@ -18,8 +18,9 @@ import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz, mapSize)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity, Rate)
 import Set
-import Svg as S
+import Svg as S exposing (Svg)
 import Svg.Attributes as SA
+import Svg.Events as SE
 import Theme exposing (Attribute, Element)
 import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
 
@@ -75,7 +76,7 @@ viewMap data sharedGameModel _ =
             mapSize.height
                 |> Quantity.at s
 
-        inFronts =
+        pins =
             data
                 |> Dict.toList
                 |> List.filter
@@ -95,7 +96,6 @@ viewMap data sharedGameModel _ =
                             personId
                             person
                     )
-                |> List.map inFront
 
         mapPixelToString q =
             String.fromFloat <| MapPixels.inPixels q
@@ -106,13 +106,13 @@ viewMap data sharedGameModel _ =
                 |> String.join " "
 
         children =
-            [ S.image
+            S.image
                 [ SA.xlinkHref "/art/europe.jpg"
                 , SA.height <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
                 []
-            ]
+                :: pins
     in
     children
         |> S.svg
@@ -128,85 +128,32 @@ pixelsToString pixels =
     String.fromFloat (Pixels.inPixels pixels) ++ "px"
 
 
-viewPinOnMap : SharedGameModel -> Id -> Person -> List (Element GameMsg)
+viewPinOnMap : SharedGameModel -> Id -> Person -> List (Svg GameMsg)
 viewPinOnMap sharedGameModel id { city } =
     let
         selected =
             id == sharedGameModel.currentPerson
 
         radius =
-            Theme.rythm * 0.3
+            MapPixels.inPixels mapSize.width * 0.006
 
-        x =
-            city.coordinates.x
+        common k =
+            [ SA.cy <| String.fromFloat city.coordinates.y
+            , SA.cx <| String.fromFloat city.coordinates.x
+            , SE.onClick (ViewPerson id)
+            , SA.cursor "pointer"
+            , SA.r <| String.fromFloat <| k * radius
+            ]
 
-        y =
-            city.coordinates.y
-
-        btn attrs child =
-            Input.button
-                attrs
-                { onPress = Just <| ViewPerson id
-                , label = el [] child
-                }
-
-        w =
-            8 * Theme.rythm
-    in
-    [ btn
-        [ Element.moveDown <| y - radius
-        , Element.moveRight <| x - radius
-        , Border.width Theme.borderWidth
-        , Background.color Theme.colors.delete --<| Element.rgb255 255 0 0
-        , Border.rounded <| round radius
-        , width <| px <| round <| 2 * radius
-        , height <| px <| round <| 2 * radius
-        ]
-        Element.none
-    , el
-        [ Element.transparent True
-        , Element.moveDown <| y - Theme.rythm / 2
-        , Element.moveRight <|
-            if city.showNameOnTheRightInTheMap then
-                x + 2 * radius
+        fill =
+            if selected then
+                "red"
 
             else
-                x - (w + 2 * radius)
-        , width <| px w
-        , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "none"
-        ]
-      <|
-        btn
-            [ if city.showNameOnTheRightInTheMap then
-                alignLeft
-
-              else
-                alignRight
-            , if selected then
-                Font.bold
-
-              else
-                Font.regular
-            , Element.htmlAttribute <|
-                Html.Attributes.style "text-shadow" <|
-                    String.join "," <|
-                        List.map
-                            (\( dx, dy, b ) ->
-                                String.join " "
-                                    [ pixelsToString dx
-                                    , pixelsToString dy
-                                    , pixelsToString b
-                                    , "#ffffff"
-                                    ]
-                            )
-                            [ ( Pixels.pixels -2, Pixels.pixels -2, Pixels.pixels 0.1 )
-                            , ( Pixels.pixels 2, Pixels.pixels -2, Pixels.pixels 0.1 )
-                            , ( Pixels.pixels -2, Pixels.pixels 2, Pixels.pixels 0.1 )
-                            , ( Pixels.pixels 2, Pixels.pixels 2, Pixels.pixels 0.1 )
-                            ]
-            , Element.htmlAttribute <| Html.Attributes.style "pointer-events" "initial"
-            ]
-            (text city.name)
+                "black"
+    in
+    [ S.circle (SA.fill fill :: common 1) []
+    , S.circle (SA.fill "white" :: common 0.8) []
     ]
 
 
