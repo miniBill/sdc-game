@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignTop, centerX, column, el, fill, height, image, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -25,6 +25,11 @@ import Theme exposing (Attribute, Element)
 import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
 
 
+gameRythm : number
+gameRythm =
+    Theme.rythm * 4
+
+
 view : OuterGameModel -> Element GameMsg
 view model =
     case model of
@@ -40,18 +45,29 @@ view model =
                     text "TODO - MISSING PERSON"
 
                 Just person ->
-                    case submodel of
-                        ViewingMap mapModel ->
-                            viewMap data sharedModel mapModel
+                    Element.with .screenSize <| \size ->
+                    el
+                        [ width fill
+                        , height fill
+                        , Font.size <|
+                            round <|
+                                0.04
+                                    * Pixels.inPixels
+                                        (Quantity.min size.width size.height)
+                        ]
+                        (case submodel of
+                            ViewingMap mapModel ->
+                                viewMap data sharedModel mapModel
 
-                        ViewingPerson ->
-                            viewPerson person
+                            ViewingPerson ->
+                                viewPerson person
 
-                        Talking talkingModel ->
-                            viewTalking person talkingModel
+                            Talking talkingModel ->
+                                viewTalking person talkingModel
 
-                        Quizzing quiz ->
-                            viewQuizzing person quiz
+                            Quizzing quiz ->
+                                viewQuizzing person quiz
+                        )
 
 
 scale : Size -> Quantity Float (Rate Pixels MapPixel)
@@ -81,7 +97,14 @@ viewMap data sharedGameModel _ =
                 |> Dict.toList
                 |> List.filter
                     (\( personId, _ ) ->
-                        Set.member personId sharedGameModel.tickets
+                        (let
+                            _ =
+                                Debug.todo
+                         in
+                         always True
+                        )
+                        <|
+                            Set.member personId sharedGameModel.tickets
                     )
                 |> List.concatMap
                     (\( personId, person ) ->
@@ -157,18 +180,30 @@ viewPerson person =
         style k v =
             Element.htmlAttribute <| Html.Attributes.style k v
 
-        rightBox attrs =
-            semiBox (width fill :: height fill :: attrs)
-                (el
-                    [ width fill
-                    , height fill
-                    , style "background-image" <| "url(\"" ++ person.image ++ "\")"
-                    , style "background-size" "contain"
-                    , style "background-repeat" "no-repeat"
-                    , style "background-position" "center"
-                    ]
-                    Element.none
-                )
+        avatarBox =
+            Input.button [ width fill, height fill ]
+                { onPress = Just <| ViewDialog person.dialog []
+                , label =
+                    semiBox [ width fill, height fill ]
+                        (column
+                            [ width fill
+                            , height fill
+                            , Font.center
+                            ]
+                            [ el
+                                [ Border.rounded gameRythm
+                                , width fill
+                                , height fill
+                                , style "background-image" <| "url(\"" ++ person.image ++ "\")"
+                                , style "background-size" "contain"
+                                , style "background-repeat" "no-repeat"
+                                , style "background-position" "center"
+                                ]
+                                Element.none
+                            , text <| "Talk to " ++ person.name
+                            ]
+                        )
+                }
 
         mainAttrs =
             [ Theme.padding
@@ -177,17 +212,6 @@ viewPerson person =
             , height fill
             , cityBackground person.city
             ]
-
-        talkButton attrs =
-            Input.button ([ centerX, centerY ] ++ attrs)
-                { onPress = Just <| ViewDialog person.dialog []
-                , label =
-                    semiBox
-                        [ Border.width Theme.borderWidth
-                        , width fill
-                        ]
-                        (text <| "Talk to " ++ person.name)
-                }
     in
     Element.with (.screenSize >> getOrientation)
         (\orientation ->
@@ -195,17 +219,13 @@ viewPerson person =
                 Portrait ->
                     Element.column mainAttrs
                         [ viewCityDescription [ width fill ] person.city
-                        , talkButton []
-                        , rightBox []
+                        , avatarBox
                         ]
 
                 Landscape ->
                     Element.row mainAttrs
-                        [ Theme.column []
-                            [ viewCityDescription [] person.city
-                            , talkButton []
-                            ]
-                        , rightBox []
+                        [ viewCityDescription [] person.city
+                        , avatarBox
                         ]
         )
 
@@ -221,7 +241,7 @@ getOrientation screen =
 
 avatarSize : Element.Length
 avatarSize =
-    px <| 6 * Theme.rythm
+    px <| 6 * gameRythm
 
 
 viewTalking : Person -> TalkingModel -> Element GameMsg
@@ -341,7 +361,7 @@ avatar : List (Attribute msg) -> { a | image : String, name : String } -> Elemen
 avatar attrs person =
     el
         ([ Border.width Theme.borderWidth
-         , Border.rounded Theme.rythm
+         , Border.rounded gameRythm
          , Background.image person.image
          , alignTop
          ]
@@ -419,8 +439,9 @@ viewCityDescription attrs city =
         (column
             [ Theme.spacing
             , Font.center
+            , width fill
             ]
-            [ el [ centerX, Font.bold ] <| text city.name
+            [ el [ Font.center, width fill, Font.bold ] <| text city.name
             , viewMarked [ centerX ] city.text
             ]
         )
@@ -430,7 +451,7 @@ semiBox : List (Attribute msg) -> Element msg -> Element msg
 semiBox attrs =
     el
         ([ Theme.padding
-         , Border.rounded Theme.rythm
+         , Border.rounded gameRythm
          , Background.color Theme.colors.semitransparent
          ]
             ++ attrs
@@ -473,7 +494,7 @@ elmUiRenderer =
                     { top = 0
                     , right = 0
                     , bottom = 0
-                    , left = Theme.rythm
+                    , left = gameRythm
                     }
                 , Theme.padding
                 , Border.color (Element.rgb255 145 145 145)
@@ -511,7 +532,7 @@ elmUiRenderer =
                 (items
                     |> List.indexedMap
                         (\index itemBlocks ->
-                            row [ spacing (Theme.rythm // 2) ]
+                            row [ spacing (gameRythm // 2) ]
                                 [ row [ alignTop ]
                                     (text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
                                 ]
@@ -532,7 +553,7 @@ code : String -> Element msg
 code snippet =
     Element.el
         [ Background.color (Element.rgba 0 0 0 0.04)
-        , Border.rounded Theme.rythm
+        , Border.rounded gameRythm
         , Theme.padding
         , Font.family [ Font.monospace ]
         ]
