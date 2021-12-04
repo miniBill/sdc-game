@@ -81,13 +81,7 @@ viewMap data sharedGameModel _ =
                 |> Dict.toList
                 |> List.filter
                     (\( personId, _ ) ->
-                        (let
-                            _ =
-                                Debug.todo
-                         in
-                         always (not <| String.isEmpty personId)
-                        )
-                            (Set.member personId sharedGameModel.tickets)
+                        Set.member personId sharedGameModel.tickets
                     )
                 |> List.concatMap
                     (\( personId, person ) ->
