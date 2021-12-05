@@ -114,7 +114,10 @@ updateFromBackend msg model =
                         LoadedData _ shared inner ->
                             LoadedData data shared inner
                 )
-            , getSizeCmd
+            , Cmd.batch
+                [ getSizeCmd
+                , PkgPorts.localstorage_load {}
+                ]
             )
 
 
@@ -236,10 +239,7 @@ init url key =
       , page = urlToPage url
       , size = Nothing
       }
-    , Cmd.batch
-        [ getSizeCmd
-        , PkgPorts.localstorage_load {}
-        ]
+    , getSizeCmd
     )
 
 
