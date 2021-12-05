@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignTop, centerX, column, el, fill, height, image, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -58,7 +58,7 @@ view model =
                                 viewPerson person
 
                             Talking talkingModel ->
-                                viewTalking person talkingModel
+                                viewTalking sharedModel person talkingModel
 
                             Quizzing quiz ->
                                 viewQuizzing person quiz
@@ -67,20 +67,14 @@ view model =
 
 fontSize : Float -> Attribute msg
 fontSize k =
+    autoscaling <| \size ->
+    Font.size <| round <| 0.04 * k * size
+
+
+autoscaling : (Float -> Attribute msg) -> Attribute msg
+autoscaling f =
     Element.withAttribute .screenSize <| \size ->
-    Font.size <|
-        round <|
-            0.04
-                * k
-                * Pixels.inPixels
-                    (Quantity.min size.width size.height)
-
-
-scale : Size -> Quantity Float (Rate Pixels MapPixel)
-scale size =
-    Quantity.max
-        (Quantity.per mapSize.width size.width)
-        (Quantity.per mapSize.height size.height)
+    f <| Pixels.inPixels (Quantity.min size.width size.height)
 
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
@@ -88,7 +82,9 @@ viewMap data sharedGameModel _ =
     Element.with .screenSize <| \screen ->
     let
         s =
-            scale screen
+            Quantity.max
+                (Quantity.per mapSize.width screen.width)
+                (Quantity.per mapSize.height screen.height)
 
         w =
             mapSize.width
@@ -179,37 +175,32 @@ viewPinOnMap sharedGameModel id { city } =
         common k =
             [ SA.cy <| String.fromFloat city.coordinates.y
             , SA.cx <| String.fromFloat city.coordinates.x
-            , SE.onClick (ViewPerson id)
+            , SE.onClick <| ViewPerson id
             , SA.cursor "pointer"
             , SA.r <| String.fromFloat <| k * radius
             ]
 
-        fill =
-            if selected then
-                "red"
-
-            else
-                "black"
-
         duckRadius =
             radius * 2
     in
-    if selected then
-        [ S.circle (SA.fill "red" :: common 2.3) []
-        , S.image
-            [ SA.x <| String.fromFloat <| city.coordinates.x - duckRadius
-            , SA.y <| String.fromFloat <| city.coordinates.y - duckRadius
-            , SA.width <| String.fromFloat (duckRadius * 2)
-            , SA.height <| String.fromFloat (duckRadius * 2)
-            , SA.xlinkHref "/art/duckon.webp"
+    [ S.circle (SA.fill "black" :: common 1) []
+    , S.circle (SA.fill "white" :: common 0.8) []
+    , S.g [] <|
+        if selected then
+            [ S.circle (SA.fill "red" :: common 2.3) []
+            , S.image
+                [ SA.x <| String.fromFloat <| city.coordinates.x - duckRadius
+                , SA.y <| String.fromFloat <| city.coordinates.y - duckRadius
+                , SA.width <| String.fromFloat <| duckRadius * 2
+                , SA.height <| String.fromFloat <| duckRadius * 2
+                , SA.xlinkHref "/art/duckon.webp"
+                ]
+                []
             ]
-            []
-        ]
 
-    else
-        [ S.circle (SA.fill fill :: common 1) []
-        , S.circle (SA.fill "white" :: common 0.8) []
-        ]
+        else
+            []
+    ]
 
 
 viewPerson : Person -> Element GameMsg
@@ -278,13 +269,8 @@ getOrientation screen =
         Landscape
 
 
-avatarSize : Element.Length
-avatarSize =
-    px <| 6 * gameRythm
-
-
-viewTalking : Person -> TalkingModel -> Element GameMsg
-viewTalking person { chatHistory, currentDialog } =
+viewTalking : SharedGameModel -> Person -> TalkingModel -> Element GameMsg
+viewTalking { currentPerson } person { chatHistory, currentDialog } =
     let
         history =
             List.map
@@ -312,6 +298,27 @@ viewTalking person { chatHistory, currentDialog } =
                     )
                 |> wrappedRow [ width fill, Theme.spacing ]
             ]
+
+        menu =
+            Input.button [ alignBottom ]
+                { onPress = Nothing
+                , label =
+                    row
+                        [ Theme.spacing
+                        , width fill
+                        , Theme.padding
+                        ]
+                        [ avatar 0.5 { image = "/art/sdc.jpg", name = "" }
+                        , if String.isEmpty currentPerson then
+                            semiBox [] <|
+                                el
+                                    [ padding <| 2 * Theme.rythm ]
+                                    (text "Menu")
+
+                          else
+                            Element.none
+                        ]
+                }
     in
     column
         [ Theme.spacing
@@ -320,7 +327,7 @@ viewTalking person { chatHistory, currentDialog } =
         , width fill
         , cityBackground person.city
         ]
-        (history ++ current)
+        (history ++ current ++ [ menu ])
 
 
 viewQuizzing : Person -> Quiz -> Element GameMsg
@@ -345,11 +352,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
                 [ height fill
                 , Theme.spacing
                 ]
-                [ avatar
-                    [ width avatarSize
-                    , height avatarSize
-                    ]
-                    person
+                [ avatar 1 person
                 , viewMarked [ width fill ] question
                 ]
         , (correctAnswer :: wrongAnswers)
@@ -396,19 +399,30 @@ viewQuizAnswer quiz answer =
         }
 
 
-avatar : List (Attribute msg) -> { a | image : String, name : String } -> Element msg
-avatar attrs person =
+avatar : Float -> { a | image : String, name : String } -> Element msg
+avatar scale person =
+    let
+        size =
+            [ autoscaling (\sc -> width <| px <| round <| scale * sc * 0.2)
+            , autoscaling (\sc -> height <| px <| round <| scale * sc * 0.2)
+            ]
+    in
     el
         ([ Border.width Theme.borderWidth
          , Border.rounded gameRythm
          , Background.image person.image
          , alignTop
          ]
-            ++ attrs
+            ++ size
         )
-        (image (attrs ++ [ Element.transparent True ])
+        (image (Element.transparent True :: size)
             { src = person.image
-            , description = person.name ++ "'s avatar"
+            , description =
+                if String.isEmpty person.name then
+                    "Menu"
+
+                else
+                    person.name ++ "'s avatar"
             }
         )
 
@@ -449,11 +463,7 @@ viewDialogLine historical personIsh text =
             Background.color (Element.rgba 1 1 1 0.8)
         ]
         (row [ Theme.spacing, width fill ]
-            [ avatar
-                [ width avatarSize
-                , height avatarSize
-                ]
-                personIsh
+            [ avatar 1 personIsh
             , viewMarked [ width fill ] text
             ]
         )

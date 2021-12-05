@@ -130,12 +130,13 @@ gotGameData data =
                 _ =
                     Debug.todo
              in
-             \_ ->
-                LoadedData data
-                    { currentPerson = orlaId
-                    , tickets = Set.singleton orlaId
-                    }
-                    (ViewingMap { transformation = Mat3.identity })
+             \q ->
+                always q <|
+                    LoadedData data
+                        { currentPerson = orlaId
+                        , tickets = Set.singleton orlaId
+                        }
+                        (ViewingMap { transformation = Mat3.identity })
             )
                 (LoadedData
                     data
