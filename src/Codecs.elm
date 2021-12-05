@@ -1,13 +1,142 @@
-module Codecs exposing (dataCodec, idCodec, personCodec, cityCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec)
+module Codecs exposing (sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec)
 
 {-|
 
-@docs dataCodec, idCodec, personCodec, cityCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
+@docs sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec, consequenceCodec, itemCodec, transportKindCodec, conditionCodec, itemNameCodec
 
 -}
 
 import Codec
 import Model
+import Set
+
+
+sharedGameModelCodec : Codec.Codec Model.SharedGameModel
+sharedGameModelCodec =
+    Codec.object
+        (\currentPerson tickets ->
+            { currentPerson = currentPerson
+            , tickets = Maybe.withDefault Set.empty tickets
+            }
+        )
+        |> Codec.field "currentPerson" .currentPerson idCodec
+        |> Codec.maybeField
+            "tickets"
+            (\lambdaArg0 ->
+                if lambdaArg0.tickets == Set.empty then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.tickets
+            )
+            (Codec.set idCodec)
+        |> Codec.buildObject
+
+
+gameModelCodec : Codec.Codec Model.GameModel
+gameModelCodec =
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fviewingMap fviewingPerson fviewingTalking fquizzing fviewingMenu value ->
+            case value of
+                Model.ViewingMap arg0 ->
+                    fviewingMap arg0
+
+                Model.ViewingPerson ->
+                    fviewingPerson
+
+                Model.ViewingTalking arg0 ->
+                    fviewingTalking arg0
+
+                Model.Quizzing arg0 ->
+                    fquizzing arg0
+
+                Model.ViewingMenu arg0 ->
+                    fviewingMenu arg0
+        )
+        |> Codec.variant1 "ViewingMap" Model.ViewingMap mapModelCodec
+        |> Codec.variant0 "ViewingPerson" Model.ViewingPerson
+        |> Codec.variant1
+            "ViewingTalking"
+            Model.ViewingTalking
+            talkingModelCodec
+        |> Codec.variant1 "Quizzing" Model.Quizzing quizCodec
+        |> Codec.variant1 "ViewingMenu" Model.ViewingMenu menuModelCodec
+        |> Codec.buildCustom
+
+
+mapModelCodec : Codec.Codec Model.MapModel
+mapModelCodec =
+    Codec.object {} |> Codec.buildObject
+
+
+talkingModelCodec : Codec.Codec Model.TalkingModel
+talkingModelCodec =
+    Codec.object
+        (\chatHistory currentDialog ->
+            { chatHistory = chatHistory, currentDialog = currentDialog }
+        )
+        |> Codec.field "chatHistory" .chatHistory chatHistoryCodec
+        |> Codec.field "currentDialog" .currentDialog dialogCodec
+        |> Codec.buildObject
+
+
+chatHistoryCodec : Codec.Codec Model.ChatHistory
+chatHistoryCodec =
+    Codec.list
+        (Codec.tuple
+            (Codec.maybe
+                (Codec.object
+                    (\image name ->
+                        { image = Maybe.withDefault "" image
+                        , name = Maybe.withDefault "" name
+                        }
+                    )
+                    |> Codec.maybeField
+                        "image"
+                        (\lambdaArg0 ->
+                            if lambdaArg0.image == "" then
+                                Maybe.Nothing
+
+                            else
+                                Maybe.Just lambdaArg0.image
+                        )
+                        Codec.string
+                    |> Codec.maybeField
+                        "name"
+                        (\lambdaArg0 ->
+                            if lambdaArg0.name == "" then
+                                Maybe.Nothing
+
+                            else
+                                Maybe.Just lambdaArg0.name
+                        )
+                        Codec.string
+                    |> Codec.buildObject
+                )
+            )
+            Codec.string
+        )
+
+
+menuModelCodec : Codec.Codec Model.MenuModel
+menuModelCodec =
+    Codec.object
+        (\previous background ->
+            { previous = previous, background = Maybe.withDefault "" background }
+        )
+        |> Codec.field "previous" .previous gameModelCodec
+        |> Codec.maybeField
+            "background"
+            (\lambdaArg0 ->
+                if lambdaArg0.background == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.background
+            )
+            Codec.string
+        |> Codec.buildObject
 
 
 dataCodec : Codec.Codec Model.Data

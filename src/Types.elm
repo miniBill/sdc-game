@@ -1,13 +1,12 @@
 module Types exposing (..)
 
-import AltMath.Matrix3 exposing (Mat3)
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
 import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (Data, Dialog, Id, Person, Quiz)
+import Model exposing (ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, SharedGameModel)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -43,40 +42,6 @@ type OuterGameModel
     = LoadingData
     | DataEmpty
     | LoadedData Data SharedGameModel GameModel
-
-
-type alias SharedGameModel =
-    { currentPerson : Id
-    , tickets : Set Id
-    }
-
-
-type GameModel
-    = ViewingMap MapModel
-    | ViewingPerson
-    | ViewingTalking TalkingModel
-    | Quizzing Quiz
-    | ViewingMenu MenuModel
-
-
-type alias MenuModel =
-    { previous : GameModel
-    , background : String
-    }
-
-
-type alias MapModel =
-    { transformation : Mat3 }
-
-
-type alias TalkingModel =
-    { chatHistory : ChatHistory
-    , currentDialog : Dialog
-    }
-
-
-type alias ChatHistory =
-    List ( Maybe { image : String, name : String }, String )
 
 
 type alias BackendModel =
@@ -120,6 +85,7 @@ type GameMsg
     | GotRandomTicket Id
     | BackTo GameModel
     | Reset
+    | LSLoaded String
 
 
 type ToBackend

@@ -1,12 +1,11 @@
 module Frontend exposing (app)
 
-import AltMath.Matrix3 as Mat3
 import Browser exposing (UrlRequest(..))
 import Browser.Dom
 import Browser.Events
 import Browser.Navigation as Nav
-import Codec
-import Codecs
+import Codec exposing (Codec)
+import Codecs exposing (gameModelCodec, sharedGameModelCodec)
 import Dict
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
@@ -22,13 +21,14 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (City, Data, Id, Nation(..), Person)
+import Model exposing (City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel)
 import Pixels
+import PkgPorts
 import Random
 import Set
 import Task
 import Theme exposing (Element)
-import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameModel(..), GameMsg(..), OuterGameModel(..), Page(..), SharedGameModel, ToBackend(..), ToFrontend(..))
+import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -137,7 +137,7 @@ gotGameData data =
                     { currentPerson = orlaId
                     , tickets = Set.singleton orlaId
                     }
-                    (ViewingMap { transformation = Mat3.identity })
+                    (ViewingMap {})
                 )
                 (LoadedData
                     data
@@ -236,7 +236,10 @@ init url key =
       , page = urlToPage url
       , size = Nothing
       }
-    , getSizeCmd
+    , Cmd.batch
+        [ getSizeCmd
+        , PkgPorts.localstorage_load {}
+        ]
     )
 
 
@@ -253,7 +256,10 @@ getSizeCmd =
 
 subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions _ =
-    Browser.Events.onResize (\_ _ -> GotResized)
+    Sub.batch
+        [ Browser.Events.onResize (\_ _ -> GotResized)
+        , PkgPorts.localstorage_loaded (GameMsg << LSLoaded)
+        ]
 
 
 update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
@@ -416,7 +422,7 @@ updateGame msg outerModel =
                                     else
                                         sharedModel.currentPerson
                               }
-                            , ViewingMap { transformation = Mat3.identity }
+                            , ViewingMap {}
                             , Cmd.none
                             )
 
@@ -460,7 +466,7 @@ updateGame msg outerModel =
                                     else
                                         sharedModel.currentPerson
                               }
-                            , ViewingMap { transformation = Mat3.identity }
+                            , ViewingMap {}
                             , pickNewTicket data sharedModel
                             )
 
@@ -477,8 +483,27 @@ updateGame msg outerModel =
 
                                 _ ->
                                     ( sharedModel, model, Cmd.none )
+
+                        LSLoaded localStorage ->
+                            localStorage
+                                |> Codec.decodeString localStorageCodec
+                                |> Result.withDefault ( sharedModel, model )
+                                |> (\( s, m ) -> ( s, m, Cmd.none ))
             in
-            ( LoadedData data sharedModel_ model_, cmd )
+            ( LoadedData data sharedModel_ model_
+            , Cmd.batch
+                [ cmd
+                , PkgPorts.localstorage_store <|
+                    Codec.encodeToString 0
+                        localStorageCodec
+                        ( sharedModel_, model_ )
+                ]
+            )
+
+
+localStorageCodec : Codec ( SharedGameModel, GameModel )
+localStorageCodec =
+    Codec.tuple sharedGameModelCodec gameModelCodec
 
 
 type Region

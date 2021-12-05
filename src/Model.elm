@@ -1,5 +1,6 @@
 module Model exposing
-    ( Choice
+    ( ChatHistory
+    , Choice
     , City
     , CityName
     , Condition(..)
@@ -7,19 +8,67 @@ module Model exposing
     , Coordinates
     , Data
     , Dialog
+    , GameModel(..)
     , Id
     , Item(..)
     , ItemName(..)
+    , MapModel
+    , MenuModel
     , Nation(..)
     , Next(..)
     , Person
     , Quiz
+    , SharedGameModel
+    , TalkingModel
     , TransportKind(..)
     , mapSize
     )
 
 import Dict exposing (Dict)
 import MapPixels exposing (MapLength)
+import Set exposing (Set)
+
+
+
+-- Game Model
+
+
+type alias SharedGameModel =
+    { currentPerson : Id
+    , tickets : Set Id
+    }
+
+
+type GameModel
+    = ViewingMap MapModel
+    | ViewingPerson
+    | ViewingTalking TalkingModel
+    | Quizzing Quiz
+    | ViewingMenu MenuModel
+
+
+type alias MapModel =
+    {}
+
+
+type alias TalkingModel =
+    { chatHistory : ChatHistory
+    , currentDialog : Dialog
+    }
+
+
+type alias ChatHistory =
+    List ( Maybe { image : String, name : String }, String )
+
+
+type alias MenuModel =
+    { previous : GameModel
+    , background : String
+    }
+
+
+
+-- Backend data
 
 
 type alias Data =

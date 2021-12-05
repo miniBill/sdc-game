@@ -1,8 +1,8 @@
-module Editors exposing (dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
+module Editors exposing (dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
 
 {-|
 
-@docs dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
+@docs dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
 
 -}
 
@@ -14,6 +14,7 @@ import Element.WithContext.Input as Input
 import Html.Attributes
 import List.Extra
 import Model
+import Set
 import Theme exposing (Element)
 import Tuple
 
@@ -1637,6 +1638,36 @@ itemNameEditor level value =
         ]
     , Basics.False
     )
+
+
+sharedGameModelDefault : Model.SharedGameModel
+sharedGameModelDefault =
+    { currentPerson = idDefault, tickets = Set.empty }
+
+
+gameModelDefault : Model.GameModel
+gameModelDefault =
+    Model.ViewingPerson
+
+
+mapModelDefault : Model.MapModel
+mapModelDefault =
+    {}
+
+
+talkingModelDefault : Model.TalkingModel
+talkingModelDefault =
+    { chatHistory = chatHistoryDefault, currentDialog = dialogDefault }
+
+
+chatHistoryDefault : Model.ChatHistory
+chatHistoryDefault =
+    []
+
+
+menuModelDefault : Model.MenuModel
+menuModelDefault =
+    { previous = gameModelDefault, background = "" }
 
 
 dataDefault : Model.Data

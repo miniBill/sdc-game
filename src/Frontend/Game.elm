@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -14,7 +14,7 @@ import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz, mapSize)
+import Model exposing (ChatHistory, Choice, City, Data, GameModel(..), Id, MapModel, MenuModel, Next(..), Person, Quiz, SharedGameModel, TalkingModel, mapSize)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set
@@ -22,7 +22,7 @@ import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
 import Theme exposing (Attribute, Element)
-import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, MenuModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
+import Types exposing (GameMsg(..), OuterGameModel(..), Size)
 
 
 gameRythm : number
