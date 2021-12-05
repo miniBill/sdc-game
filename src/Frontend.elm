@@ -126,11 +126,24 @@ gotGameData data =
         )
     of
         ( Just ( orlaId, _ ), Just initial ) ->
-            LoadedData data
-                { currentPerson = ""
-                , tickets = Set.singleton orlaId
-                }
-                (Talking { chatHistory = [], currentDialog = initial.dialog })
+            (let
+                _ =
+                    Debug.todo
+             in
+             \_ ->
+                LoadedData data
+                    { currentPerson = orlaId
+                    , tickets = Set.singleton orlaId
+                    }
+                    (ViewingMap { transformation = Mat3.identity })
+            )
+                (LoadedData
+                    data
+                    { currentPerson = ""
+                    , tickets = Set.singleton orlaId
+                    }
+                    (Talking { chatHistory = [], currentDialog = initial.dialog })
+                )
 
         ( Nothing, _ ) ->
             DataEmpty

@@ -112,6 +112,7 @@ viewMap data sharedGameModel _ =
                         <|
                             Set.member personId sharedGameModel.tickets
                     )
+                |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
                 |> List.concatMap
                     (\( personId, person ) ->
                         viewPinOnMap
@@ -131,10 +132,16 @@ viewMap data sharedGameModel _ =
         children =
             S.image
                 [ SA.xlinkHref "/art/europe.jpg"
-                , SA.height <| mapPixelToString mapSize.width
+                , SA.width <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
                 []
+                :: S.rect
+                    [ SA.width <| mapPixelToString mapSize.width
+                    , SA.height <| mapPixelToString mapSize.height
+                    , SA.fillOpacity "0.15"
+                    ]
+                    []
                 :: pins
     in
     children
@@ -144,6 +151,15 @@ viewMap data sharedGameModel _ =
             , SA.height <| pixelsToString h
             ]
         |> Element.html
+
+
+boolToInt : Bool -> number
+boolToInt b =
+    if b then
+        1
+
+    else
+        0
 
 
 pixelsToString : Quantity Float Pixels -> String
@@ -174,10 +190,26 @@ viewPinOnMap sharedGameModel id { city } =
 
             else
                 "black"
+
+        duckRadius =
+            radius * 2
     in
-    [ S.circle (SA.fill fill :: common 1) []
-    , S.circle (SA.fill "white" :: common 0.8) []
-    ]
+    if selected then
+        [ S.circle (SA.fill "red" :: common 2.3) []
+        , S.image
+            [ SA.x <| String.fromFloat <| city.coordinates.x - duckRadius
+            , SA.y <| String.fromFloat <| city.coordinates.y - duckRadius
+            , SA.width <| String.fromFloat (duckRadius * 2)
+            , SA.height <| String.fromFloat (duckRadius * 2)
+            , SA.xlinkHref "/art/duckon.webp"
+            ]
+            []
+        ]
+
+    else
+        [ S.circle (SA.fill fill :: common 1) []
+        , S.circle (SA.fill "white" :: common 0.8) []
+        ]
 
 
 viewPerson : Person -> Element GameMsg
