@@ -67,7 +67,7 @@ outerView model =
     { title = "SDC Game"
     , body =
         [ css
-        , case model.size of
+        , case model.screenSize of
             Nothing ->
                 Element.layout () attrs Frontend.Common.loading
 
@@ -223,7 +223,7 @@ init : Url -> Key -> ( FrontendModel, Cmd FrontendMsg )
 init url key =
     ( { key = key
       , page = urlToPage url
-      , size = Nothing
+      , screenSize = Nothing
       }
     , getSizeCmd
     )
@@ -265,7 +265,7 @@ update msg model =
 
         ( Resized width height, _ ) ->
             ( { model
-                | size =
+                | screenSize =
                     { width = width
                     , height = height
                     }

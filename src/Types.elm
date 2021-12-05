@@ -14,9 +14,7 @@ import Set exposing (Set)
 
 type alias FrontendModel =
     { key : Key
-
-    -- TODO: s/size/screenSize
-    , size : Maybe Size
+    , screenSize : Maybe Size
     , page : Page
     }
 

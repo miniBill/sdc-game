@@ -87,7 +87,11 @@ viewMenu { previous, background } =
                     Debug.todo
               in
               btn Reset "RESET"
-            , btn Cheat "Cheat"
+            , let
+                _ =
+                    Debug.todo
+              in
+              btn Cheat "Cheat"
             , menuRow (BackTo previous) "Back"
             ]
 
@@ -226,6 +230,8 @@ viewPerson person =
                             [ width fill
                             , height fill
                             , Font.center
+                            , Theme.spacing
+                            , Theme.padding
                             ]
                             [ el
                                 [ Theme.borderRounded
@@ -506,6 +512,7 @@ viewCityDescription attrs city =
     semiBox attrs
         (column
             [ Theme.spacing
+            , Theme.padding
             , Font.center
             , width fill
             ]
