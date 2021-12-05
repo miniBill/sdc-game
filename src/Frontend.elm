@@ -130,20 +130,21 @@ gotGameData data =
                 _ =
                     Debug.todo
              in
-             \q ->
-                always q <|
-                    LoadedData data
-                        { currentPerson = orlaId
-                        , tickets = Set.singleton orlaId
-                        }
-                        (ViewingMap { transformation = Mat3.identity })
+             \_ q ->
+                q
             )
+                (LoadedData data
+                    { currentPerson = orlaId
+                    , tickets = Set.singleton orlaId
+                    }
+                    (ViewingMap { transformation = Mat3.identity })
+                )
                 (LoadedData
                     data
                     { currentPerson = ""
                     , tickets = Set.singleton orlaId
                     }
-                    (Talking { chatHistory = [], currentDialog = initial.dialog })
+                    (ViewingTalking { chatHistory = [], currentDialog = initial.dialog })
                 )
 
         ( Nothing, _ ) ->
@@ -395,6 +396,15 @@ updateGame msg outerModel =
                         ViewPerson id ->
                             ( { sharedModel | currentPerson = id }, ViewingPerson, Cmd.none )
 
+                        ViewMenu { background } ->
+                            ( sharedModel
+                            , ViewingMenu
+                                { previous = model
+                                , background = background
+                                }
+                            , Cmd.none
+                            )
+
                         ViewMap ->
                             ( { sharedModel
                                 | currentPerson =
@@ -410,9 +420,9 @@ updateGame msg outerModel =
                             , Cmd.none
                             )
 
-                        ViewDialog dialog chatHistory ->
+                        ViewTalking dialog chatHistory ->
                             ( sharedModel
-                            , Talking
+                            , ViewingTalking
                                 { chatHistory = chatHistory
                                 , currentDialog = dialog
                                 }
@@ -456,6 +466,17 @@ updateGame msg outerModel =
 
                         GotRandomTicket id ->
                             ( { sharedModel | tickets = Set.insert id sharedModel.tickets }, model, Cmd.none )
+
+                        BackTo previous ->
+                            ( sharedModel, previous, Cmd.none )
+
+                        Reset ->
+                            case gotGameData data of
+                                LoadedData _ s m ->
+                                    ( s, m, Cmd.none )
+
+                                _ ->
+                                    ( sharedModel, model, Cmd.none )
             in
             ( LoadedData data sharedModel_ model_, cmd )
 

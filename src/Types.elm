@@ -54,8 +54,15 @@ type alias SharedGameModel =
 type GameModel
     = ViewingMap MapModel
     | ViewingPerson
-    | Talking TalkingModel
+    | ViewingTalking TalkingModel
     | Quizzing Quiz
+    | ViewingMenu MenuModel
+
+
+type alias MenuModel =
+    { previous : GameModel
+    , background : String
+    }
 
 
 type alias MapModel =
@@ -104,12 +111,15 @@ type EditorMsg
 
 type GameMsg
     = ViewPerson Id
-    | ViewDialog Dialog ChatHistory
+    | ViewTalking Dialog ChatHistory
     | ViewMap
-    | PickQuiz
     | ViewQuiz Quiz
+    | ViewMenu { background : String }
+    | PickQuiz
     | GiveTicketAndViewMap
     | GotRandomTicket Id
+    | BackTo GameModel
+    | Reset
 
 
 type ToBackend

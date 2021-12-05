@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -9,20 +9,20 @@ import Element.WithContext.Input as Input
 import Frontend.Common
 import Html
 import Html.Attributes
-import MapPixels exposing (MapPixel)
+import MapPixels
 import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (Choice, City, Data, Id, Next(..), Person, Quiz, mapSize)
 import Pixels exposing (Pixels)
-import Quantity exposing (Quantity, Rate)
+import Quantity exposing (Quantity)
 import Set
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
 import Theme exposing (Attribute, Element)
-import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
+import Types exposing (ChatHistory, GameModel(..), GameMsg(..), MapModel, MenuModel, OuterGameModel(..), SharedGameModel, Size, TalkingModel)
 
 
 gameRythm : number
@@ -57,12 +57,39 @@ view model =
                             ViewingPerson ->
                                 viewPerson person
 
-                            Talking talkingModel ->
+                            ViewingTalking talkingModel ->
                                 viewTalking sharedModel person talkingModel
 
                             Quizzing quiz ->
                                 viewQuizzing person quiz
+
+                            ViewingMenu previous ->
+                                viewMenu previous
                         )
+
+
+viewMenu : MenuModel -> Element GameMsg
+viewMenu { previous, background } =
+    let
+        btn msg label =
+            Input.button
+                [ width fill ]
+                { onPress = Just msg
+                , label =
+                    semiBox
+                        [ width fill
+                        , Border.width Theme.borderWidth
+                        , Border.rounded gameRythm
+                        , padding gameRythm
+                        ]
+                        (text label)
+                }
+    in
+    el (mainContainerAttrs { image = background }) <|
+        column [ width fill, height fill, Theme.spacing ]
+            [ btn Reset "RESET"
+            , menuRow (BackTo previous) "Back"
+            ]
 
 
 fontSize : Float -> Attribute msg
@@ -103,7 +130,7 @@ viewMap data sharedGameModel _ =
                             _ =
                                 Debug.todo
                          in
-                         always True
+                         \_ -> True
                         )
                         <|
                             Set.member personId sharedGameModel.tickets
@@ -211,7 +238,7 @@ viewPerson person =
 
         avatarBox =
             Input.button [ width fill, height fill ]
-                { onPress = Just <| ViewDialog person.dialog []
+                { onPress = Just <| ViewTalking person.dialog []
                 , label =
                     semiBox [ width fill, height fill ]
                         (column
@@ -234,26 +261,18 @@ viewPerson person =
                             ]
                         )
                 }
-
-        mainAttrs =
-            [ Theme.padding
-            , Theme.spacing
-            , width fill
-            , height fill
-            , cityBackground person.city
-            ]
     in
     Element.with (.screenSize >> getOrientation)
         (\orientation ->
             case orientation of
                 Portrait ->
-                    Element.column mainAttrs
+                    Element.column (mainContainerAttrs person.city)
                         [ viewCityDescription [ width fill ] person.city
                         , avatarBox
                         ]
 
                 Landscape ->
-                    Element.row mainAttrs
+                    Element.row (mainContainerAttrs person.city)
                         [ viewCityDescription [] person.city
                         , avatarBox
                         ]
@@ -267,6 +286,16 @@ getOrientation screen =
 
     else
         Landscape
+
+
+mainContainerAttrs : { a | image : String } -> List (Attribute msg)
+mainContainerAttrs city =
+    [ Theme.spacing
+    , Theme.padding
+    , height fill
+    , width fill
+    , cityBackground city
+    ]
 
 
 viewTalking : SharedGameModel -> Person -> TalkingModel -> Element GameMsg
@@ -300,45 +329,53 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
             ]
 
         menu =
-            Input.button [ alignBottom ]
-                { onPress = Nothing
-                , label =
-                    row
-                        [ Theme.spacing
-                        , width fill
-                        , Theme.padding
-                        ]
-                        [ avatar 0.5 { image = "/art/sdc.jpg", name = "" }
-                        , if String.isEmpty currentPerson then
-                            semiBox [] <|
-                                el
-                                    [ padding <| 2 * Theme.rythm ]
-                                    (text "Menu")
+            menuRow
+                (ViewMenu { background = person.city.image })
+                (if String.isEmpty currentPerson then
+                    "Menu"
 
-                          else
-                            Element.none
-                        ]
-                }
+                 else
+                    ""
+                )
     in
     column
-        [ Theme.spacing
-        , Theme.padding
-        , height fill
-        , width fill
-        , cityBackground person.city
-        ]
+        (mainContainerAttrs person.city)
         (history ++ current ++ [ menu ])
+
+
+menuRow : GameMsg -> String -> Element GameMsg
+menuRow msg label =
+    Input.button
+        [ alignBottom
+        , width fill
+        ]
+        { onPress = Just msg
+        , label =
+            row
+                [ Theme.spacing
+                , width fill
+                , Theme.padding
+                ]
+                [ avatar 0.5 { image = "/art/sdc.jpg", name = "" }
+                , if String.isEmpty label then
+                    Element.none
+
+                  else
+                    semiBox
+                        [ Border.width Theme.borderWidth
+                        , padding <| gameRythm * 3 // 4
+                        , height fill
+                        , width fill
+                        ]
+                        (text label)
+                ]
+        }
 
 
 viewQuizzing : Person -> Quiz -> Element GameMsg
 viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
     column
-        [ Theme.spacing
-        , Theme.padding
-        , height fill
-        , width fill
-        , cityBackground person.city
-        ]
+        (mainContainerAttrs person.city)
         [ semiBox [ width fill ] <|
             el
                 [ Font.center
@@ -395,7 +432,7 @@ viewQuizAnswer quiz answer =
     in
     Input.button [ width fill ]
         { label = viewDialogLine False duckPerson answer
-        , onPress = Just <| ViewDialog next []
+        , onPress = Just <| ViewTalking next []
         }
 
 
@@ -435,7 +472,7 @@ viewChoice chatHistory { text, next } =
             Just <|
                 case next of
                     NextDialog n ->
-                        ViewDialog n (( Nothing, text ) :: chatHistory)
+                        ViewTalking n (( Nothing, text ) :: chatHistory)
 
                     NextViewMap ->
                         ViewMap
@@ -469,7 +506,7 @@ viewDialogLine historical personIsh text =
         )
 
 
-cityBackground : City -> Attribute msg
+cityBackground : { a | image : String } -> Attribute msg
 cityBackground city =
     Element.behindContent <|
         el
