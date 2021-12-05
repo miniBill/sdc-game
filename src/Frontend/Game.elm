@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -82,7 +82,12 @@ viewMenu { previous, background } =
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
-            [ btn Reset "RESET"
+            [ let
+                _ =
+                    Debug.todo
+              in
+              btn Reset "RESET"
+            , btn Cheat "Cheat"
             , menuRow (BackTo previous) "Back"
             ]
 
@@ -109,14 +114,7 @@ viewMap data sharedGameModel _ =
                 |> Dict.toList
                 |> List.filter
                     (\( personId, _ ) ->
-                        (let
-                            _ =
-                                Debug.todo
-                         in
-                         \_ -> True
-                        )
-                        <|
-                            Set.member personId sharedGameModel.tickets
+                        Set.member personId sharedGameModel.tickets
                     )
                 |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
                 |> List.concatMap

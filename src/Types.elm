@@ -85,6 +85,7 @@ type GameMsg
     | GotRandomTicket Id
     | BackTo GameModel
     | Reset
+    | Cheat
     | LSLoaded String
 
 

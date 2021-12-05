@@ -129,26 +129,12 @@ gotGameData data =
         )
     of
         ( Just ( orlaId, _ ), Just initial ) ->
-            (let
-                _ =
-                    Debug.todo
-             in
-             \_ q ->
-                q
-            )
-                (LoadedData data
-                    { currentPerson = orlaId
-                    , tickets = Set.singleton orlaId
-                    }
-                    (ViewingMap {})
-                )
-                (LoadedData
-                    data
-                    { currentPerson = ""
-                    , tickets = Set.singleton orlaId
-                    }
-                    (ViewingTalking { chatHistory = [], currentDialog = initial.dialog })
-                )
+            LoadedData
+                data
+                { currentPerson = ""
+                , tickets = Set.singleton orlaId
+                }
+                (ViewingTalking { chatHistory = [], currentDialog = initial.dialog })
 
         ( Nothing, _ ) ->
             DataEmpty
@@ -489,6 +475,16 @@ updateGame msg outerModel =
                                 |> Codec.decodeString localStorageCodec
                                 |> Result.withDefault ( sharedModel, model )
                                 |> (\( s, m ) -> ( s, m, Cmd.none ))
+
+                        Cheat ->
+                            ( { sharedModel
+                                | tickets =
+                                    Set.fromList <|
+                                        Dict.keys data
+                              }
+                            , model
+                            , Cmd.none
+                            )
             in
             ( LoadedData data sharedModel_ model_
             , Cmd.batch
