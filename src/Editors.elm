@@ -11,11 +11,11 @@ import Element.WithContext as Element
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Input as Input
+import Frontend.Theme exposing (Element)
 import Html.Attributes
 import List.Extra
 import Model
 import Set
-import Theme exposing (Element)
 import Tuple
 
 
@@ -112,14 +112,14 @@ personEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -146,13 +146,13 @@ personEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -237,14 +237,14 @@ cityEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -271,13 +271,13 @@ cityEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -333,14 +333,14 @@ coordinatesEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -367,13 +367,13 @@ coordinatesEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -385,7 +385,7 @@ nationEditor level value =
     ( let
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Model.Austria (Element.text "Austria")
@@ -402,13 +402,13 @@ nationEditor level value =
                 }
       in
       Element.el
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         variantRow
     , Basics.False
@@ -469,14 +469,14 @@ dialogEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -503,13 +503,13 @@ dialogEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -564,14 +564,14 @@ choiceEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -598,13 +598,13 @@ choiceEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -636,7 +636,7 @@ nextEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -681,16 +681,16 @@ nextEditor level value =
                     []
       in
       Element.column
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Frontend.Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -779,14 +779,14 @@ quizEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Frontend.Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Frontend.Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
+                    [ Frontend.Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -813,13 +813,13 @@ quizEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -858,7 +858,7 @@ consequenceEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -922,16 +922,16 @@ consequenceEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Frontend.Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -965,7 +965,7 @@ itemEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -1045,7 +1045,7 @@ itemEditor level value =
                                             |> List.map
                                                 (\pair ->
                                                     Element.row
-                                                        [ Theme.spacing
+                                                        [ Frontend.Theme.spacing
                                                         , Element.width
                                                             Element.fill
                                                         ]
@@ -1054,13 +1054,13 @@ itemEditor level value =
                                                         ]
                                                 )
                                             |> Element.row
-                                                [ Theme.spacing
+                                                [ Frontend.Theme.spacing
                                                 , Element.width Element.fill
                                                 ]
 
                                     else
                                         Element.table
-                                            [ Theme.spacing
+                                            [ Frontend.Theme.spacing
                                             , Element.width Element.fill
                                             ]
                                             { columns =
@@ -1093,13 +1093,13 @@ itemEditor level value =
                              in
                              ( Element.column
                                 [ Element.width Element.fill
-                                , Background.color (Theme.getColor (level + 1))
+                                , Background.color (Frontend.Theme.getColor (level + 1))
                                 , Element.width Element.fill
-                                , Theme.spacing
-                                , Theme.padding
+                                , Frontend.Theme.spacing
+                                , Frontend.Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
-                                , Border.rounded Theme.rythm
+                                , Border.rounded Frontend.Theme.rythm
                                 ]
                                 (simplesTable :: complexes)
                              , Basics.False
@@ -1205,7 +1205,7 @@ itemEditor level value =
                                             |> List.map
                                                 (\pair ->
                                                     Element.row
-                                                        [ Theme.spacing
+                                                        [ Frontend.Theme.spacing
                                                         , Element.width
                                                             Element.fill
                                                         ]
@@ -1214,13 +1214,13 @@ itemEditor level value =
                                                         ]
                                                 )
                                             |> Element.row
-                                                [ Theme.spacing
+                                                [ Frontend.Theme.spacing
                                                 , Element.width Element.fill
                                                 ]
 
                                     else
                                         Element.table
-                                            [ Theme.spacing
+                                            [ Frontend.Theme.spacing
                                             , Element.width Element.fill
                                             ]
                                             { columns =
@@ -1253,13 +1253,13 @@ itemEditor level value =
                              in
                              ( Element.column
                                 [ Element.width Element.fill
-                                , Background.color (Theme.getColor (level + 1))
+                                , Background.color (Frontend.Theme.getColor (level + 1))
                                 , Element.width Element.fill
-                                , Theme.spacing
-                                , Theme.padding
+                                , Frontend.Theme.spacing
+                                , Frontend.Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
-                                , Border.rounded Theme.rythm
+                                , Border.rounded Frontend.Theme.rythm
                                 ]
                                 (simplesTable :: complexes)
                              , Basics.False
@@ -1269,16 +1269,16 @@ itemEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Frontend.Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -1289,7 +1289,7 @@ transportKindEditor level value =
     ( let
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Model.Plane (Element.text "Plane")
@@ -1305,13 +1305,13 @@ transportKindEditor level value =
                 }
       in
       Element.el
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         variantRow
     , Basics.False
@@ -1347,7 +1347,7 @@ conditionEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -1419,16 +1419,16 @@ conditionEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Frontend.Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -1459,7 +1459,7 @@ itemNameEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Theme.spacing ]
+                [ Frontend.Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -1561,7 +1561,7 @@ itemNameEditor level value =
                                             |> List.map
                                                 (\pair ->
                                                     Element.row
-                                                        [ Theme.spacing
+                                                        [ Frontend.Theme.spacing
                                                         , Element.width
                                                             Element.fill
                                                         ]
@@ -1570,13 +1570,13 @@ itemNameEditor level value =
                                                         ]
                                                 )
                                             |> Element.row
-                                                [ Theme.spacing
+                                                [ Frontend.Theme.spacing
                                                 , Element.width Element.fill
                                                 ]
 
                                     else
                                         Element.table
-                                            [ Theme.spacing
+                                            [ Frontend.Theme.spacing
                                             , Element.width Element.fill
                                             ]
                                             { columns =
@@ -1609,13 +1609,13 @@ itemNameEditor level value =
                              in
                              ( Element.column
                                 [ Element.width Element.fill
-                                , Background.color (Theme.getColor (level + 1))
+                                , Background.color (Frontend.Theme.getColor (level + 1))
                                 , Element.width Element.fill
-                                , Theme.spacing
-                                , Theme.padding
+                                , Frontend.Theme.spacing
+                                , Frontend.Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
-                                , Border.rounded Theme.rythm
+                                , Border.rounded Frontend.Theme.rythm
                                 ]
                                 (simplesTable :: complexes)
                              , Basics.False
@@ -1625,16 +1625,16 @@ itemNameEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Frontend.Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -1772,7 +1772,7 @@ intEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (Theme.getColor level)
+            , Background.color (Frontend.Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromInt value
@@ -1791,7 +1791,7 @@ floatEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (Theme.getColor level)
+            , Background.color (Frontend.Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromFloat value
@@ -1826,13 +1826,13 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
              else
                 Element.column
             )
-                [ Background.color (Theme.getColor level)
+                [ Background.color (Frontend.Theme.getColor level)
                 , Element.width Element.fill
-                , Theme.spacing
-                , Theme.padding
+                , Frontend.Theme.spacing
+                , Frontend.Theme.padding
                 , Element.alignTop
                 , Border.width 1
-                , Border.rounded Theme.rythm
+                , Border.rounded Frontend.Theme.rythm
                 ]
                 [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
                 , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
@@ -1846,7 +1846,7 @@ stringEditor level value =
     ( Input.text
         [ Element.width (Element.minimum 100 Element.fill)
         , Element.alignTop
-        , Background.color (Theme.getColor level)
+        , Background.color (Frontend.Theme.getColor level)
         ]
         { onChange = Basics.identity
         , text = value
@@ -1860,7 +1860,7 @@ stringEditor level value =
 boolEditor : Int -> Bool -> ( Element Basics.Bool, Bool )
 boolEditor _ value =
     ( Input.radioRow
-        [ Theme.spacing, Element.alignTop ]
+        [ Frontend.Theme.spacing, Element.alignTop ]
         { onChange = Basics.identity
         , options =
             [ Input.option Basics.True (Element.text "True")
@@ -1898,24 +1898,24 @@ listEditor typeName valueEditor valueDefault level value =
                             [ Element.el
                                 [ Element.paddingEach
                                     { top = 0
-                                    , right = Theme.rythm
+                                    , right = Frontend.Theme.rythm
                                     , bottom = 0
                                     , left = 0
                                     }
                                 , Element.alignRight
                                 ]
-                                (Theme.tabButton
-                                    [ Theme.spacing
-                                    , Theme.padding
+                                (Frontend.Theme.tabButton
+                                    [ Frontend.Theme.spacing
+                                    , Frontend.Theme.padding
                                     , Element.alignTop
                                     , Border.width 1
-                                    , Border.rounded Theme.rythm
+                                    , Border.rounded Frontend.Theme.rythm
                                     , Background.gradient
                                         { angle = 0
                                         , steps =
-                                            [ Theme.getColor (level + 1)
-                                            , Theme.colors.delete
-                                            , Theme.colors.delete
+                                            [ Frontend.Theme.getColor (level + 1)
+                                            , Frontend.Theme.colors.delete
+                                            , Frontend.Theme.colors.delete
                                             ]
                                         }
                                     , Border.widthEach
@@ -1925,8 +1925,8 @@ listEditor typeName valueEditor valueDefault level value =
                                         , top = 1
                                         }
                                     , Border.roundEach
-                                        { topLeft = Theme.rythm
-                                        , topRight = Theme.rythm
+                                        { topLeft = Frontend.Theme.rythm
+                                        , topRight = Frontend.Theme.rythm
                                         , bottomLeft = 0
                                         , bottomRight = 0
                                         }
@@ -1948,41 +1948,41 @@ listEditor typeName valueEditor valueDefault level value =
     ( Element.column
         [ Element.width Element.fill ]
         [ Element.column
-            [ Background.color (Theme.getColor level)
+            [ Background.color (Frontend.Theme.getColor level)
             , Element.width Element.fill
-            , Theme.spacing
-            , Theme.padding
+            , Frontend.Theme.spacing
+            , Frontend.Theme.padding
             , Element.alignTop
             , Border.width 1
-            , Border.rounded Theme.rythm
+            , Border.rounded Frontend.Theme.rythm
             ]
             rows
         , Element.el
             [ Element.paddingEach
-                { top = 0, right = Theme.rythm, bottom = 0, left = Theme.rythm }
+                { top = 0, right = Frontend.Theme.rythm, bottom = 0, left = Frontend.Theme.rythm }
             , Element.alignRight
             ]
-            (Theme.button
-                [ Theme.spacing
-                , Theme.padding
+            (Frontend.Theme.button
+                [ Frontend.Theme.spacing
+                , Frontend.Theme.padding
                 , Element.alignTop
                 , Border.width 1
-                , Border.rounded Theme.rythm
+                , Border.rounded Frontend.Theme.rythm
                 , Background.gradient
                     { angle = 0
                     , steps =
-                        [ Theme.colors.addNew
-                        , Theme.colors.addNew
-                        , Theme.colors.addNew
-                        , Theme.getColor level
+                        [ Frontend.Theme.colors.addNew
+                        , Frontend.Theme.colors.addNew
+                        , Frontend.Theme.colors.addNew
+                        , Frontend.Theme.getColor level
                         ]
                     }
                 , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
                 , Border.roundEach
                     { topLeft = 0
                     , topRight = 0
-                    , bottomLeft = Theme.rythm
-                    , bottomRight = Theme.rythm
+                    , bottomLeft = Frontend.Theme.rythm
+                    , bottomRight = Frontend.Theme.rythm
                     }
                 , Element.moveUp 1
                 ]
@@ -2046,13 +2046,13 @@ dictEditor keyEditor keyDefault valueEditor valueDefault level value =
             }
     in
     ( Element.table
-        [ Background.color (Theme.getColor level)
+        [ Background.color (Frontend.Theme.getColor level)
         , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
+        , Frontend.Theme.spacing
+        , Frontend.Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Theme.rythm
+        , Border.rounded Frontend.Theme.rythm
         ]
         { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
         , columns = [ keysColumn, valuesColumn ]

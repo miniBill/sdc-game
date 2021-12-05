@@ -6,6 +6,7 @@ import Element.WithContext as Element exposing (alignTop, centerY, el, fill, hei
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Frontend.Common
+import Frontend.Theme exposing (Element)
 import Json.Decode as JD exposing (Decoder)
 import MapPixels
 import Model exposing (Data, Id, Person, mapSize)
@@ -13,7 +14,6 @@ import Quantity
 import Svg as S
 import Svg.Attributes as SA
 import Svg.Events
-import Theme exposing (Element)
 import Types exposing (EditorModel, EditorMsg(..))
 
 
@@ -36,7 +36,7 @@ view maybeData editorModel =
                         |> Maybe.withDefault Element.none
 
                 scrollableView =
-                    Theme.column
+                    Frontend.Theme.column
                         [ scrollbars
                         , height fill
                         , width fill
@@ -49,25 +49,25 @@ view maybeData editorModel =
             el
                 [ width fill
                 , height fill
-                , Theme.spacing
+                , Frontend.Theme.spacing
                 , inFront <|
                     el
                         [ Element.paddingEach
                             { left = 0
                             , top = 0
-                            , right = Theme.rythm
+                            , right = Frontend.Theme.rythm
                             , bottom = 0
                             }
                         ]
                     <|
                         el
-                            [ Theme.padding
-                            , Background.color Theme.colors.semitransparent
+                            [ Frontend.Theme.padding
+                            , Background.color Frontend.Theme.colors.semitransparent
                             , Border.roundEach
                                 { topLeft = 0
                                 , topRight = 0
                                 , bottomLeft = 0
-                                , bottomRight = Theme.rythm
+                                , bottomRight = Frontend.Theme.rythm
                                 }
                             ]
                             (controls RealMode data editorModel)
@@ -83,7 +83,7 @@ type ControlsMode
 controls : ControlsMode -> Data -> EditorModel -> Element EditorMsg
 controls mode data model =
     Element.wrappedRow
-        [ Theme.spacing
+        [ Frontend.Theme.spacing
         , alignTop
         ]
         (commonControls mode
@@ -105,7 +105,7 @@ commonControls : ControlsMode -> List (Element EditorMsg)
 commonControls mode =
     let
         btn msg color label =
-            Theme.button
+            Frontend.Theme.button
                 [ alignTop
                 , Background.color color
                 , Element.transparent <| mode == GhostMode
@@ -114,9 +114,9 @@ commonControls mode =
                 , label = text label
                 }
     in
-    [ btn FileSelect Theme.colors.white "Upload JSON"
-    , btn DownloadJson Theme.colors.white "Save as JSON"
-    , btn AddPerson Theme.colors.addNew "Add Person"
+    [ btn FileSelect Frontend.Theme.colors.white "Upload JSON"
+    , btn DownloadJson Frontend.Theme.colors.white "Save as JSON"
+    , btn AddPerson Frontend.Theme.colors.addNew "Add Person"
     ]
 
 
@@ -127,22 +127,22 @@ peopleButtons mode data model =
         |> List.sortBy (\( _, { name } ) -> name)
         |> List.map
             (\( id, person ) ->
-                Theme.button
+                Frontend.Theme.button
                     [ alignTop
                     , padding 0
                     , Background.color <|
                         if Just id == model.currentPerson then
-                            Theme.colors.selectedTab
+                            Frontend.Theme.colors.selectedTab
 
                         else
-                            Theme.colors.tab
+                            Frontend.Theme.colors.tab
                     , Element.transparent <| mode == GhostMode
                     ]
                     { onPress = Just <| EditPerson id
                     , label =
                         row
-                            [ paddingXY Theme.rythm 0
-                            , Theme.spacing
+                            [ paddingXY Frontend.Theme.rythm 0
+                            , Frontend.Theme.spacing
                             ]
                             [ if String.isEmpty person.image then
                                 Element.none
@@ -156,7 +156,7 @@ peopleButtons mode data model =
                                       description = ""
                                     , src = person.image
                                     }
-                            , el [ paddingXY 0 Theme.rythm ] <|
+                            , el [ paddingXY 0 Frontend.Theme.rythm ] <|
                                 text <|
                                     if String.isEmpty person.name then
                                         "<New>"
@@ -173,7 +173,7 @@ viewPerson id person =
     Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
         Element.column
             [ alignTop
-            , Theme.spacing
+            , Frontend.Theme.spacing
             , width fill
             , height shrink
             ]

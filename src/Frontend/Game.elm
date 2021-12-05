@@ -1,12 +1,13 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, padding, paragraph, px, row, spacing, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
 import Frontend.Common
+import Frontend.GameTheme as Theme exposing (Attribute, Element)
 import Html
 import Html.Attributes
 import MapPixels
@@ -21,13 +22,7 @@ import Set
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
-import Theme exposing (Attribute, Element)
 import Types exposing (GameMsg(..), OuterGameModel(..), Size)
-
-
-gameRythm : number
-gameRythm =
-    Theme.rythm * 4
 
 
 view : OuterGameModel -> Element GameMsg
@@ -48,7 +43,7 @@ view model =
                     el
                         [ width fill
                         , height fill
-                        , fontSize 1
+                        , Theme.fontSize 1
                         ]
                         (case submodel of
                             ViewingMap mapModel ->
@@ -78,9 +73,9 @@ viewMenu { previous, background } =
                 , label =
                     semiBox
                         [ width fill
-                        , Border.width Theme.borderWidth
-                        , Border.rounded gameRythm
-                        , padding gameRythm
+                        , Theme.borderWidth
+                        , Theme.borderRounded
+                        , Theme.padding
                         ]
                         (text label)
                 }
@@ -90,18 +85,6 @@ viewMenu { previous, background } =
             [ btn Reset "RESET"
             , menuRow (BackTo previous) "Back"
             ]
-
-
-fontSize : Float -> Attribute msg
-fontSize k =
-    autoscaling <| \size ->
-    Font.size <| round <| 0.04 * k * size
-
-
-autoscaling : (Float -> Attribute msg) -> Attribute msg
-autoscaling f =
-    Element.withAttribute .screenSize <| \size ->
-    f <| Pixels.inPixels (Quantity.min size.width size.height)
 
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
@@ -247,7 +230,7 @@ viewPerson person =
                             , Font.center
                             ]
                             [ el
-                                [ Border.rounded gameRythm
+                                [ Theme.borderRounded
                                 , width fill
                                 , height fill
                                 , style "background-image" <| "url(\"" ++ person.image ++ "\")"
@@ -356,18 +339,18 @@ menuRow msg label =
                 , width fill
                 , Theme.padding
                 ]
-                [ avatar 0.5 { image = "/art/sdc.jpg", name = "" }
+                [ avatar 1 { image = "/art/sdc.jpg", name = "" }
                 , if String.isEmpty label then
                     Element.none
 
                   else
                     semiBox
-                        [ Border.width Theme.borderWidth
-                        , padding <| gameRythm * 3 // 4
+                        [ Theme.borderWidth
+                        , Theme.paddingXYWithCoeff 2 1
                         , height fill
                         , width fill
                         ]
-                        (text label)
+                        (el [ centerY ] <| text label)
                 ]
         }
 
@@ -381,7 +364,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
                 [ Font.center
                 , Font.bold
                 , width fill
-                , fontSize 3
+                , Theme.fontSize 3
                 ]
                 (text "QUIZ TIME!")
         , semiBox [ width fill ] <|
@@ -440,13 +423,13 @@ avatar : Float -> { a | image : String, name : String } -> Element msg
 avatar scale person =
     let
         size =
-            [ autoscaling (\sc -> width <| px <| round <| scale * sc * 0.2)
-            , autoscaling (\sc -> height <| px <| round <| scale * sc * 0.2)
+            [ Theme.autoscalingI (scale * 200) (width << px)
+            , Theme.autoscalingI (scale * 200) (height << px)
             ]
     in
     el
-        ([ Border.width Theme.borderWidth
-         , Border.rounded gameRythm
+        ([ Theme.borderWidth
+         , Theme.borderRounded
          , Background.image person.image
          , alignTop
          ]
@@ -490,20 +473,21 @@ viewChoice chatHistory { text, next } =
 
 viewDialogLine : Bool -> { a | image : String, name : String } -> String -> Element msg
 viewDialogLine historical personIsh text =
-    semiBox
-        [ Border.width Theme.borderWidth
-        , width fill
-        , if historical then
-            Background.color (Element.rgba 0.6 0.6 0.6 0.6)
+    row [ Theme.spacing, width fill ]
+        [ avatar 1 personIsh
+        , semiBox
+            [ Theme.borderWidth
+            , width fill
+            , height fill
+            , Theme.paddingXYWithCoeff 4 1
+            , if historical then
+                Background.color (Element.rgba 0.6 0.6 0.6 0.6)
 
-          else
-            Background.color (Element.rgba 1 1 1 0.8)
-        ]
-        (row [ Theme.spacing, width fill ]
-            [ avatar 1 personIsh
-            , viewMarked [ width fill ] text
+              else
+                Background.color (Element.rgba 1 1 1 0.8)
             ]
-        )
+            (viewMarked [ centerY, width fill ] text)
+        ]
 
 
 cityBackground : { a | image : String } -> Attribute msg
@@ -537,7 +521,7 @@ semiBox : List (Attribute msg) -> Element msg -> Element msg
 semiBox attrs =
     el
         ([ Theme.padding
-         , Border.rounded gameRythm
+         , Theme.borderRounded
          , Background.color Theme.colors.semitransparent
          ]
             ++ attrs
@@ -576,11 +560,11 @@ elmUiRenderer =
     , blockQuote =
         \children ->
             Element.column
-                [ Border.widthEach
+                [ Theme.borderWidthEach
                     { top = 0
                     , right = 0
                     , bottom = 0
-                    , left = gameRythm
+                    , left = 1
                     }
                 , Theme.padding
                 , Border.color (Element.rgb255 145 145 145)
@@ -618,7 +602,7 @@ elmUiRenderer =
                 (items
                     |> List.indexedMap
                         (\index itemBlocks ->
-                            row [ spacing (gameRythm // 2) ]
+                            row [ Theme.spacing ]
                                 [ row [ alignTop ]
                                     (text (String.fromInt (index + startingIndex) ++ " ") :: itemBlocks)
                                 ]
@@ -639,7 +623,7 @@ code : String -> Element msg
 code snippet =
     Element.el
         [ Background.color (Element.rgba 0 0 0 0.04)
-        , Border.rounded gameRythm
+        , Theme.borderRounded
         , Theme.padding
         , Font.family [ Font.monospace ]
         ]
@@ -667,13 +651,13 @@ heading { level, rawText, children } =
     Element.paragraph
         [ case level of
             Markdown.Block.H1 ->
-                fontSize 1.8
+                Theme.fontSize 1.8
 
             Markdown.Block.H2 ->
-                fontSize 1.2
+                Theme.fontSize 1.2
 
             _ ->
-                fontSize 1
+                Theme.fontSize 1
         , Font.bold
         , Font.family [ Font.typeface "Montserrat" ]
         , Element.htmlAttribute

@@ -15,6 +15,7 @@ import File.Select
 import Frontend.Common
 import Frontend.Editor
 import Frontend.Game
+import Frontend.Theme exposing (Element)
 import Hex
 import Html
 import Html.Attributes
@@ -27,7 +28,6 @@ import PkgPorts
 import Random
 import Set
 import Task
-import Theme exposing (Element)
 import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
@@ -58,7 +58,7 @@ outerView : FrontendModel -> { title : String, body : List (Html.Html FrontendMs
 outerView model =
     let
         attrs =
-            [ Theme.fontSizes.normal
+            [ Frontend.Theme.fontSizes.normal
             , height fill
             , width fill
             , Element.htmlAttribute <| Html.Attributes.id "main"
@@ -83,7 +83,7 @@ css =
         content =
             """
             select {
-                font-size: """ ++ String.fromInt Theme.fontSize ++ """px;
+                font-size: """ ++ String.fromInt Frontend.Theme.fontSize ++ """px;
             }
             """
     in

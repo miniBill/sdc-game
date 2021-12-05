@@ -1,4 +1,4 @@
-module Theme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
+module Frontend.Theme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
