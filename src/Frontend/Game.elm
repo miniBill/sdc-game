@@ -344,7 +344,7 @@ viewPerson person =
 
                 Landscape ->
                     Element.row (mainContainerAttrs person.city)
-                        [ viewCityDescription [ width fill ] person.city
+                        [ viewCityDescription [ width fill, height fill ] person.city
                         , avatarBox
                         ]
         )
