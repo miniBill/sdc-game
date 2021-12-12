@@ -65,20 +65,77 @@ view model =
 
 viewMenu : MenuModel -> Element GameMsg
 viewMenu { previous, background } =
+    Element.with .a11y <| \a11y ->
     let
-        btn msg label =
+        container attrs =
+            semiBox
+                ([ width fill
+                 , Theme.borderWidth
+                 , Theme.borderRounded
+                 , Theme.padding
+                 ]
+                    ++ attrs
+                )
+
+        btn attrs msg label =
             Input.button
                 [ width fill ]
                 { onPress = Just msg
-                , label =
-                    semiBox
-                        [ width fill
-                        , Theme.borderWidth
-                        , Theme.borderRounded
-                        , Theme.padding
-                        ]
-                        (text label)
+                , label = container attrs (text label)
                 }
+
+        segment kind active label onPress =
+            Input.button
+                [ Theme.padding
+                , width fill
+                , case kind of
+                    Left ->
+                        { topLeft = Theme.rythm
+                        , topRight = 0
+                        , bottomLeft = Theme.rythm
+                        , bottomRight = 0
+                        }
+                            |> Theme.borderRoundedEach
+
+                    Mid ->
+                        Border.rounded 0
+
+                    Right ->
+                        { topLeft = 0
+                        , topRight = Theme.rythm
+                        , bottomLeft = 0
+                        , bottomRight = Theme.rythm
+                        }
+                            |> Theme.borderRoundedEach
+                , case kind of
+                    Left ->
+                        Theme.borderWidth
+
+                    _ ->
+                        Theme.borderWidthEach { top = 1, bottom = 1, right = 1, left = 0 }
+                , Background.color <|
+                    if active then
+                        Theme.colors.selectedTab
+
+                    else
+                        Theme.colors.semitransparent
+                ]
+                { label = text label
+                , onPress = Just onPress
+                }
+
+        toggle label getter toMsg =
+            let
+                value =
+                    getter a11y
+            in
+            [ text <| label ++ " "
+            , segment Left (not value) "No" (toMsg False)
+            , segment Right value "Yes" (toMsg True)
+            ]
+                |> Element.row [ width fill ]
+                |> container []
+                |> Element.map A11y
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
@@ -86,19 +143,29 @@ viewMenu { previous, background } =
                 _ =
                     Debug.todo
               in
-              btn Reset "RESET"
+              btn [ Background.color <| Element.rgb 1 0.7 0.7 ] Reset "RESET"
+            , toggle
+                "Allow free travel"
+                .unlockEverything
+                (\newValue -> { a11y | unlockEverything = newValue })
             , menuRow (BackTo previous) "Back"
             ]
 
 
+type SegmentKind
+    = Left
+    | Mid
+    | Right
+
+
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
 viewMap data sharedGameModel _ =
-    Element.with .screenSize <| \screen ->
+    Element.with identity <| \{ screenSize, a11y } ->
     let
         s =
             Quantity.max
-                (Quantity.per mapSize.width screen.width)
-                (Quantity.per mapSize.height screen.height)
+                (Quantity.per mapSize.width screenSize.width)
+                (Quantity.per mapSize.height screenSize.height)
 
         w =
             mapSize.width
@@ -113,7 +180,7 @@ viewMap data sharedGameModel _ =
                 |> Dict.toList
                 |> List.filter
                     (\( personId, _ ) ->
-                        Set.member personId sharedGameModel.tickets
+                        a11y.unlockEverything || Set.member personId sharedGameModel.tickets
                     )
                 |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
                 |> List.concatMap
@@ -314,7 +381,7 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
             menuRow
                 (ViewMenu { background = person.city.image })
                 (if String.isEmpty currentPerson then
-                    "Menu"
+                    "Menu - Accessibility"
 
                  else
                     ""

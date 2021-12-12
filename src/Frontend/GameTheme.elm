@@ -1,4 +1,4 @@
-module Frontend.GameTheme exposing (Attr, Attribute, Element, autoscaling, autoscalingI, borderRounded, borderWidth, borderWidthEach, colors, fontSize, padding, paddingWithCoeff, paddingXYWithCoeff, spacing)
+module Frontend.GameTheme exposing (Attr, Attribute, Element, autoscaling, autoscalingI, borderRounded, borderRoundedEach, borderWidth, borderWidthEach, colors, fontSize, padding, paddingWithCoeff, paddingXYWithCoeff, rythm, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Border as Border
@@ -32,9 +32,14 @@ type alias Attr decorative msg =
 -- Attrs
 
 
-colors : { semitransparent : Color }
+colors :
+    { semitransparent : Color
+    , selectedTab : Color
+    }
 colors =
-    { semitransparent = Element.rgba255 0xFF 0xFF 0xFF 0.7 }
+    { semitransparent = Element.rgba255 0xFF 0xFF 0xFF 0.7
+    , selectedTab = Element.rgb255 0xD0 0xD0 0xFF
+    }
 
 
 borderSize : number
@@ -85,6 +90,17 @@ borderWidth =
 borderRounded : Attribute msg
 borderRounded =
     autoscalingI (rythm * 4) Border.rounded
+
+
+borderRoundedEach : { topRight : Int, topLeft : Int, bottomRight : Int, bottomLeft : Int } -> Attribute msg
+borderRoundedEach { topRight, topLeft, bottomRight, bottomLeft } =
+    autoscalingI (rythm * 4) <| \s ->
+    Border.roundEach
+        { topRight = s * topRight
+        , topLeft = s * topLeft
+        , bottomRight = s * bottomRight
+        , bottomLeft = s * bottomLeft
+        }
 
 
 borderWidthEach :
