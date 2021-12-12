@@ -5,7 +5,7 @@ import Browser.Dom
 import Browser.Events
 import Browser.Navigation as Nav
 import Codec exposing (Codec)
-import Codecs exposing (gameModelCodec, sharedGameModelCodec)
+import Codecs exposing (a11yOptionsCodec, gameModelCodec, sharedGameModelCodec)
 import Dict
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
@@ -231,14 +231,19 @@ init url key =
     ( { key = key
       , page = urlToPage url
       , screenSize = Nothing
-      , a11y =
-            { fontSize = Frontend.GameTheme.defaultFontSize
-            , openDyslexic = False
-            , unlockEverything = False
-            }
+      , a11y = defaultA11yOptions
       }
     , getSizeCmd
     )
+
+
+defaultA11yOptions : A11yOptions
+defaultA11yOptions =
+    { fontSize = Frontend.GameTheme.defaultFontSize
+    , openDyslexic = False
+    , unlockEverything = False
+    , opaqueBackgrounds = False
+    }
 
 
 getSizeCmd : Cmd FrontendMsg
@@ -314,11 +319,11 @@ update msg model =
         ( GameMsg gameMsg, Game gameModel ) ->
             let
                 ( gameModel_, gameCmd, a11y ) =
-                    updateGame gameMsg gameModel
+                    updateGame gameMsg model.a11y gameModel
             in
             ( { model
                 | page = Game gameModel_
-                , a11y = Maybe.withDefault model.a11y a11y
+                , a11y = a11y
               }
             , Cmd.batch [ getSizeCmd, Cmd.map GameMsg gameCmd ]
             )
@@ -385,16 +390,16 @@ updateEditor msg data model =
             )
 
 
-updateGame : GameMsg -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg, Maybe A11yOptions )
-updateGame msg outerModel =
+updateGame : GameMsg -> A11yOptions -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg, A11yOptions )
+updateGame msg a11y outerModel =
     case outerModel of
         LoadingData ->
             -- Ignore messages received while loading
             -- TODO: queue them instead?
-            ( outerModel, Cmd.none, Nothing )
+            ( outerModel, Cmd.none, a11y )
 
         DataEmpty ->
-            ( outerModel, Cmd.none, Nothing )
+            ( outerModel, Cmd.none, a11y )
 
         LoadedData data sharedModel model ->
             let
@@ -402,7 +407,7 @@ updateGame msg outerModel =
                     { sharedModel = sharedModel
                     , model = model
                     , cmd = Cmd.none
-                    , a11y = Nothing
+                    , a11y = a11y
                     }
 
                 result =
@@ -501,14 +506,21 @@ updateGame msg outerModel =
                                 _ ->
                                     default
 
+                        A11y a ->
+                            { default | a11y = a }
+
                         LocalStorageLoaded localStorage ->
                             localStorage
                                 |> Codec.decodeString localStorageCodec
-                                |> Result.withDefault ( sharedModel, model )
-                                |> (\( s, m ) -> { default | sharedModel = s, model = m })
-
-                        A11y a11y ->
-                            { default | a11y = Just a11y }
+                                |> Debug.log "Decodec"
+                                |> Result.withDefault ( sharedModel, model, a11y )
+                                |> (\( s, m, a ) ->
+                                        { default
+                                            | sharedModel = s
+                                            , model = m
+                                            , a11y = a
+                                        }
+                                   )
             in
             ( LoadedData data result.sharedModel result.model
             , Cmd.batch
@@ -516,15 +528,15 @@ updateGame msg outerModel =
                 , PkgPorts.localstorage_store <|
                     Codec.encodeToString 0
                         localStorageCodec
-                        ( result.sharedModel, result.model )
+                        ( result.sharedModel, result.model, result.a11y )
                 ]
             , result.a11y
             )
 
 
-localStorageCodec : Codec ( SharedGameModel, GameModel )
+localStorageCodec : Codec ( SharedGameModel, GameModel, A11yOptions )
 localStorageCodec =
-    Codec.tuple sharedGameModelCodec gameModelCodec
+    Codec.triple sharedGameModelCodec gameModelCodec a11yOptionsCodec
 
 
 type Region

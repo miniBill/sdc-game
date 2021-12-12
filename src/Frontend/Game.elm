@@ -89,12 +89,11 @@ viewMenu { previous, background } =
                    }
                     |> Theme.borderRoundedEachWithCoeff
                  , Theme.borderWidthEach { top = True, bottom = True, right = True, left = index == 0 }
-                 , Background.color <|
-                    if active then
-                        Theme.colors.selectedTab
+                 , if active then
+                    Background.color Theme.colors.selectedTab
 
-                    else
-                        Theme.colors.semitransparent
+                   else
+                    Theme.semitransparentBackground
                  ]
                     ++ attrs
                 )
@@ -102,7 +101,7 @@ viewMenu { previous, background } =
                 , onPress = Just onPress
                 }
 
-        menuRow label segments =
+        menuRow attrs label segments =
             let
                 segmentsCount =
                     List.length segments
@@ -120,14 +119,15 @@ viewMenu { previous, background } =
                 |> Element.row [ width <| fillPortion 2 ]
             ]
                 |> row [ width fill, Theme.spacing ]
-                |> container []
+                |> container attrs
 
-        toggle label getter toMsg =
+        toggle attrs label getter toMsg =
             let
                 value =
                     getter a11y
             in
-            menuRow label
+            menuRow attrs
+                label
                 [ Segment [] { active = not value, label = "No", onPress = False }
                 , Segment [] { active = value, label = "Yes", onPress = True }
                 ]
@@ -135,22 +135,23 @@ viewMenu { previous, background } =
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
-            [ menuRow "Reset save"
+            [ menuRow []
+                "Reset save"
                 [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
                     { active = False
                     , label = "RESET"
                     , onPress = Reset
                     }
                 ]
-            , toggle
+            , toggle []
                 "Allow free travel"
                 .unlockEverything
                 (\newValue -> { a11y | unlockEverything = newValue })
-            , toggle
+            , toggle []
                 "Use Open Dyslexic"
                 .openDyslexic
                 (\newValue -> { a11y | openDyslexic = newValue })
-            , menuRow
+            , menuRow []
                 ("Scale (" ++ String.fromInt (round <| a11y.fontSize / Theme.defaultFontSize * 100) ++ "%)")
                 [ Segment []
                     { active = a11y.fontSize < Theme.defaultFontSize
@@ -169,6 +170,10 @@ viewMenu { previous, background } =
                     }
                 ]
                 |> Element.map (\fontSize -> A11y { a11y | fontSize = toFloat <| round fontSize })
+            , toggle [ Background.color <| Element.rgb 1 1 1 ]
+                "Opaque backgrounds"
+                .opaqueBackgrounds
+                (\newValue -> { a11y | opaqueBackgrounds = newValue })
             , menuButtonAndLabel (BackTo previous) "Back"
             ]
 
@@ -400,7 +405,7 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
             menuButtonAndLabel
                 (ViewMenu { background = person.city.image })
                 (if String.isEmpty currentPerson then
-                    "Menu - Accessibility"
+                    initialMenuLabel
 
                  else
                     ""
@@ -409,6 +414,11 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
     column
         (mainContainerAttrs person.city)
         (history ++ current ++ [ menu ])
+
+
+initialMenuLabel : String
+initialMenuLabel =
+    "Menu - Accessibility"
 
 
 menuButtonAndLabel : GameMsg -> String -> Element GameMsg
@@ -434,6 +444,7 @@ menuButtonAndLabel msg label =
                         , Theme.paddingXYWithCoeff 2 1
                         , height fill
                         , width fill
+                        , Background.color <| Element.rgb 1 1 1
                         ]
                         (el [ centerY ] <| text label)
                 ]
@@ -569,7 +580,7 @@ viewDialogLine historical personIsh text =
                 Background.color (Element.rgba 0.6 0.6 0.6 0.6)
 
               else
-                Background.color (Element.rgba 1 1 1 0.8)
+                Theme.semitransparentBackground
             ]
             (viewMarked [ centerY, width fill ] text)
         ]
@@ -608,7 +619,7 @@ semiBox attrs =
     el
         ([ Theme.padding
          , Theme.borderRounded
-         , Background.color Theme.colors.semitransparent
+         , Theme.semitransparentBackground
          ]
             ++ attrs
         )

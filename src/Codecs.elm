@@ -1,14 +1,32 @@
-module Codecs exposing (sharedGameModelCodec, gameModelCodec, dataCodec)
+module Codecs exposing (sharedGameModelCodec, gameModelCodec, dataCodec, a11yOptionsCodec)
 
 {-|
 
-@docs sharedGameModelCodec, gameModelCodec, dataCodec
+@docs sharedGameModelCodec, gameModelCodec, dataCodec, a11yOptionsCodec
 
 -}
 
 import Codec
 import Model
 import Set
+import Types exposing (A11yOptions)
+
+
+a11yOptionsCodec : Codec.Codec A11yOptions
+a11yOptionsCodec =
+    Codec.object
+        (\unlockEverything openDyslexic fontSize opaqueBackgrounds ->
+            { unlockEverything = unlockEverything
+            , openDyslexic = openDyslexic
+            , fontSize = fontSize
+            , opaqueBackgrounds = opaqueBackgrounds
+            }
+        )
+        |> Codec.field "unlockEverything" .unlockEverything Codec.bool
+        |> Codec.field "openDyslexic" .openDyslexic Codec.bool
+        |> Codec.field "fontSize" .fontSize Codec.float
+        |> Codec.field "opaqueBackgrounds" .opaqueBackgrounds Codec.bool
+        |> Codec.buildObject
 
 
 sharedGameModelCodec : Codec.Codec Model.SharedGameModel
@@ -35,35 +53,34 @@ sharedGameModelCodec =
 
 gameModelCodec : Codec.Codec Model.GameModel
 gameModelCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\fviewingMap fviewingPerson fviewingTalking fquizzing fviewingMenu value ->
-                    case value of
-                        Model.ViewingMap arg0 ->
-                            fviewingMap arg0
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fviewingMap fviewingPerson fviewingTalking fquizzing fviewingMenu value ->
+            case value of
+                Model.ViewingMap arg0 ->
+                    fviewingMap arg0
 
-                        Model.ViewingPerson ->
-                            fviewingPerson
+                Model.ViewingPerson ->
+                    fviewingPerson
 
-                        Model.ViewingTalking arg0 ->
-                            fviewingTalking arg0
+                Model.ViewingTalking arg0 ->
+                    fviewingTalking arg0
 
-                        Model.Quizzing arg0 ->
-                            fquizzing arg0
+                Model.Quizzing arg0 ->
+                    fquizzing arg0
 
-                        Model.ViewingMenu arg0 ->
-                            fviewingMenu arg0
-                )
-                |> Codec.variant1 "ViewingMap" Model.ViewingMap mapModelCodec
-                |> Codec.variant0 "ViewingPerson" Model.ViewingPerson
-                |> Codec.variant1
-                    "ViewingTalking"
-                    Model.ViewingTalking
-                    talkingModelCodec
-                |> Codec.variant1 "Quizzing" Model.Quizzing quizCodec
-                |> Codec.variant1 "ViewingMenu" Model.ViewingMenu menuModelCodec
-                |> Codec.buildCustom
+                Model.ViewingMenu arg0 ->
+                    fviewingMenu arg0
+        )
+        |> Codec.variant1 "ViewingMap" Model.ViewingMap mapModelCodec
+        |> Codec.variant0 "ViewingPerson" Model.ViewingPerson
+        |> Codec.variant1
+            "ViewingTalking"
+            Model.ViewingTalking
+            talkingModelCodec
+        |> Codec.variant1 "Quizzing" Model.Quizzing quizCodec
+        |> Codec.variant1 "ViewingMenu" Model.ViewingMenu menuModelCodec
+        |> Codec.buildCustom
 
 
 mapModelCodec : Codec.Codec Model.MapModel
@@ -267,44 +284,43 @@ coordinatesCodec =
 
 nationCodec : Codec.Codec Model.Nation
 nationCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\faustria fbelgium fengland ffrance fgermany fitaly fnetherlands fnorway value ->
-                    case value of
-                        Model.Austria ->
-                            faustria
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\faustria fbelgium fengland ffrance fgermany fitaly fnetherlands fnorway value ->
+            case value of
+                Model.Austria ->
+                    faustria
 
-                        Model.Belgium ->
-                            fbelgium
+                Model.Belgium ->
+                    fbelgium
 
-                        Model.England ->
-                            fengland
+                Model.England ->
+                    fengland
 
-                        Model.France ->
-                            ffrance
+                Model.France ->
+                    ffrance
 
-                        Model.Germany ->
-                            fgermany
+                Model.Germany ->
+                    fgermany
 
-                        Model.Italy ->
-                            fitaly
+                Model.Italy ->
+                    fitaly
 
-                        Model.Netherlands ->
-                            fnetherlands
+                Model.Netherlands ->
+                    fnetherlands
 
-                        Model.Norway ->
-                            fnorway
-                )
-                |> Codec.variant0 "Austria" Model.Austria
-                |> Codec.variant0 "Belgium" Model.Belgium
-                |> Codec.variant0 "England" Model.England
-                |> Codec.variant0 "France" Model.France
-                |> Codec.variant0 "Germany" Model.Germany
-                |> Codec.variant0 "Italy" Model.Italy
-                |> Codec.variant0 "Netherlands" Model.Netherlands
-                |> Codec.variant0 "Norway" Model.Norway
-                |> Codec.buildCustom
+                Model.Norway ->
+                    fnorway
+        )
+        |> Codec.variant0 "Austria" Model.Austria
+        |> Codec.variant0 "Belgium" Model.Belgium
+        |> Codec.variant0 "England" Model.England
+        |> Codec.variant0 "France" Model.France
+        |> Codec.variant0 "Germany" Model.Germany
+        |> Codec.variant0 "Italy" Model.Italy
+        |> Codec.variant0 "Netherlands" Model.Netherlands
+        |> Codec.variant0 "Norway" Model.Norway
+        |> Codec.buildCustom
 
 
 dialogCodec : Codec.Codec Model.Dialog
@@ -348,32 +364,31 @@ choiceCodec =
 
 nextCodec : Codec.Codec Model.Next
 nextCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
-                    case value of
-                        Model.NextDialog arg0 ->
-                            fnextDialog arg0
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
+            case value of
+                Model.NextDialog arg0 ->
+                    fnextDialog arg0
 
-                        Model.NextViewMap ->
-                            fnextViewMap
+                Model.NextViewMap ->
+                    fnextViewMap
 
-                        Model.NextRandomQuiz ->
-                            fnextRandomQuiz
+                Model.NextRandomQuiz ->
+                    fnextRandomQuiz
 
-                        Model.NextQuiz arg0 ->
-                            fnextQuiz arg0
+                Model.NextQuiz arg0 ->
+                    fnextQuiz arg0
 
-                        Model.NextGiveTicket ->
-                            fnextGiveTicket
-                )
-                |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
-                |> Codec.variant0 "NextViewMap" Model.NextViewMap
-                |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
-                |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
-                |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
-                |> Codec.buildCustom
+                Model.NextGiveTicket ->
+                    fnextGiveTicket
+        )
+        |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
+        |> Codec.variant0 "NextViewMap" Model.NextViewMap
+        |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
+        |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
+        |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
+        |> Codec.buildCustom
 
 
 quizCodec : Codec.Codec Model.Quiz
@@ -442,156 +457,153 @@ quizCodec =
 
 consequenceCodec : Codec.Codec Model.Consequence
 consequenceCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\fconsequenceGetMoney fconsequenceLoseMoney fconsequenceGetItem fconsequenceLoseItem fconsequenceSetLocalFlag value ->
-                    case value of
-                        Model.ConsequenceGetMoney arg0 ->
-                            fconsequenceGetMoney arg0
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fconsequenceGetMoney fconsequenceLoseMoney fconsequenceGetItem fconsequenceLoseItem fconsequenceSetLocalFlag value ->
+            case value of
+                Model.ConsequenceGetMoney arg0 ->
+                    fconsequenceGetMoney arg0
 
-                        Model.ConsequenceLoseMoney arg0 ->
-                            fconsequenceLoseMoney arg0
+                Model.ConsequenceLoseMoney arg0 ->
+                    fconsequenceLoseMoney arg0
 
-                        Model.ConsequenceGetItem arg0 ->
-                            fconsequenceGetItem arg0
+                Model.ConsequenceGetItem arg0 ->
+                    fconsequenceGetItem arg0
 
-                        Model.ConsequenceLoseItem arg0 ->
-                            fconsequenceLoseItem arg0
+                Model.ConsequenceLoseItem arg0 ->
+                    fconsequenceLoseItem arg0
 
-                        Model.ConsequenceSetLocalFlag arg0 arg1 ->
-                            fconsequenceSetLocalFlag arg0 arg1
-                )
-                |> Codec.variant1
-                    "ConsequenceGetMoney"
-                    Model.ConsequenceGetMoney
-                    Codec.int
-                |> Codec.variant1
-                    "ConsequenceLoseMoney"
-                    Model.ConsequenceLoseMoney
-                    Codec.int
-                |> Codec.variant1
-                    "ConsequenceGetItem"
-                    Model.ConsequenceGetItem
-                    itemCodec
-                |> Codec.variant1
-                    "ConsequenceLoseItem"
-                    Model.ConsequenceLoseItem
-                    Codec.string
-                |> Codec.variant2
-                    "ConsequenceSetLocalFlag"
-                    Model.ConsequenceSetLocalFlag
-                    Codec.string
-                    Codec.bool
-                |> Codec.buildCustom
+                Model.ConsequenceSetLocalFlag arg0 arg1 ->
+                    fconsequenceSetLocalFlag arg0 arg1
+        )
+        |> Codec.variant1
+            "ConsequenceGetMoney"
+            Model.ConsequenceGetMoney
+            Codec.int
+        |> Codec.variant1
+            "ConsequenceLoseMoney"
+            Model.ConsequenceLoseMoney
+            Codec.int
+        |> Codec.variant1
+            "ConsequenceGetItem"
+            Model.ConsequenceGetItem
+            itemCodec
+        |> Codec.variant1
+            "ConsequenceLoseItem"
+            Model.ConsequenceLoseItem
+            Codec.string
+        |> Codec.variant2
+            "ConsequenceSetLocalFlag"
+            Model.ConsequenceSetLocalFlag
+            Codec.string
+            Codec.bool
+        |> Codec.buildCustom
 
 
 itemCodec : Codec.Codec Model.Item
 itemCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\fgenericItem fticket value ->
-                    case value of
-                        Model.GenericItem arg0 ->
-                            fgenericItem arg0
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fgenericItem fticket value ->
+            case value of
+                Model.GenericItem arg0 ->
+                    fgenericItem arg0
 
-                        Model.Ticket arg0 ->
-                            fticket arg0
+                Model.Ticket arg0 ->
+                    fticket arg0
+        )
+        |> Codec.variant1
+            "GenericItem"
+            Model.GenericItem
+            (Codec.object
+                (\name image ->
+                    { name = Maybe.withDefault "" name
+                    , image = Maybe.withDefault "" image
+                    }
                 )
-                |> Codec.variant1
-                    "GenericItem"
-                    Model.GenericItem
-                    (Codec.object
-                        (\name image ->
-                            { name = Maybe.withDefault "" name
-                            , image = Maybe.withDefault "" image
-                            }
-                        )
-                        |> Codec.maybeField
-                            "name"
-                            (\lambdaArg0 ->
-                                if lambdaArg0.name == "" then
-                                    Maybe.Nothing
+                |> Codec.maybeField
+                    "name"
+                    (\lambdaArg0 ->
+                        if lambdaArg0.name == "" then
+                            Maybe.Nothing
 
-                                else
-                                    Maybe.Just lambdaArg0.name
-                            )
-                            Codec.string
-                        |> Codec.maybeField
-                            "image"
-                            (\lambdaArg0 ->
-                                if lambdaArg0.image == "" then
-                                    Maybe.Nothing
-
-                                else
-                                    Maybe.Just lambdaArg0.image
-                            )
-                            Codec.string
-                        |> Codec.buildObject
+                        else
+                            Maybe.Just lambdaArg0.name
                     )
-                |> Codec.variant1
-                    "Ticket"
-                    Model.Ticket
-                    (Codec.object
-                        (\from to kind consequences ->
-                            { from = from
-                            , to = to
-                            , kind = kind
-                            , consequences = Maybe.withDefault [] consequences
-                            }
-                        )
-                        |> Codec.field "from" .from cityNameCodec
-                        |> Codec.field "to" .to cityNameCodec
-                        |> Codec.field "kind" .kind transportKindCodec
-                        |> Codec.maybeField
-                            "consequences"
-                            (\lambdaArg0 ->
-                                if lambdaArg0.consequences == [] then
-                                    Maybe.Nothing
+                    Codec.string
+                |> Codec.maybeField
+                    "image"
+                    (\lambdaArg0 ->
+                        if lambdaArg0.image == "" then
+                            Maybe.Nothing
 
-                                else
-                                    Maybe.Just lambdaArg0.consequences
-                            )
-                            (Codec.list consequenceCodec)
-                        |> Codec.buildObject
+                        else
+                            Maybe.Just lambdaArg0.image
                     )
-                |> Codec.buildCustom
+                    Codec.string
+                |> Codec.buildObject
+            )
+        |> Codec.variant1
+            "Ticket"
+            Model.Ticket
+            (Codec.object
+                (\from to kind consequences ->
+                    { from = from
+                    , to = to
+                    , kind = kind
+                    , consequences = Maybe.withDefault [] consequences
+                    }
+                )
+                |> Codec.field "from" .from cityNameCodec
+                |> Codec.field "to" .to cityNameCodec
+                |> Codec.field "kind" .kind transportKindCodec
+                |> Codec.maybeField
+                    "consequences"
+                    (\lambdaArg0 ->
+                        if lambdaArg0.consequences == [] then
+                            Maybe.Nothing
+
+                        else
+                            Maybe.Just lambdaArg0.consequences
+                    )
+                    (Codec.list consequenceCodec)
+                |> Codec.buildObject
+            )
+        |> Codec.buildCustom
 
 
 transportKindCodec : Codec.Codec Model.TransportKind
 transportKindCodec =
-    Codec.lazy <|
-        \() ->
-            Codec.custom
-                (\fplane ftrain fcoach fbike fboat fferry fduckWalk value ->
-                    case value of
-                        Model.Plane ->
-                            fplane
+    Codec.lazy <| \() ->
+    Codec.custom
+        (\fplane ftrain fcoach fbike fboat fferry fduckWalk value ->
+            case value of
+                Model.Plane ->
+                    fplane
 
-                        Model.Train ->
-                            ftrain
+                Model.Train ->
+                    ftrain
 
-                        Model.Coach ->
-                            fcoach
+                Model.Coach ->
+                    fcoach
 
-                        Model.Bike ->
-                            fbike
+                Model.Bike ->
+                    fbike
 
-                        Model.Boat ->
-                            fboat
+                Model.Boat ->
+                    fboat
 
-                        Model.Ferry ->
-                            fferry
+                Model.Ferry ->
+                    fferry
 
-                        Model.DuckWalk ->
-                            fduckWalk
-                )
-                |> Codec.variant0 "Plane" Model.Plane
-                |> Codec.variant0 "Train" Model.Train
-                |> Codec.variant0 "Coach" Model.Coach
-                |> Codec.variant0 "Bike" Model.Bike
-                |> Codec.variant0 "Boat" Model.Boat
-                |> Codec.variant0 "Ferry" Model.Ferry
-                |> Codec.variant0 "DuckWalk" Model.DuckWalk
-                |> Codec.buildCustom
+                Model.DuckWalk ->
+                    fduckWalk
+        )
+        |> Codec.variant0 "Plane" Model.Plane
+        |> Codec.variant0 "Train" Model.Train
+        |> Codec.variant0 "Coach" Model.Coach
+        |> Codec.variant0 "Bike" Model.Bike
+        |> Codec.variant0 "Boat" Model.Boat
+        |> Codec.variant0 "Ferry" Model.Ferry
+        |> Codec.variant0 "DuckWalk" Model.DuckWalk
+        |> Codec.buildCustom

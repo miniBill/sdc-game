@@ -1,6 +1,7 @@
-module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, padding, paddingXYWithCoeff, spacing)
+module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
 
 import Element.WithContext as Element exposing (Color)
+import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Types exposing (A11yOptions, Size)
@@ -11,7 +12,9 @@ import Types exposing (A11yOptions, Size)
 
 
 type alias Context =
-    { screenSize : Size, a11y : A11yOptions }
+    { screenSize : Size
+    , a11y : A11yOptions
+    }
 
 
 type alias Element msg =
@@ -26,14 +29,19 @@ type alias Attribute msg =
 -- Attrs
 
 
-colors :
-    { semitransparent : Color
-    , selectedTab : Color
-    }
+colors : { selectedTab : Color }
 colors =
-    { semitransparent = Element.rgba255 0xFF 0xFF 0xFF 0.7
-    , selectedTab = Element.rgb255 0xD0 0xD0 0xFF
-    }
+    { selectedTab = Element.rgb255 0xD0 0xD0 0xFF }
+
+
+semitransparentBackground : Attribute msg
+semitransparentBackground =
+    Element.withAttribute .a11y <| \{ opaqueBackgrounds } ->
+    if opaqueBackgrounds then
+        Background.color <| Element.rgba255 0xFF 0xFF 0xFF 1
+
+    else
+        Background.color <| Element.rgba255 0xFF 0xFF 0xFF 0.7
 
 
 borderSize : number

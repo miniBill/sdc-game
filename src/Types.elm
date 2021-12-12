@@ -24,6 +24,7 @@ type alias A11yOptions =
     { unlockEverything : Bool
     , openDyslexic : Bool
     , fontSize : Float
+    , opaqueBackgrounds : Bool
     }
 
 
