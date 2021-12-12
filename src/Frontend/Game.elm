@@ -77,42 +77,18 @@ viewMenu { previous, background } =
                     ++ attrs
                 )
 
-        segment attrs kind active label onPress =
+        viewSegment attrs index segmentsCount { active, label, onPress } =
             Input.button
                 ([ Theme.padding
                  , width fill
                  , Font.center
-                 , case kind of
-                    Left ->
-                        { topLeft = 1
-                        , topRight = 0
-                        , bottomLeft = 1
-                        , bottomRight = 0
-                        }
-                            |> Theme.borderRoundedEachWithCoeff
-
-                    Mid ->
-                        Border.rounded 0
-
-                    Only ->
-                        Theme.borderRounded
-
-                    Right ->
-                        { topLeft = 0
-                        , topRight = 1
-                        , bottomLeft = 0
-                        , bottomRight = 1
-                        }
-                            |> Theme.borderRoundedEachWithCoeff
-                 , case kind of
-                    Left ->
-                        Theme.borderWidth
-
-                    Only ->
-                        Theme.borderWidth
-
-                    _ ->
-                        Theme.borderWidthEach { top = 1, bottom = 1, right = 1, left = 0 }
+                 , { topLeft = index == 0
+                   , topRight = index == segmentsCount - 1
+                   , bottomLeft = index == 0
+                   , bottomRight = index == segmentsCount - 1
+                   }
+                    |> Theme.borderRoundedEachWithCoeff
+                 , Theme.borderWidthEach { top = True, bottom = True, right = True, left = index == 0 }
                  , Background.color <|
                     if active then
                         Theme.colors.selectedTab
@@ -127,8 +103,21 @@ viewMenu { previous, background } =
                 }
 
         menuRow label segments =
+            let
+                segmentsCount =
+                    List.length segments
+            in
             [ el [ width <| fillPortion 3 ] <| text label
-            , Element.row [ width <| fillPortion 2 ] segments
+            , segments
+                |> List.indexedMap
+                    (\index (Segment sattrs segment) ->
+                        viewSegment
+                            sattrs
+                            index
+                            segmentsCount
+                            segment
+                    )
+                |> Element.row [ width <| fillPortion 2 ]
             ]
                 |> row [ width fill, Theme.spacing ]
                 |> container []
@@ -139,13 +128,20 @@ viewMenu { previous, background } =
                     getter a11y
             in
             menuRow label
-                [ segment [] Left (not value) "No" (A11y <| toMsg False)
-                , segment [] Right value "Yes" (A11y <| toMsg True)
+                [ Segment [] { active = not value, label = "No", onPress = False }
+                , Segment [] { active = value, label = "Yes", onPress = True }
                 ]
+                |> Element.map (toMsg >> A11y)
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
-            [ menuRow "Reset save" [ segment [ Background.color <| Element.rgb 1 0.7 0.7 ] Only False "RESET" Reset ]
+            [ menuRow "Reset save"
+                [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
+                    { active = False
+                    , label = "RESET"
+                    , onPress = Reset
+                    }
+                ]
             , toggle
                 "Allow free travel"
                 .unlockEverything
@@ -154,32 +150,31 @@ viewMenu { previous, background } =
                 "Use Open Dyslexic"
                 .openDyslexic
                 (\newValue -> { a11y | openDyslexic = newValue })
-            , menuRow "Font size"
-                [ segment []
-                    Left
-                    (a11y.fontSize < Theme.defaultFontSize)
-                    "-"
-                    (A11y { a11y | fontSize = toFloat <| round <| a11y.fontSize * 10 / 11 })
-                , segment []
-                    Mid
-                    (a11y.fontSize == Theme.defaultFontSize)
-                    (String.fromInt Theme.defaultFontSize)
-                    (A11y { a11y | fontSize = toFloat <| round <| Theme.defaultFontSize })
-                , segment []
-                    Right
-                    (a11y.fontSize > Theme.defaultFontSize)
-                    "+"
-                    (A11y { a11y | fontSize = toFloat <| round <| a11y.fontSize * 11 / 10 })
+            , menuRow
+                ("Scale (" ++ String.fromInt (round <| a11y.fontSize / Theme.defaultFontSize * 100) ++ "%)")
+                [ Segment []
+                    { active = a11y.fontSize < Theme.defaultFontSize
+                    , label = "-"
+                    , onPress = a11y.fontSize * 10 / 11
+                    }
+                , Segment []
+                    { active = a11y.fontSize == Theme.defaultFontSize
+                    , label = "100%"
+                    , onPress = Theme.defaultFontSize
+                    }
+                , Segment []
+                    { active = a11y.fontSize > Theme.defaultFontSize
+                    , label = "+"
+                    , onPress = a11y.fontSize * 11 / 10
+                    }
                 ]
+                |> Element.map (\fontSize -> A11y { a11y | fontSize = toFloat <| round fontSize })
             , menuButtonAndLabel (BackTo previous) "Back"
             ]
 
 
-type SegmentKind
-    = Left
-    | Mid
-    | Right
-    | Only
+type Segment msg
+    = Segment (List (Attribute msg)) { active : Bool, label : String, onPress : msg }
 
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
@@ -513,8 +508,8 @@ avatar : Float -> { a | image : String, name : String } -> Element msg
 avatar scale person =
     let
         size =
-            [ Theme.autoscalingI (scale * 200) (width << px)
-            , Theme.autoscalingI (scale * 200) (height << px)
+            [ Theme.autoscalingI (scale * 120) (width << px)
+            , Theme.autoscalingI (scale * 120) (height << px)
             ]
     in
     el
@@ -652,10 +647,10 @@ elmUiRenderer =
         \children ->
             Element.column
                 [ Theme.borderWidthEach
-                    { top = 0
-                    , right = 0
-                    , bottom = 0
-                    , left = 1
+                    { top = False
+                    , right = False
+                    , bottom = False
+                    , left = True
                     }
                 , Theme.padding
                 , Border.color (Element.rgb255 145 145 145)

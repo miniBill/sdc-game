@@ -86,32 +86,40 @@ borderRounded =
     autoscalingI (rythm * 4) Border.rounded
 
 
-borderRoundedEachWithCoeff : { topRight : Int, topLeft : Int, bottomRight : Int, bottomLeft : Int } -> Attribute msg
+borderRoundedEachWithCoeff : { topRight : Bool, topLeft : Bool, bottomRight : Bool, bottomLeft : Bool } -> Attribute msg
 borderRoundedEachWithCoeff { topRight, topLeft, bottomRight, bottomLeft } =
-    autoscalingI (rythm * 4) <|
-        \s ->
-            Border.roundEach
-                { topRight = s * rythm * topRight
-                , topLeft = s * rythm * topLeft
-                , bottomRight = s * rythm * bottomRight
-                , bottomLeft = s * rythm * bottomLeft
-                }
+    autoscalingI (rythm * 4) <| \s ->
+    Border.roundEach
+        { topRight = s * rythm * boolToInt topRight
+        , topLeft = s * rythm * boolToInt topLeft
+        , bottomRight = s * rythm * boolToInt bottomRight
+        , bottomLeft = s * rythm * boolToInt bottomLeft
+        }
 
 
 borderWidthEach :
-    { top : Int
-    , right : Int
-    , bottom : Int
-    , left : Int
+    { top : Bool
+    , right : Bool
+    , bottom : Bool
+    , left : Bool
     }
     -> Attribute msg
 borderWidthEach { top, right, bottom, left } =
     Border.widthEach
-        { top = top * borderSize
-        , right = right * borderSize
-        , bottom = bottom * borderSize
-        , left = left * borderSize
+        { top = boolToInt top * borderSize
+        , right = boolToInt right * borderSize
+        , bottom = boolToInt bottom * borderSize
+        , left = boolToInt left * borderSize
         }
+
+
+boolToInt : Bool -> Int
+boolToInt b =
+    if b then
+        1
+
+    else
+        0
 
 
 
@@ -120,9 +128,8 @@ borderWidthEach { top, right, bottom, left } =
 
 autoscaling : Float -> (Float -> Attribute msg) -> Attribute msg
 autoscaling k f =
-    Element.withAttribute .a11y <|
-        \a11y ->
-            f <| k * a11y.fontSize / defaultFontSize
+    Element.withAttribute .a11y <| \a11y ->
+    f <| k * a11y.fontSize / defaultFontSize
 
 
 autoscalingI : Float -> (Int -> Attribute msg) -> Attribute msg
