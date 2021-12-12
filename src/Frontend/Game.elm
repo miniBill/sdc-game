@@ -577,7 +577,7 @@ viewDialogLine historical personIsh text =
             , height fill
             , Theme.paddingXYWithCoeff 4 1
             , if historical then
-                Background.color (Element.rgba 0.6 0.6 0.6 0.6)
+                Theme.historicalBackground
 
               else
                 Theme.semitransparentBackground

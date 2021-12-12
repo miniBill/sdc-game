@@ -1,4 +1,4 @@
-module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
+module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, historicalBackground, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
@@ -38,10 +38,20 @@ semitransparentBackground : Attribute msg
 semitransparentBackground =
     Element.withAttribute .a11y <| \{ opaqueBackgrounds } ->
     if opaqueBackgrounds then
-        Background.color <| Element.rgba255 0xFF 0xFF 0xFF 1
+        Background.color <| Element.rgb255 0xFF 0xFF 0xFF
 
     else
         Background.color <| Element.rgba255 0xFF 0xFF 0xFF 0.7
+
+
+historicalBackground : Attribute msg
+historicalBackground =
+    Element.withAttribute .a11y <| \{ opaqueBackgrounds } ->
+    if opaqueBackgrounds then
+        Background.color <| Element.rgb 0.6 0.6 0.6
+
+    else
+        Background.color <| Element.rgba 0.6 0.6 0.6 0.6
 
 
 borderSize : number
