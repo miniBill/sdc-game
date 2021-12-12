@@ -2,13 +2,14 @@ module Frontend.Common exposing (..)
 
 import Element.WithContext as Element exposing (Element, centerX, centerY, el, text)
 import Element.WithContext.Font as Font
-import Frontend.Theme
+import Frontend.EditorTheme as EditorTheme
+import Types exposing (A11yOptions)
 
 
-loading : Element context msg
+loading : Element { a | a11y : A11yOptions } msg
 loading =
     el
-        [ Frontend.Theme.fontSizes.huge
+        [ EditorTheme.fontSizes.huge
         , centerX
         , centerY
         , Font.center

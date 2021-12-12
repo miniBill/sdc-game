@@ -5,7 +5,7 @@ import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Pixels
 import Quantity
-import Types exposing (Size)
+import Types exposing (A11yOptions, Size)
 
 
 
@@ -13,7 +13,7 @@ import Types exposing (Size)
 
 
 type alias Context =
-    { screenSize : Size }
+    { screenSize : Size, a11y : A11yOptions }
 
 
 type alias Element msg =
@@ -74,7 +74,7 @@ spacing =
 
 fontSize : Float -> Attribute msg
 fontSize k =
-    autoscalingI (32 * k) Font.size
+    Element.withAttribute .a11y <| \a11y -> autoscalingI (toFloat a11y.fontSize * k) Font.size
 
 
 borderWidth : Attribute msg

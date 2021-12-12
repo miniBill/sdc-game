@@ -1,12 +1,17 @@
 # Todo
 
 1. High contrast mode
-2. Cheat code for Orla demo - TECHQUEEN - makes travel free
+2. Big font
+3. Open Dyslexia
+4. Unlock everything
 
 # Maybe
 
+1. Consider: America
+
+# Not doing
+
 1. Various means of transportation have different tradeoffs
-2. Consider: America
 
 # Done
 
@@ -20,9 +25,6 @@
       2. Europe - Netherland
       3. Netherland - Nijmegen
       4. Nijmegen
-   2. ~~Could be collecting things~~
-   3. ~~Could be limited traveling options~~
-   4. ~~Could be narrative (you get kidnapped)~~
 
 # Possible locations
 

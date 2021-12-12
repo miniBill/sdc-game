@@ -14,8 +14,16 @@ import Set exposing (Set)
 
 type alias FrontendModel =
     { key : Key
+    , a11y : A11yOptions
     , screenSize : Maybe Size
     , page : Page
+    }
+
+
+type alias A11yOptions =
+    { unlockEverything : Bool
+    , openDyslexic : Bool
+    , fontSize : Int
     }
 
 
@@ -83,8 +91,8 @@ type GameMsg
     | GotRandomTicket Id
     | BackTo GameModel
     | Reset
-    | Cheat
-    | LSLoaded String
+    | A11y A11yOptions
+    | LocalStorageLoaded String
 
 
 type ToBackend

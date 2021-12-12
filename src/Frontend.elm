@@ -14,8 +14,8 @@ import File.Download
 import File.Select
 import Frontend.Common
 import Frontend.Editor
+import Frontend.EditorTheme as Theme exposing (Element)
 import Frontend.Game
-import Frontend.Theme exposing (Element)
 import Hex
 import Html
 import Html.Attributes
@@ -28,7 +28,7 @@ import PkgPorts
 import Random
 import Set
 import Task
-import Types exposing (EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
+import Types exposing (A11yOptions, EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -58,7 +58,7 @@ outerView : FrontendModel -> { title : String, body : List (Html.Html FrontendMs
 outerView model =
     let
         attrs =
-            [ Frontend.Theme.fontSizes.normal
+            [ Theme.fontSizes.normal
             , height fill
             , width fill
             , Element.htmlAttribute <| Html.Attributes.id "main"
@@ -66,28 +66,42 @@ outerView model =
     in
     { title = "SDC Game"
     , body =
-        [ css
+        [ css model.a11y
         , case model.screenSize of
             Nothing ->
-                Element.layout () attrs Frontend.Common.loading
+                Element.layout { a11y = model.a11y } attrs Frontend.Common.loading
 
             Just size ->
-                Element.layout { screenSize = size } attrs (view model)
+                Element.layout { screenSize = size, a11y = model.a11y } attrs (view model)
         ]
     }
 
 
-css : Html.Html FrontendMsg
-css =
+css : A11yOptions -> Html.Html FrontendMsg
+css { fontSize, openDyslexic } =
     let
-        content =
+        contentCommon =
             """
             select {
-                font-size: """ ++ String.fromInt Frontend.Theme.fontSize ++ """px;
-            }
-            """
+                font-size: """ ++ String.fromInt fontSize ++ """px;
+            }"""
+
+        contentA11y =
+            if openDyslexic then
+                """
+                @font-face {
+                    font-family: OpenDyslexic;
+                    src: url(art/OpenDyslexic3-Regular.ttf);
+                }
+
+                body {
+                    font-family: OpenDyslexic serif;
+                }"""
+
+            else
+                ""
     in
-    Html.node "style" [] [ Html.text content ]
+    Html.node "style" [] [ Html.text (contentCommon ++ contentA11y) ]
 
 
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
@@ -224,6 +238,11 @@ init url key =
     ( { key = key
       , page = urlToPage url
       , screenSize = Nothing
+      , a11y =
+            { fontSize = 40
+            , openDyslexic = False
+            , unlockEverything = False
+            }
       }
     , getSizeCmd
     )
@@ -244,7 +263,7 @@ subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions _ =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> GotResized)
-        , PkgPorts.localstorage_loaded (GameMsg << LSLoaded)
+        , PkgPorts.localstorage_loaded (GameMsg << LocalStorageLoaded)
         ]
 
 
@@ -301,10 +320,13 @@ update msg model =
 
         ( GameMsg gameMsg, Game gameModel ) ->
             let
-                ( gameModel_, gameCmd ) =
+                ( gameModel_, gameCmd, a11y ) =
                     updateGame gameMsg gameModel
             in
-            ( { model | page = Game gameModel_ }
+            ( { model
+                | page = Game gameModel_
+                , a11y = Maybe.withDefault model.a11y a11y
+              }
             , Cmd.batch [ getSizeCmd, Cmd.map GameMsg gameCmd ]
             )
 
@@ -370,130 +392,140 @@ updateEditor msg data model =
             )
 
 
-updateGame : GameMsg -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg )
+updateGame : GameMsg -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg, Maybe A11yOptions )
 updateGame msg outerModel =
     case outerModel of
         LoadingData ->
             -- Ignore messages received while loading
             -- TODO: queue them instead?
-            ( outerModel, Cmd.none )
+            ( outerModel, Cmd.none, Nothing )
 
         DataEmpty ->
-            ( outerModel, Cmd.none )
+            ( outerModel, Cmd.none, Nothing )
 
         LoadedData data sharedModel model ->
             let
-                ( sharedModel_, model_, cmd ) =
+                default =
+                    { sharedModel = sharedModel
+                    , model = model
+                    , cmd = Cmd.none
+                    , a11y = Nothing
+                    }
+
+                result =
                     case msg of
                         ViewPerson id ->
-                            ( { sharedModel | currentPerson = id }, ViewingPerson, Cmd.none )
+                            { default
+                                | sharedModel = { sharedModel | currentPerson = id }
+                                , model = ViewingPerson
+                            }
 
                         ViewMenu { background } ->
-                            ( sharedModel
-                            , ViewingMenu
-                                { previous = model
-                                , background = background
-                                }
-                            , Cmd.none
-                            )
+                            { default
+                                | model =
+                                    ViewingMenu
+                                        { previous = model
+                                        , background = background
+                                        }
+                            }
 
                         ViewMap ->
-                            ( { sharedModel
-                                | currentPerson =
-                                    if String.isEmpty sharedModel.currentPerson then
-                                        findOrla data
-                                            |> Maybe.map Tuple.first
-                                            |> Maybe.withDefault ""
+                            { default
+                                | sharedModel =
+                                    { sharedModel
+                                        | currentPerson =
+                                            if String.isEmpty sharedModel.currentPerson then
+                                                findOrla data
+                                                    |> Maybe.map Tuple.first
+                                                    |> Maybe.withDefault ""
 
-                                    else
-                                        sharedModel.currentPerson
-                              }
-                            , ViewingMap {}
-                            , Cmd.none
-                            )
+                                            else
+                                                sharedModel.currentPerson
+                                    }
+                                , model = ViewingMap {}
+                            }
 
                         ViewTalking dialog chatHistory ->
-                            ( sharedModel
-                            , ViewingTalking
-                                { chatHistory = chatHistory
-                                , currentDialog = dialog
-                                }
-                            , Cmd.none
-                            )
+                            { default
+                                | model =
+                                    ViewingTalking
+                                        { chatHistory = chatHistory
+                                        , currentDialog = dialog
+                                        }
+                            }
 
                         PickQuiz ->
                             case Dict.get sharedModel.currentPerson data of
                                 Nothing ->
-                                    ( sharedModel, model, Cmd.none )
+                                    default
 
                                 Just person ->
-                                    ( sharedModel
-                                    , model
-                                    , case person.quizzes of
+                                    case person.quizzes of
                                         [] ->
-                                            Cmd.none
+                                            default
 
                                         h :: t ->
-                                            Random.uniform h t
-                                                |> Random.generate ViewQuiz
-                                    )
+                                            { default
+                                                | cmd =
+                                                    Random.uniform h t
+                                                        |> Random.generate ViewQuiz
+                                            }
 
                         ViewQuiz quiz ->
-                            ( sharedModel, Quizzing quiz, Cmd.none )
+                            { default | model = Quizzing quiz }
 
                         GiveTicketAndViewMap ->
-                            ( { sharedModel
-                                | currentPerson =
-                                    if String.isEmpty sharedModel.currentPerson then
-                                        findOrla data
-                                            |> Maybe.map Tuple.first
-                                            |> Maybe.withDefault ""
+                            { default
+                                | sharedModel =
+                                    { sharedModel
+                                        | currentPerson =
+                                            if String.isEmpty sharedModel.currentPerson then
+                                                findOrla data
+                                                    |> Maybe.map Tuple.first
+                                                    |> Maybe.withDefault ""
 
-                                    else
-                                        sharedModel.currentPerson
-                              }
-                            , ViewingMap {}
-                            , pickNewTicket data sharedModel
-                            )
+                                            else
+                                                sharedModel.currentPerson
+                                    }
+                                , model = ViewingMap {}
+                                , cmd = pickNewTicket data sharedModel
+                            }
 
                         GotRandomTicket id ->
-                            ( { sharedModel | tickets = Set.insert id sharedModel.tickets }, model, Cmd.none )
+                            { default
+                                | sharedModel =
+                                    { sharedModel | tickets = Set.insert id sharedModel.tickets }
+                            }
 
                         BackTo previous ->
-                            ( sharedModel, previous, Cmd.none )
+                            { default | model = previous }
 
                         Reset ->
                             case gotGameData data of
                                 LoadedData _ s m ->
-                                    ( s, m, Cmd.none )
+                                    { default | sharedModel = s, model = m }
 
                                 _ ->
-                                    ( sharedModel, model, Cmd.none )
+                                    default
 
-                        LSLoaded localStorage ->
+                        LocalStorageLoaded localStorage ->
                             localStorage
                                 |> Codec.decodeString localStorageCodec
                                 |> Result.withDefault ( sharedModel, model )
-                                |> (\( s, m ) -> ( s, m, Cmd.none ))
+                                |> (\( s, m ) -> { default | sharedModel = s, model = m })
 
-                        Cheat ->
-                            ( { sharedModel
-                                | tickets =
-                                    Set.fromList <|
-                                        Dict.keys data
-                              }
-                            , model
-                            , Cmd.none
-                            )
+                        A11y a11y ->
+                            { default | a11y = Just a11y }
             in
-            ( LoadedData data sharedModel_ model_
+            ( LoadedData data result.sharedModel result.model
             , Cmd.batch
-                [ cmd
+                [ result.cmd
                 , PkgPorts.localstorage_store <|
                     Codec.encodeToString 0
                         localStorageCodec
-                        ( sharedModel_, model_ )
+                        ( result.sharedModel, result.model )
                 ]
+            , result.a11y
             )
 
 

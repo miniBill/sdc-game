@@ -87,11 +87,6 @@ viewMenu { previous, background } =
                     Debug.todo
               in
               btn Reset "RESET"
-            , let
-                _ =
-                    Debug.todo
-              in
-              btn Cheat "Cheat"
             , menuRow (BackTo previous) "Back"
             ]
 

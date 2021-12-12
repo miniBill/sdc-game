@@ -1,4 +1,4 @@
-module Frontend.Theme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSize, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
+module Frontend.EditorTheme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
@@ -8,11 +8,13 @@ import Element.WithContext.Input as Input
 import Html
 import Html.Attributes
 import Html.Events
-import Types exposing (Size)
+import Types exposing (A11yOptions, Size)
 
 
 type alias Context =
-    { screenSize : Size }
+    { screenSize : Size
+    , a11y : A11yOptions
+    }
 
 
 type alias Element msg =
@@ -88,26 +90,24 @@ getColor index =
             Element.rgb255 0xF0 0xDE 0xFD
 
 
-fontSize : number
-fontSize =
-    20
-
-
 fontSizes :
-    { huge : Element.Attr context decorative msg
-    , bigger : Element.Attr context decorative msg
-    , big : Element.Attr context decorative msg
-    , normal : Element.Attr context decorative msg
-    , small : Element.Attr context decorative msg
-    , smaller : Element.Attr context decorative msg
-    , tiny : Element.Attr context decorative msg
+    { huge : Element.Attribute { a | a11y : A11yOptions } msg
+    , bigger : Element.Attribute { a | a11y : A11yOptions } msg
+    , big : Element.Attribute { a | a11y : A11yOptions } msg
+    , normal : Element.Attribute { a | a11y : A11yOptions } msg
+    , small : Element.Attribute { a | a11y : A11yOptions } msg
+    , smaller : Element.Attribute { a | a11y : A11yOptions } msg
+    , tiny : Element.Attribute { a | a11y : A11yOptions } msg
     }
 fontSizes =
     let
         size n =
-            Font.size <|
-                round <|
-                    Element.modular fontSize 1.25 n
+            Element.withAttribute .a11y
+                (\a11y ->
+                    Font.size <|
+                        round <|
+                            Element.modular (0.5 * toFloat a11y.fontSize) 1.25 n
+                )
     in
     { huge = size 4
     , bigger = size 3
