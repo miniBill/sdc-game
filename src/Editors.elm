@@ -1,32 +1,20 @@
-module Editors exposing (dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault)
+module Editors exposing (personEditor, personDefault)
 
 {-|
 
-@docs dataEditor, idEditor, personEditor, cityEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, consequenceEditor, itemEditor, transportKindEditor, conditionEditor, itemNameEditor, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault, consequenceDefault, itemDefault, transportKindDefault, conditionDefault, itemNameDefault
+@docs personEditor, personDefault
 
 -}
 
-import Dict
 import Element.WithContext as Element
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Input as Input
-import Frontend.EditorTheme exposing (Element)
+import Frontend.EditorTheme as Theme exposing (Element)
 import Html.Attributes
 import List.Extra
 import Model
-import Set
 import Tuple
-
-
-dataEditor : Int -> Model.Data -> ( Element Model.Data, Bool )
-dataEditor level value =
-    dictEditor idEditor idDefault personEditor personDefault level value
-
-
-idEditor : Int -> Model.Id -> ( Element Model.Id, Bool )
-idEditor level value =
-    stringEditor level value
 
 
 personEditor : Int -> Model.Person -> ( Element Model.Person, Bool )
@@ -112,14 +100,14 @@ personEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -146,13 +134,13 @@ personEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -237,14 +225,14 @@ cityEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -271,13 +259,13 @@ cityEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -333,14 +321,14 @@ coordinatesEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -367,13 +355,13 @@ coordinatesEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -385,7 +373,7 @@ nationEditor level value =
     ( let
         variantRow =
             Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Model.Austria (Element.text "Austria")
@@ -402,13 +390,13 @@ nationEditor level value =
                 }
       in
       Element.el
-        [ Background.color (Frontend.EditorTheme.getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         variantRow
     , Basics.False
@@ -469,14 +457,14 @@ dialogEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -503,13 +491,13 @@ dialogEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -564,14 +552,14 @@ choiceEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -598,13 +586,13 @@ choiceEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -636,7 +624,7 @@ nextEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -681,16 +669,16 @@ nextEditor level value =
                     []
       in
       Element.column
-        [ Background.color (Frontend.EditorTheme.getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Frontend.EditorTheme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -779,14 +767,14 @@ quizEditor level value =
                     |> List.map
                         (\pair ->
                             Element.row
-                                [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                                [ Theme.spacing, Element.width Element.fill ]
                                 [ Tuple.first pair, Tuple.second pair ]
                         )
-                    |> Element.row [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
 
             else
                 Element.table
-                    [ Frontend.EditorTheme.spacing, Element.width Element.fill ]
+                    [ Theme.spacing, Element.width Element.fill ]
                     { columns =
                         [ { header = Element.none
                           , width = Element.shrink
@@ -813,13 +801,13 @@ quizEditor level value =
     in
     ( Element.column
         [ Element.width Element.fill
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         (simplesTable :: complexes)
     , Basics.False
@@ -858,7 +846,7 @@ consequenceEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -922,16 +910,16 @@ consequenceEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Frontend.EditorTheme.getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Frontend.EditorTheme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -965,7 +953,7 @@ itemEditor level value =
 
         variantRow =
             Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option
@@ -1045,7 +1033,7 @@ itemEditor level value =
                                             |> List.map
                                                 (\pair ->
                                                     Element.row
-                                                        [ Frontend.EditorTheme.spacing
+                                                        [ Theme.spacing
                                                         , Element.width
                                                             Element.fill
                                                         ]
@@ -1054,13 +1042,13 @@ itemEditor level value =
                                                         ]
                                                 )
                                             |> Element.row
-                                                [ Frontend.EditorTheme.spacing
+                                                [ Theme.spacing
                                                 , Element.width Element.fill
                                                 ]
 
                                     else
                                         Element.table
-                                            [ Frontend.EditorTheme.spacing
+                                            [ Theme.spacing
                                             , Element.width Element.fill
                                             ]
                                             { columns =
@@ -1093,13 +1081,13 @@ itemEditor level value =
                              in
                              ( Element.column
                                 [ Element.width Element.fill
-                                , Background.color (Frontend.EditorTheme.getColor (level + 1))
+                                , Background.color (Theme.getColor (level + 1))
                                 , Element.width Element.fill
-                                , Frontend.EditorTheme.spacing
-                                , Frontend.EditorTheme.padding
+                                , Theme.spacing
+                                , Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
-                                , Border.rounded Frontend.EditorTheme.rythm
+                                , Theme.borderRounded
                                 ]
                                 (simplesTable :: complexes)
                              , Basics.False
@@ -1205,7 +1193,7 @@ itemEditor level value =
                                             |> List.map
                                                 (\pair ->
                                                     Element.row
-                                                        [ Frontend.EditorTheme.spacing
+                                                        [ Theme.spacing
                                                         , Element.width
                                                             Element.fill
                                                         ]
@@ -1214,13 +1202,13 @@ itemEditor level value =
                                                         ]
                                                 )
                                             |> Element.row
-                                                [ Frontend.EditorTheme.spacing
+                                                [ Theme.spacing
                                                 , Element.width Element.fill
                                                 ]
 
                                     else
                                         Element.table
-                                            [ Frontend.EditorTheme.spacing
+                                            [ Theme.spacing
                                             , Element.width Element.fill
                                             ]
                                             { columns =
@@ -1253,13 +1241,13 @@ itemEditor level value =
                              in
                              ( Element.column
                                 [ Element.width Element.fill
-                                , Background.color (Frontend.EditorTheme.getColor (level + 1))
+                                , Background.color (Theme.getColor (level + 1))
                                 , Element.width Element.fill
-                                , Frontend.EditorTheme.spacing
-                                , Frontend.EditorTheme.padding
+                                , Theme.spacing
+                                , Theme.padding
                                 , Element.alignTop
                                 , Border.width 1
-                                , Border.rounded Frontend.EditorTheme.rythm
+                                , Theme.borderRounded
                                 ]
                                 (simplesTable :: complexes)
                              , Basics.False
@@ -1269,16 +1257,16 @@ itemEditor level value =
                     ]
       in
       Element.column
-        [ Background.color (Frontend.EditorTheme.getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         [ variantRow
-        , Element.row [ Element.width Element.fill, Frontend.EditorTheme.spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
         ]
     , Basics.False
     )
@@ -1289,7 +1277,7 @@ transportKindEditor level value =
     ( let
         variantRow =
             Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
+                [ Theme.spacing ]
                 { onChange = Basics.identity
                 , options =
                     [ Input.option Model.Plane (Element.text "Plane")
@@ -1305,379 +1293,17 @@ transportKindEditor level value =
                 }
       in
       Element.el
-        [ Background.color (Frontend.EditorTheme.getColor level)
+        [ Background.color (Theme.getColor level)
         , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
+        , Theme.spacing
+        , Theme.padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
+        , Theme.borderRounded
         ]
         variantRow
     , Basics.False
     )
-
-
-conditionEditor : Int -> Model.Condition -> ( Element Model.Condition, Bool )
-conditionEditor level value =
-    ( let
-        { conditionExtracted, itemNameExtracted, listConditionExtracted, stringExtracted } =
-            case value of
-                Model.ConditionNot condition ->
-                    { extractedDefault | conditionExtracted = condition }
-
-                Model.ConditionAnd listCondition ->
-                    { extractedDefault | listConditionExtracted = listCondition }
-
-                Model.ConditionOr listCondition ->
-                    { extractedDefault | listConditionExtracted = listCondition }
-
-                Model.HasItem itemName ->
-                    { extractedDefault | itemNameExtracted = itemName }
-
-                Model.LocalFlag string ->
-                    { extractedDefault | stringExtracted = string }
-
-        extractedDefault =
-            { conditionExtracted = conditionDefault
-            , itemNameExtracted = itemNameDefault
-            , listConditionExtracted = []
-            , stringExtracted = ""
-            }
-
-        variantRow =
-            Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
-                { onChange = Basics.identity
-                , options =
-                    [ Input.option
-                        (Model.ConditionNot conditionExtracted)
-                        (Element.text "Not")
-                    , Input.option
-                        (Model.ConditionAnd listConditionExtracted)
-                        (Element.text "And")
-                    , Input.option
-                        (Model.ConditionOr listConditionExtracted)
-                        (Element.text "Or")
-                    , Input.option
-                        (Model.HasItem itemNameExtracted)
-                        (Element.text "Has item")
-                    , Input.option
-                        (Model.LocalFlag stringExtracted)
-                        (Element.text "Local flag")
-                    ]
-                , selected = Maybe.Just value
-                , label = Input.labelHidden ""
-                }
-
-        inputsRow =
-            case value of
-                Model.ConditionNot condition ->
-                    [ Element.map
-                        Model.ConditionNot
-                        (Tuple.first (conditionEditor (level + 1) condition))
-                    ]
-
-                Model.ConditionAnd listCondition ->
-                    [ Element.map
-                        Model.ConditionAnd
-                        (Tuple.first
-                            (listEditor
-                                "Condition"
-                                conditionEditor
-                                conditionDefault
-                                (level + 1)
-                                listCondition
-                            )
-                        )
-                    ]
-
-                Model.ConditionOr listCondition ->
-                    [ Element.map
-                        Model.ConditionOr
-                        (Tuple.first
-                            (listEditor
-                                "Condition"
-                                conditionEditor
-                                conditionDefault
-                                (level + 1)
-                                listCondition
-                            )
-                        )
-                    ]
-
-                Model.HasItem itemName ->
-                    [ Element.map
-                        Model.HasItem
-                        (Tuple.first (itemNameEditor (level + 1) itemName))
-                    ]
-
-                Model.LocalFlag string ->
-                    [ Element.map
-                        Model.LocalFlag
-                        (Tuple.first (stringEditor (level + 1) string))
-                    ]
-      in
-      Element.column
-        [ Background.color (Frontend.EditorTheme.getColor level)
-        , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
-        ]
-        [ variantRow
-        , Element.row [ Element.width Element.fill, Frontend.EditorTheme.spacing ] inputsRow
-        ]
-    , Basics.False
-    )
-
-
-itemNameEditor : Int -> Model.ItemName -> ( Element Model.ItemName, Bool )
-itemNameEditor level value =
-    ( let
-        { fromCityNametoCityNamekindTransportKindExtracted, stringExtracted } =
-            case value of
-                Model.GenericItemName string ->
-                    { extractedDefault | stringExtracted = string }
-
-                Model.TicketName fromCityNametoCityNamekindTransportKind ->
-                    { extractedDefault
-                        | fromCityNametoCityNamekindTransportKindExtracted =
-                            fromCityNametoCityNamekindTransportKind
-                    }
-
-        extractedDefault =
-            { fromCityNametoCityNamekindTransportKindExtracted =
-                { from = cityNameDefault
-                , to = cityNameDefault
-                , kind = transportKindDefault
-                }
-            , stringExtracted = ""
-            }
-
-        variantRow =
-            Input.radioRow
-                [ Frontend.EditorTheme.spacing ]
-                { onChange = Basics.identity
-                , options =
-                    [ Input.option
-                        (Model.GenericItemName stringExtracted)
-                        (Element.text "Generic item name")
-                    , Input.option
-                        (Model.TicketName
-                            fromCityNametoCityNamekindTransportKindExtracted
-                        )
-                        (Element.text "Ticket name")
-                    ]
-                , selected = Maybe.Just value
-                , label = Input.labelHidden ""
-                }
-
-        inputsRow =
-            case value of
-                Model.GenericItemName string ->
-                    [ Element.map
-                        Model.GenericItemName
-                        (Tuple.first (stringEditor (level + 1) string))
-                    ]
-
-                Model.TicketName fromCityNametoCityNamekindTransportKind ->
-                    [ Element.map
-                        Model.TicketName
-                        (Tuple.first
-                            (let
-                                raw =
-                                    [ let
-                                        ( editor, simple ) =
-                                            cityNameEditor
-                                                (level + 1 + 1)
-                                                fromCityNametoCityNamekindTransportKind.from
-                                      in
-                                      ( "From"
-                                      , Element.map
-                                            (\lambdaArg0 ->
-                                                { fromCityNametoCityNamekindTransportKind
-                                                    | from = lambdaArg0
-                                                }
-                                            )
-                                            editor
-                                      , simple
-                                      )
-                                    , let
-                                        ( editor, simple ) =
-                                            cityNameEditor
-                                                (level + 1 + 1)
-                                                fromCityNametoCityNamekindTransportKind.to
-                                      in
-                                      ( "To"
-                                      , Element.map
-                                            (\lambdaArg0 ->
-                                                { fromCityNametoCityNamekindTransportKind
-                                                    | to = lambdaArg0
-                                                }
-                                            )
-                                            editor
-                                      , simple
-                                      )
-                                    , let
-                                        ( editor, simple ) =
-                                            transportKindEditor
-                                                (level + 1 + 1)
-                                                fromCityNametoCityNamekindTransportKind.kind
-                                      in
-                                      ( "Kind"
-                                      , Element.map
-                                            (\lambdaArg0 ->
-                                                { fromCityNametoCityNamekindTransportKind
-                                                    | kind = lambdaArg0
-                                                }
-                                            )
-                                            editor
-                                      , simple
-                                      )
-                                    ]
-
-                                simples =
-                                    raw
-                                        |> List.filterMap
-                                            (\( fieldName, fieldEditor, simple ) ->
-                                                if simple then
-                                                    Maybe.Just
-                                                        ( Element.el
-                                                            [ Element.centerY ]
-                                                            (Element.text fieldName)
-                                                        , fieldEditor
-                                                        )
-
-                                                else
-                                                    Maybe.Nothing
-                                            )
-
-                                simplesTable =
-                                    if List.length simples <= 2 then
-                                        simples
-                                            |> List.map
-                                                (\pair ->
-                                                    Element.row
-                                                        [ Frontend.EditorTheme.spacing
-                                                        , Element.width
-                                                            Element.fill
-                                                        ]
-                                                        [ Tuple.first pair
-                                                        , Tuple.second pair
-                                                        ]
-                                                )
-                                            |> Element.row
-                                                [ Frontend.EditorTheme.spacing
-                                                , Element.width Element.fill
-                                                ]
-
-                                    else
-                                        Element.table
-                                            [ Frontend.EditorTheme.spacing
-                                            , Element.width Element.fill
-                                            ]
-                                            { columns =
-                                                [ { header = Element.none
-                                                  , width = Element.shrink
-                                                  , view =
-                                                        \pair -> Tuple.first pair
-                                                  }
-                                                , { header = Element.none
-                                                  , width = Element.fill
-                                                  , view =
-                                                        \pair -> Tuple.second pair
-                                                  }
-                                                ]
-                                            , data = simples
-                                            }
-
-                                complexes =
-                                    raw
-                                        |> List.concatMap
-                                            (\( fieldName, fieldEditor, simple ) ->
-                                                if simple then
-                                                    []
-
-                                                else
-                                                    [ Element.text fieldName
-                                                    , fieldEditor
-                                                    ]
-                                            )
-                             in
-                             ( Element.column
-                                [ Element.width Element.fill
-                                , Background.color (Frontend.EditorTheme.getColor (level + 1))
-                                , Element.width Element.fill
-                                , Frontend.EditorTheme.spacing
-                                , Frontend.EditorTheme.padding
-                                , Element.alignTop
-                                , Border.width 1
-                                , Border.rounded Frontend.EditorTheme.rythm
-                                ]
-                                (simplesTable :: complexes)
-                             , Basics.False
-                             )
-                            )
-                        )
-                    ]
-      in
-      Element.column
-        [ Background.color (Frontend.EditorTheme.getColor level)
-        , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
-        ]
-        [ variantRow
-        , Element.row [ Element.width Element.fill, Frontend.EditorTheme.spacing ] inputsRow
-        ]
-    , Basics.False
-    )
-
-
-sharedGameModelDefault : Model.SharedGameModel
-sharedGameModelDefault =
-    { currentPerson = idDefault, tickets = Set.empty }
-
-
-gameModelDefault : Model.GameModel
-gameModelDefault =
-    Model.ViewingPerson
-
-
-mapModelDefault : Model.MapModel
-mapModelDefault =
-    {}
-
-
-talkingModelDefault : Model.TalkingModel
-talkingModelDefault =
-    { chatHistory = chatHistoryDefault, currentDialog = dialogDefault }
-
-
-chatHistoryDefault : Model.ChatHistory
-chatHistoryDefault =
-    []
-
-
-menuModelDefault : Model.MenuModel
-menuModelDefault =
-    { previous = gameModelDefault, background = "" }
-
-
-dataDefault : Model.Data
-dataDefault =
-    Dict.empty
-
-
-idDefault : Model.Id
-idDefault =
-    ""
 
 
 personDefault : Model.Person
@@ -1755,16 +1381,6 @@ transportKindDefault =
     Model.Plane
 
 
-conditionDefault : Model.Condition
-conditionDefault =
-    Model.ConditionAnd []
-
-
-itemNameDefault : Model.ItemName
-itemNameDefault =
-    Model.GenericItemName ""
-
-
 intEditor : Int -> Int -> ( Element Basics.Int, Bool )
 intEditor level value =
     ( Element.map
@@ -1772,7 +1388,7 @@ intEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (Frontend.EditorTheme.getColor level)
+            , Background.color (Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromInt value
@@ -1791,7 +1407,7 @@ floatEditor level value =
         (Input.text
             [ Element.width (Element.minimum 100 Element.fill)
             , Element.alignTop
-            , Background.color (Frontend.EditorTheme.getColor level)
+            , Background.color (Theme.getColor level)
             ]
             { onChange = Basics.identity
             , text = String.fromFloat value
@@ -1826,13 +1442,13 @@ tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
              else
                 Element.column
             )
-                [ Background.color (Frontend.EditorTheme.getColor level)
+                [ Background.color (Theme.getColor level)
                 , Element.width Element.fill
-                , Frontend.EditorTheme.spacing
-                , Frontend.EditorTheme.padding
+                , Theme.spacing
+                , Theme.padding
                 , Element.alignTop
                 , Border.width 1
-                , Border.rounded Frontend.EditorTheme.rythm
+                , Theme.borderRounded
                 ]
                 [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
                 , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
@@ -1846,7 +1462,7 @@ stringEditor level value =
     ( Input.text
         [ Element.width (Element.minimum 100 Element.fill)
         , Element.alignTop
-        , Background.color (Frontend.EditorTheme.getColor level)
+        , Background.color (Theme.getColor level)
         ]
         { onChange = Basics.identity
         , text = value
@@ -1860,7 +1476,7 @@ stringEditor level value =
 boolEditor : Int -> Bool -> ( Element Basics.Bool, Bool )
 boolEditor _ value =
     ( Input.radioRow
-        [ Frontend.EditorTheme.spacing, Element.alignTop ]
+        [ Theme.spacing, Element.alignTop ]
         { onChange = Basics.identity
         , options =
             [ Input.option Basics.True (Element.text "True")
@@ -1898,24 +1514,24 @@ listEditor typeName valueEditor valueDefault level value =
                             [ Element.el
                                 [ Element.paddingEach
                                     { top = 0
-                                    , right = Frontend.EditorTheme.rythm
+                                    , right = Theme.rythm
                                     , bottom = 0
                                     , left = 0
                                     }
                                 , Element.alignRight
                                 ]
-                                (Frontend.EditorTheme.tabButton
-                                    [ Frontend.EditorTheme.spacing
-                                    , Frontend.EditorTheme.padding
+                                (Theme.tabButton
+                                    [ Theme.spacing
+                                    , Theme.padding
                                     , Element.alignTop
                                     , Border.width 1
-                                    , Border.rounded Frontend.EditorTheme.rythm
+                                    , Theme.borderRounded
                                     , Background.gradient
                                         { angle = 0
                                         , steps =
-                                            [ Frontend.EditorTheme.getColor (level + 1)
-                                            , Frontend.EditorTheme.colors.delete
-                                            , Frontend.EditorTheme.colors.delete
+                                            [ Theme.getColor (level + 1)
+                                            , Theme.colors.delete
+                                            , Theme.colors.delete
                                             ]
                                         }
                                     , Border.widthEach
@@ -1925,8 +1541,8 @@ listEditor typeName valueEditor valueDefault level value =
                                         , top = 1
                                         }
                                     , Border.roundEach
-                                        { topLeft = Frontend.EditorTheme.rythm
-                                        , topRight = Frontend.EditorTheme.rythm
+                                        { topLeft = Theme.rythm
+                                        , topRight = Theme.rythm
                                         , bottomLeft = 0
                                         , bottomRight = 0
                                         }
@@ -1948,41 +1564,41 @@ listEditor typeName valueEditor valueDefault level value =
     ( Element.column
         [ Element.width Element.fill ]
         [ Element.column
-            [ Background.color (Frontend.EditorTheme.getColor level)
+            [ Background.color (Theme.getColor level)
             , Element.width Element.fill
-            , Frontend.EditorTheme.spacing
-            , Frontend.EditorTheme.padding
+            , Theme.spacing
+            , Theme.padding
             , Element.alignTop
             , Border.width 1
-            , Border.rounded Frontend.EditorTheme.rythm
+            , Theme.borderRounded
             ]
             rows
         , Element.el
             [ Element.paddingEach
-                { top = 0, right = Frontend.EditorTheme.rythm, bottom = 0, left = Frontend.EditorTheme.rythm }
+                { top = 0, right = Theme.rythm, bottom = 0, left = Theme.rythm }
             , Element.alignRight
             ]
-            (Frontend.EditorTheme.button
-                [ Frontend.EditorTheme.spacing
-                , Frontend.EditorTheme.padding
+            (Theme.button
+                [ Theme.spacing
+                , Theme.padding
                 , Element.alignTop
                 , Border.width 1
-                , Border.rounded Frontend.EditorTheme.rythm
+                , Theme.borderRounded
                 , Background.gradient
                     { angle = 0
                     , steps =
-                        [ Frontend.EditorTheme.colors.addNew
-                        , Frontend.EditorTheme.colors.addNew
-                        , Frontend.EditorTheme.colors.addNew
-                        , Frontend.EditorTheme.getColor level
+                        [ Theme.colors.addNew
+                        , Theme.colors.addNew
+                        , Theme.colors.addNew
+                        , Theme.getColor level
                         ]
                     }
                 , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
                 , Border.roundEach
                     { topLeft = 0
                     , topRight = 0
-                    , bottomLeft = Frontend.EditorTheme.rythm
-                    , bottomRight = Frontend.EditorTheme.rythm
+                    , bottomLeft = Theme.rythm
+                    , bottomRight = Theme.rythm
                     }
                 , Element.moveUp 1
                 ]
@@ -1991,71 +1607,5 @@ listEditor typeName valueEditor valueDefault level value =
                 }
             )
         ]
-    , Basics.False
-    )
-
-
-dictEditor :
-    (Int -> comparable -> ( Element comparable, Bool ))
-    -> comparable
-    -> (Int -> v -> ( Element v, Bool ))
-    -> v
-    -> Int
-    -> Dict.Dict comparable v
-    -> ( Element (Dict.Dict comparable v), Bool )
-dictEditor keyEditor keyDefault valueEditor valueDefault level value =
-    let
-        keysColumn =
-            { header = Element.none
-            , width = Element.shrink
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if
-                                lambdaArg0
-                                    == keyDefault
-                                    && memberValue
-                                    == valueDefault
-                            then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert
-                                    lambdaArg0
-                                    memberValue
-                                    (Dict.remove key value)
-                        )
-                        (Tuple.first (keyEditor (level + 1) key))
-            }
-
-        valuesColumn =
-            { header = Element.none
-            , width = Element.fill
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if key == keyDefault && lambdaArg0 == valueDefault then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert key lambdaArg0 value
-                        )
-                        (Tuple.first (valueEditor (level + 1) memberValue))
-            }
-    in
-    ( Element.table
-        [ Background.color (Frontend.EditorTheme.getColor level)
-        , Element.width Element.fill
-        , Frontend.EditorTheme.spacing
-        , Frontend.EditorTheme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded Frontend.EditorTheme.rythm
-        ]
-        { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
-        , columns = [ keysColumn, valuesColumn ]
-        }
     , Basics.False
     )

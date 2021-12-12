@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, height, image, paragraph, px, row, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, fillPortion, height, image, paragraph, px, row, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -77,78 +77,101 @@ viewMenu { previous, background } =
                     ++ attrs
                 )
 
-        btn attrs msg label =
+        segment attrs kind active label onPress =
             Input.button
-                [ width fill ]
-                { onPress = Just msg
-                , label = container attrs (text label)
-                }
-
-        segment kind active label onPress =
-            Input.button
-                [ Theme.padding
-                , width fill
-                , case kind of
+                ([ Theme.padding
+                 , width fill
+                 , Font.center
+                 , case kind of
                     Left ->
-                        { topLeft = Theme.rythm
+                        { topLeft = 1
                         , topRight = 0
-                        , bottomLeft = Theme.rythm
+                        , bottomLeft = 1
                         , bottomRight = 0
                         }
-                            |> Theme.borderRoundedEach
+                            |> Theme.borderRoundedEachWithCoeff
 
                     Mid ->
                         Border.rounded 0
 
+                    Only ->
+                        Theme.borderRounded
+
                     Right ->
                         { topLeft = 0
-                        , topRight = Theme.rythm
+                        , topRight = 1
                         , bottomLeft = 0
-                        , bottomRight = Theme.rythm
+                        , bottomRight = 1
                         }
-                            |> Theme.borderRoundedEach
-                , case kind of
+                            |> Theme.borderRoundedEachWithCoeff
+                 , case kind of
                     Left ->
+                        Theme.borderWidth
+
+                    Only ->
                         Theme.borderWidth
 
                     _ ->
                         Theme.borderWidthEach { top = 1, bottom = 1, right = 1, left = 0 }
-                , Background.color <|
+                 , Background.color <|
                     if active then
                         Theme.colors.selectedTab
 
                     else
                         Theme.colors.semitransparent
-                ]
+                 ]
+                    ++ attrs
+                )
                 { label = text label
                 , onPress = Just onPress
                 }
+
+        menuRow label segments =
+            [ el [ width <| fillPortion 3 ] <| text label
+            , Element.row [ width <| fillPortion 2 ] segments
+            ]
+                |> row [ width fill, Theme.spacing ]
+                |> container []
 
         toggle label getter toMsg =
             let
                 value =
                     getter a11y
             in
-            [ text <| label ++ " "
-            , segment Left (not value) "No" (toMsg False)
-            , segment Right value "Yes" (toMsg True)
-            ]
-                |> Element.row [ width fill ]
-                |> container []
-                |> Element.map A11y
+            menuRow label
+                [ segment [] Left (not value) "No" (A11y <| toMsg False)
+                , segment [] Right value "Yes" (A11y <| toMsg True)
+                ]
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
-            [ let
-                _ =
-                    Debug.todo
-              in
-              btn [ Background.color <| Element.rgb 1 0.7 0.7 ] Reset "RESET"
+            [ menuRow "Reset save" [ segment [ Background.color <| Element.rgb 1 0.7 0.7 ] Only False "RESET" Reset ]
             , toggle
                 "Allow free travel"
                 .unlockEverything
                 (\newValue -> { a11y | unlockEverything = newValue })
-            , menuRow (BackTo previous) "Back"
+            , toggle
+                "Use Open Dyslexic"
+                .openDyslexic
+                (\newValue -> { a11y | openDyslexic = newValue })
+            , menuRow "Font size"
+                [ segment []
+                    Left
+                    (a11y.fontSize < Theme.defaultFontSize)
+                    "-"
+                    (A11y { a11y | fontSize = toFloat <| round <| a11y.fontSize * 10 / 11 })
+                , segment []
+                    Mid
+                    (a11y.fontSize == Theme.defaultFontSize)
+                    (String.fromInt Theme.defaultFontSize)
+                    (A11y { a11y | fontSize = toFloat <| round <| Theme.defaultFontSize })
+                , segment []
+                    Right
+                    (a11y.fontSize > Theme.defaultFontSize)
+                    "+"
+                    (A11y { a11y | fontSize = toFloat <| round <| a11y.fontSize * 11 / 10 })
+                ]
+            , menuButtonAndLabel (BackTo previous) "Back"
             ]
 
 
@@ -156,6 +179,7 @@ type SegmentKind
     = Left
     | Mid
     | Right
+    | Only
 
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
@@ -378,7 +402,7 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
             ]
 
         menu =
-            menuRow
+            menuButtonAndLabel
                 (ViewMenu { background = person.city.image })
                 (if String.isEmpty currentPerson then
                     "Menu - Accessibility"
@@ -392,8 +416,8 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
         (history ++ current ++ [ menu ])
 
 
-menuRow : GameMsg -> String -> Element GameMsg
-menuRow msg label =
+menuButtonAndLabel : GameMsg -> String -> Element GameMsg
+menuButtonAndLabel msg label =
     Input.button
         [ alignBottom
         , width fill

@@ -1,10 +1,8 @@
-module Frontend.GameTheme exposing (Attr, Attribute, Element, autoscaling, autoscalingI, borderRounded, borderRoundedEach, borderWidth, borderWidthEach, colors, fontSize, padding, paddingWithCoeff, paddingXYWithCoeff, rythm, spacing)
+module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, padding, paddingXYWithCoeff, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
-import Pixels
-import Quantity
 import Types exposing (A11yOptions, Size)
 
 
@@ -22,10 +20,6 @@ type alias Element msg =
 
 type alias Attribute msg =
     Element.Attribute Context msg
-
-
-type alias Attr decorative msg =
-    Element.Attr Context decorative msg
 
 
 
@@ -52,9 +46,14 @@ rythm =
     15
 
 
+defaultFontSize : number
+defaultFontSize =
+    20
+
+
 padding : Attribute msg
 padding =
-    Element.padding rythm
+    autoscalingI rythm Element.padding
 
 
 paddingXYWithCoeff : Float -> Float -> Attribute msg
@@ -67,19 +66,14 @@ paddingXYWithCoeff x y =
         )
 
 
-paddingWithCoeff : Float -> Attribute msg
-paddingWithCoeff k =
-    Element.padding (round <| k * rythm)
-
-
 spacing : Attribute msg
 spacing =
-    Element.spacing rythm
+    autoscalingI rythm Element.spacing
 
 
 fontSize : Float -> Attribute msg
 fontSize k =
-    Element.withAttribute .a11y <| \a11y -> autoscalingI (toFloat a11y.fontSize * k) Font.size
+    Element.withAttribute .a11y <| \a11y -> autoscalingI (a11y.fontSize * k) Font.size
 
 
 borderWidth : Attribute msg
@@ -92,15 +86,16 @@ borderRounded =
     autoscalingI (rythm * 4) Border.rounded
 
 
-borderRoundedEach : { topRight : Int, topLeft : Int, bottomRight : Int, bottomLeft : Int } -> Attribute msg
-borderRoundedEach { topRight, topLeft, bottomRight, bottomLeft } =
-    autoscalingI (rythm * 4) <| \s ->
-    Border.roundEach
-        { topRight = s * topRight
-        , topLeft = s * topLeft
-        , bottomRight = s * bottomRight
-        , bottomLeft = s * bottomLeft
-        }
+borderRoundedEachWithCoeff : { topRight : Int, topLeft : Int, bottomRight : Int, bottomLeft : Int } -> Attribute msg
+borderRoundedEachWithCoeff { topRight, topLeft, bottomRight, bottomLeft } =
+    autoscalingI (rythm * 4) <|
+        \s ->
+            Border.roundEach
+                { topRight = s * rythm * topRight
+                , topLeft = s * rythm * topLeft
+                , bottomRight = s * rythm * bottomRight
+                , bottomLeft = s * rythm * bottomLeft
+                }
 
 
 borderWidthEach :
@@ -121,22 +116,13 @@ borderWidthEach { top, right, bottom, left } =
 
 
 -- Autoscaling
---
--- 0.001 @ 400
--- 0.00075 @ 1000
 
 
 autoscaling : Float -> (Float -> Attribute msg) -> Attribute msg
 autoscaling k f =
-    Element.withAttribute .screenSize <| \size ->
-    let
-        minSize =
-            Pixels.inPixels (Quantity.min size.width size.height)
-
-        coeff =
-            0.0012 / (1 + 0.3 * (minSize - 400) / 600)
-    in
-    f <| k * 0.001 * minSize
+    Element.withAttribute .a11y <|
+        \a11y ->
+            f <| k * a11y.fontSize / defaultFontSize
 
 
 autoscalingI : Float -> (Int -> Attribute msg) -> Attribute msg

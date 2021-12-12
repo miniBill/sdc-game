@@ -180,15 +180,10 @@ type TransportKind
 
 type Condition
     = ConditionNot Condition
-    | ConditionAnd (List Condition)
-    | ConditionOr (List Condition)
-    | HasItem ItemName
-    | LocalFlag String
 
 
 type ItemName
-    = GenericItemName String
-    | TicketName
+    = TicketName
         { from : CityName
         , to : CityName
         , kind : TransportKind

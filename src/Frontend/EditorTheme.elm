@@ -1,13 +1,9 @@
-module Frontend.EditorTheme exposing (Attr, Attribute, Context, Element, borderWidth, button, colors, column, fontSizes, getColor, input, multiline, padding, row, rythm, select, spacing, tabButton, wrappedRow)
+module Frontend.EditorTheme exposing (Attribute, Context, Element, borderRounded, button, colors, column, fontSizes, getColor, padding, rythm, spacing, tabButton)
 
 import Element.WithContext as Element exposing (Color)
-import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
-import Html
-import Html.Attributes
-import Html.Events
 import Types exposing (A11yOptions, Size)
 
 
@@ -25,10 +21,6 @@ type alias Attribute msg =
     Element.Attribute Context msg
 
 
-type alias Attr decorative msg =
-    Element.Attr Context decorative msg
-
-
 
 -- Attributes
 
@@ -36,6 +28,11 @@ type alias Attr decorative msg =
 borderWidth : number
 borderWidth =
     1
+
+
+borderRounded : Attribute msg
+borderRounded =
+    Border.rounded rythm
 
 
 rythm : number
@@ -106,7 +103,7 @@ fontSizes =
                 (\a11y ->
                     Font.size <|
                         round <|
-                            Element.modular (0.5 * toFloat a11y.fontSize) 1.25 n
+                            Element.modular (0.5 * a11y.fontSize) 1.25 n
                 )
     in
     { huge = size 4
@@ -123,16 +120,6 @@ fontSizes =
 -- Containers
 
 
-row : List (Attribute msg) -> List (Element msg) -> Element msg
-row attrs =
-    Element.row ([ padding, spacing ] ++ attrs)
-
-
-wrappedRow : List (Attribute msg) -> List (Element msg) -> Element msg
-wrappedRow attrs =
-    Element.wrappedRow ([ padding, spacing ] ++ attrs)
-
-
 column : List (Attribute msg) -> List (Element msg) -> Element msg
 column attrs =
     Element.column ([ padding, spacing ] ++ attrs)
@@ -140,86 +127,6 @@ column attrs =
 
 
 -- Inputs
-
-
-select :
-    List (Attribute msg)
-    ->
-        { onInput : String -> msg
-        , selected : String
-        , options : List String
-        }
-    -> Element msg
-select attrs { onInput, selected, options } =
-    let
-        toOption key =
-            Html.option
-                [ Html.Attributes.value key
-                , Html.Attributes.selected <| key == selected
-                ]
-                [ Html.text key ]
-    in
-    Element.el attrs <|
-        Element.html <|
-            Html.select
-                [ Html.Attributes.style "padding" <| String.fromInt rythm ++ "px"
-                , Html.Events.onInput onInput
-                , Html.Attributes.style "background-color" <| toCssString colors.semitransparent
-                ]
-                (List.map toOption options)
-
-
-toCssString : Color -> String
-toCssString color =
-    let
-        { red, green, blue, alpha } =
-            Element.toRgb color
-
-        channel c =
-            String.fromInt <| floor <| 255 * c
-    in
-    "rgba(" ++ String.join "," [ channel red, channel green, channel blue, String.fromFloat alpha ] ++ ")"
-
-
-input :
-    List (Attribute Never)
-    ->
-        { label : String
-        , text : String
-        , onChange : String -> msg
-        }
-    -> Element msg
-input attrs { label, text, onChange } =
-    Input.text
-        (Background.color colors.semitransparent
-            :: List.map (Element.mapAttribute never) attrs
-        )
-        { label = Input.labelHidden label
-        , text = text
-        , onChange = onChange
-        , placeholder = Just <| Input.placeholder [] <| Element.text label
-        }
-
-
-multiline :
-    List (Attribute Never)
-    ->
-        { label : String
-        , text : String
-        , onChange : String -> msg
-        }
-    -> Element msg
-multiline attrs { label, text, onChange } =
-    Input.multiline
-        (Background.color colors.semitransparent
-            :: List.map (Element.mapAttribute never) attrs
-        )
-        { label = Input.labelHidden label
-        , text = text
-        , onChange = onChange
-        , placeholder = Just <| Input.placeholder [] <| Element.text label
-        , spellcheck = True
-        }
 
 
 button :

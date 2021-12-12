@@ -23,7 +23,7 @@ type alias FrontendModel =
 type alias A11yOptions =
     { unlockEverything : Bool
     , openDyslexic : Bool
-    , fontSize : Int
+    , fontSize : Float
     }
 
 

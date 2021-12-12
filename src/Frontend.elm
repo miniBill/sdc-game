@@ -9,13 +9,15 @@ import Codecs exposing (gameModelCodec, sharedGameModelCodec)
 import Dict
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
+import Element.WithContext.Font as Font
 import File
 import File.Download
 import File.Select
 import Frontend.Common
 import Frontend.Editor
-import Frontend.EditorTheme as Theme exposing (Element)
+import Frontend.EditorTheme exposing (Element)
 import Frontend.Game
+import Frontend.GameTheme
 import Hex
 import Html
 import Html.Attributes
@@ -58,15 +60,20 @@ outerView : FrontendModel -> { title : String, body : List (Html.Html FrontendMs
 outerView model =
     let
         attrs =
-            [ Theme.fontSizes.normal
-            , height fill
+            [ height fill
             , width fill
             , Element.htmlAttribute <| Html.Attributes.id "main"
+            , Element.withAttribute .a11y <| \{ openDyslexic } ->
+            if openDyslexic then
+                Font.family [ Font.typeface "OpenDyslexic", Font.serif ]
+
+            else
+                Element.htmlAttribute <| Html.Attributes.id "main"
             ]
     in
     { title = "SDC Game"
     , body =
-        [ css model.a11y
+        [ css
         , case model.screenSize of
             Nothing ->
                 Element.layout { a11y = model.a11y } attrs Frontend.Common.loading
@@ -77,31 +84,17 @@ outerView model =
     }
 
 
-css : A11yOptions -> Html.Html FrontendMsg
-css { fontSize, openDyslexic } =
+css : Html.Html FrontendMsg
+css =
     let
-        contentCommon =
+        content =
             """
-            select {
-                font-size: """ ++ String.fromInt fontSize ++ """px;
-            }"""
-
-        contentA11y =
-            if openDyslexic then
-                """
-                @font-face {
+            @font-face {
                     font-family: OpenDyslexic;
                     src: url(art/OpenDyslexic3-Regular.ttf);
-                }
-
-                body {
-                    font-family: OpenDyslexic serif;
-                }"""
-
-            else
-                ""
+            }"""
     in
-    Html.node "style" [] [ Html.text (contentCommon ++ contentA11y) ]
+    Html.node "style" [] [ Html.text content ]
 
 
 updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
@@ -239,7 +232,7 @@ init url key =
       , page = urlToPage url
       , screenSize = Nothing
       , a11y =
-            { fontSize = 40
+            { fontSize = Frontend.GameTheme.defaultFontSize
             , openDyslexic = False
             , unlockEverything = False
             }
