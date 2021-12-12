@@ -237,6 +237,9 @@ mapEditor person =
             [ cy, cx, radius 1, SA.stroke "black", SA.fill "transparent" ]
             []
         , S.circle
+            [ cy, cx, radius 1.2, SA.stroke "white", SA.fill "transparent" ]
+            []
+        , S.circle
             [ cy, cx, radius 0.2, SA.fill "black" ]
             []
         ]

@@ -133,14 +133,10 @@ viewMenu { previous, background } =
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
-            [ menuRow []
-                "Reset save"
-                [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
-                    { active = False
-                    , label = "RESET"
-                    , onPress = Reset
-                    }
-                ]
+            [ toggle [ Background.color <| Element.rgb 1 1 1 ]
+                "Opaque backgrounds"
+                .opaqueBackgrounds
+                (\newValue -> { a11y | opaqueBackgrounds = newValue })
             , toggle []
                 "Allow free travel"
                 .unlockEverything
@@ -168,10 +164,14 @@ viewMenu { previous, background } =
                     }
                 ]
                 |> Element.map (\fontSize -> A11y { a11y | fontSize = toFloat <| round fontSize })
-            , toggle [ Background.color <| Element.rgb 1 1 1 ]
-                "Opaque backgrounds"
-                .opaqueBackgrounds
-                (\newValue -> { a11y | opaqueBackgrounds = newValue })
+            , menuRow []
+                "Reset save"
+                [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
+                    { active = False
+                    , label = "RESET"
+                    , onPress = Reset
+                    }
+                ]
             , menuButtonAndLabel (BackTo previous) "Back"
             ]
 
@@ -344,7 +344,7 @@ viewPerson person =
 
                 Landscape ->
                     Element.row (mainContainerAttrs person.city)
-                        [ viewCityDescription [] person.city
+                        [ viewCityDescription [ width fill ] person.city
                         , avatarBox
                         ]
         )

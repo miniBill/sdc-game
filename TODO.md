@@ -1,13 +1,11 @@
 # Todo
 
-1. High contrast mode
-2. Big font
-3. Open Dyslexia
-4. Unlock everything
+1. Animations
 
 # Maybe
 
-1. Consider: America
+1. Kidnap
+2. Consider: America
 
 # Not doing
 
@@ -25,6 +23,10 @@
       2. Europe - Netherland
       3. Netherland - Nijmegen
       4. Nijmegen
+6. High contrast mode
+7. Big font
+8. Open Dyslexia
+9. Unlock everything
 
 # Possible locations
 
