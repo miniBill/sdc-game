@@ -66,7 +66,7 @@ rythm =
 
 defaultFontSize : number
 defaultFontSize =
-    20
+    16
 
 
 padding : Attribute msg
@@ -91,7 +91,8 @@ spacing =
 
 fontSize : Float -> Attribute msg
 fontSize k =
-    Element.withAttribute .a11y <| \a11y -> autoscalingI (a11y.fontSize * k) Font.size
+    Element.withAttribute .a11y <| \a11y ->
+    autoscalingI (a11y.fontSize * k) Font.size
 
 
 borderWidth : Attribute msg

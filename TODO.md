@@ -1,6 +1,7 @@
 # Todo
 
 1. Animations
+2. Duck sounds
 
 # Maybe
 

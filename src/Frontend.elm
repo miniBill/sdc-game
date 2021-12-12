@@ -68,7 +68,7 @@ outerView model =
                 Font.family [ Font.typeface "OpenDyslexic", Font.serif ]
 
             else
-                Element.htmlAttribute <| Html.Attributes.id "main"
+                Font.family [ Font.typeface "ComicSansMS3", Font.serif ]
             ]
     in
     { title = "SDC Game"
@@ -92,6 +92,11 @@ css =
             @font-face {
                     font-family: OpenDyslexic;
                     src: url(art/OpenDyslexic3-Regular.ttf);
+            }
+
+            @font-face {
+                    font-family: ComicSansMS3;
+                    src: url(art/ComicSansMS3.ttf);
             }"""
     in
     Html.node "style" [] [ Html.text content ]
