@@ -30,12 +30,12 @@ view model =
             Frontend.Common.loading
 
         DataEmpty ->
-            text "branch 'DataEmpty' not implemented"
+            text "Loading failed :("
 
         LoadedData data sharedModel submodel ->
             case Dict.get sharedModel.currentPerson data of
                 Nothing ->
-                    text "TODO - MISSING PERSON"
+                    text "There is a problem with the game data or save file :("
 
                 Just person ->
                     el

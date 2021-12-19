@@ -517,7 +517,6 @@ updateGame msg a11y outerModel =
                         LocalStorageLoaded localStorage ->
                             localStorage
                                 |> Codec.decodeString localStorageCodec
-                                |> Debug.log "Decodec"
                                 |> Result.withDefault ( sharedModel, model, a11y )
                                 |> (\( s, m, a ) ->
                                         { default
