@@ -222,20 +222,54 @@ viewMap data sharedGameModel _ =
                 |> List.map mapPixelToString
                 |> String.join " "
 
-        children =
-            S.image
+        map =
+            [ S.image
                 [ SA.xlinkHref "/art/europe.jpg"
                 , SA.width <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
                 []
-                :: S.rect
-                    [ SA.width <| mapPixelToString mapSize.width
-                    , SA.height <| mapPixelToString mapSize.height
-                    , SA.fillOpacity "0.15"
+            , S.rect
+                [ SA.width <| mapPixelToString mapSize.width
+                , SA.height <| mapPixelToString mapSize.height
+                , SA.fillOpacity "0.10"
+                ]
+                []
+            ]
+
+        menu =
+            let
+                delta =
+                    "20px"
+
+                attrs =
+                    [ SA.x delta
+                    , SA.y <| "calc(100% - 100px - " ++ delta ++ ")"
+                    , SA.width "100px"
+                    , SA.height "100px"
+                    , SA.rx "100px"
                     ]
-                    []
-                :: pins
+            in
+            [ S.defs []
+                [ S.rect (SA.id "clipRect" :: attrs) []
+                , S.clipPath [ SA.id "clip" ]
+                    [ S.use [ SA.xlinkHref "#clipRect" ] [] ]
+                ]
+            , S.image
+                ([ SA.xlinkHref "/art/sdc.jpg"
+                 , SA.clipPath "url(#clip)"
+                 , SA.cursor "pointer"
+                 , SE.onClick <| ViewMenu { background = "/art/europe.jpg" }
+                 ]
+                    ++ attrs
+                )
+                []
+            ]
+
+        children =
+            map
+                ++ menu
+                ++ pins
     in
     children
         |> S.svg
