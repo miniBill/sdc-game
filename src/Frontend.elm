@@ -145,6 +145,7 @@ gotGameData data =
                 data
                 { currentPerson = ""
                 , tickets = Set.singleton orlaId
+                , usedTickets = Set.empty
                 }
                 (ViewingTalking { chatHistory = [], currentDialog = initial.dialog })
 
@@ -419,7 +420,11 @@ updateGame msg a11y outerModel =
                     case msg of
                         ViewPerson id ->
                             { default
-                                | sharedModel = { sharedModel | currentPerson = id }
+                                | sharedModel =
+                                    { sharedModel
+                                        | currentPerson = id
+                                        , usedTickets = Set.insert id sharedModel.usedTickets
+                                    }
                                 , model = ViewingPerson
                             }
 

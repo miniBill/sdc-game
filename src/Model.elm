@@ -36,6 +36,7 @@ import Set exposing (Set)
 type alias SharedGameModel =
     { currentPerson : Id
     , tickets : Set Id
+    , usedTickets : Set Id
     }
 
 

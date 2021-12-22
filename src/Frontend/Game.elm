@@ -20,7 +20,7 @@ import Set
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
-import Types exposing (GameMsg(..), OuterGameModel(..), Size)
+import Types exposing (A11yOptions, GameMsg(..), OuterGameModel(..), Size)
 
 
 view : OuterGameModel -> Element GameMsg
@@ -209,6 +209,7 @@ viewMap data sharedGameModel _ =
                     (\( personId, person ) ->
                         viewPinOnMap
                             sharedGameModel
+                            a11y
                             personId
                             person
                     )
@@ -259,8 +260,8 @@ pixelsToString pixels =
     String.fromFloat (Pixels.inPixels pixels) ++ "px"
 
 
-viewPinOnMap : SharedGameModel -> Id -> Person -> List (Svg GameMsg)
-viewPinOnMap sharedGameModel id { city } =
+viewPinOnMap : SharedGameModel -> A11yOptions -> Id -> Person -> List (Svg GameMsg)
+viewPinOnMap sharedGameModel a11y id { city } =
     let
         selected =
             id == sharedGameModel.currentPerson
@@ -271,16 +272,34 @@ viewPinOnMap sharedGameModel id { city } =
         common k =
             [ SA.cy <| String.fromFloat city.coordinates.y
             , SA.cx <| String.fromFloat city.coordinates.x
-            , SE.onClick <| ViewPerson id
-            , SA.cursor "pointer"
             , SA.r <| String.fromFloat <| k * radius
             ]
+                ++ handler
 
         duckRadius =
             radius * 2
+
+        ( fill, handler ) =
+            ( if Set.member id sharedGameModel.usedTickets then
+                if a11y.unlockEverything then
+                    "lightgray"
+
+                else
+                    "gray"
+
+              else
+                "white"
+            , if Set.member id sharedGameModel.usedTickets && not a11y.unlockEverything then
+                []
+
+              else
+                [ SA.cursor "pointer"
+                , SE.onClick <| ViewPerson id
+                ]
+            )
     in
     [ S.circle (SA.fill "black" :: common 1) []
-    , S.circle (SA.fill "white" :: common 0.8) []
+    , S.circle (SA.fill fill :: common 0.8) []
     , S.g [] <|
         if selected then
             [ S.circle (SA.fill "red" :: common 2.3) []

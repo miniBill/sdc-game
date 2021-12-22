@@ -32,9 +32,10 @@ a11yOptionsCodec =
 sharedGameModelCodec : Codec.Codec Model.SharedGameModel
 sharedGameModelCodec =
     Codec.object
-        (\currentPerson tickets ->
+        (\currentPerson tickets usedTickets ->
             { currentPerson = currentPerson
             , tickets = Maybe.withDefault Set.empty tickets
+            , usedTickets = Maybe.withDefault Set.empty usedTickets
             }
         )
         |> Codec.field "currentPerson" .currentPerson idCodec
@@ -46,6 +47,16 @@ sharedGameModelCodec =
 
                 else
                     Maybe.Just lambdaArg0.tickets
+            )
+            (Codec.set idCodec)
+        |> Codec.maybeField
+            "usedTickets"
+            (\lambdaArg0 ->
+                if lambdaArg0.usedTickets == Set.empty then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.usedTickets
             )
             (Codec.set idCodec)
         |> Codec.buildObject
