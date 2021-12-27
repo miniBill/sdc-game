@@ -540,7 +540,9 @@ viewQuizAnswer quiz answer =
     let
         next =
             if answer == quiz.correctAnswer then
-                { text = quiz.messageIfCorrect
+                { text =
+                    quiz.messageIfCorrect
+                        |> withDefaultIfEmpty "That's correct!"
                 , choices =
                     ( { text = "Thank you!"
                       , next = NextGiveTicket
@@ -550,7 +552,9 @@ viewQuizAnswer quiz answer =
                 }
 
             else
-                { text = quiz.messageIfWrong
+                { text =
+                    quiz.messageIfWrong
+                        |> withDefaultIfEmpty "Are you sure?"
                 , choices =
                     ( { text = "Let me try again!"
                       , next = NextQuiz quiz
@@ -563,6 +567,15 @@ viewQuizAnswer quiz answer =
         { label = viewDialogLine False duckPerson answer
         , onPress = Just <| ViewTalking next []
         }
+
+
+withDefaultIfEmpty : String -> String -> String
+withDefaultIfEmpty default arg =
+    if String.isEmpty arg then
+        default
+
+    else
+        arg
 
 
 avatar : Float -> { a | image : String, name : String } -> Element msg
