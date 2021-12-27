@@ -8,6 +8,7 @@ import Element.WithContext.Input as Input
 import Frontend.Common
 import Frontend.GameMarkdown
 import Frontend.GameTheme as Theme exposing (Attribute, Element)
+import Html
 import Html.Attributes
 import MapPixels
 import Markdown.Block exposing (ListItem(..), Task(..))
@@ -358,7 +359,7 @@ viewPerson person =
         style k v =
             Element.htmlAttribute <| Html.Attributes.style k v
 
-        avatarBox =
+        avatarBox orientation =
             Input.button [ width fill, height fill ]
                 { onPress = Just <| ViewTalking person.dialog []
                 , label =
@@ -371,8 +372,7 @@ viewPerson person =
                             , Theme.padding
                             ]
                             [ el
-                                [ Theme.borderRounded
-                                , width fill
+                                [ width fill
                                 , height fill
                                 , style "background-image" <| "url(\"" ++ person.image ++ "\")"
                                 , style "background-size" "contain"
@@ -392,13 +392,13 @@ viewPerson person =
                 Portrait ->
                     Element.column (mainContainerAttrs person.city)
                         [ viewCityDescription [ width fill ] person.city
-                        , avatarBox
+                        , avatarBox orientation
                         ]
 
                 Landscape ->
                     Element.row (mainContainerAttrs person.city)
                         [ viewCityDescription [ width fill, height fill ] person.city
-                        , avatarBox
+                        , avatarBox orientation
                         ]
         )
 
