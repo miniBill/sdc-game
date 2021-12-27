@@ -483,7 +483,6 @@ menuButtonAndLabel msg label =
             row
                 [ Theme.spacing
                 , width fill
-                , Theme.padding
                 ]
                 [ avatar 1 { image = "/art/sdc.jpg", name = "" }
                 , if String.isEmpty label then
@@ -626,7 +625,7 @@ viewDialogLine historical personIsh text =
             [ Theme.borderWidth
             , width fill
             , height fill
-            , Theme.paddingXYWithCoeff 4 1
+            , Theme.paddingXYWithCoeff 2 2
             , if historical then
                 Theme.historicalBackground
 
