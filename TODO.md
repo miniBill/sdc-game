@@ -2,6 +2,8 @@
 
 1. Animations
 2. Duck sounds
+3. Images
+4. Content
 
 # Maybe
 
