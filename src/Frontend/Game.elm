@@ -237,39 +237,19 @@ viewMap data sharedGameModel _ =
                 []
             ]
 
-        menu =
-            let
-                delta =
-                    "20px"
-
-                attrs =
-                    [ SA.x delta
-                    , SA.y <| "calc(100% - 100px - " ++ delta ++ ")"
-                    , SA.width "100px"
-                    , SA.height "100px"
-                    , SA.rx "100px"
-                    ]
-            in
-            [ S.defs []
-                [ S.rect (SA.id "clipRect" :: attrs) []
-                , S.clipPath [ SA.id "clip" ]
-                    [ S.use [ SA.xlinkHref "#clipRect" ] [] ]
-                ]
-            , S.image
-                ([ SA.xlinkHref "/art/sdc.jpg"
-                 , SA.clipPath "url(#clip)"
-                 , SA.cursor "pointer"
-                 , SE.onClick <| ViewMenu { background = "/art/europe.jpg" }
-                 ]
-                    ++ attrs
-                )
-                []
-            ]
-
         children =
-            map
-                ++ menu
-                ++ pins
+            map ++ pins
+
+        menu =
+            el
+                [ Theme.padding
+                , Element.htmlAttribute <| Html.Attributes.style "position" "fixed"
+                , Element.htmlAttribute <| Html.Attributes.style "bottom" "0px"
+                ]
+                (menuButtonAndLabel
+                    (ViewMenu { background = "/art/europe.jpg" })
+                    ""
+                )
     in
     children
         |> S.svg
@@ -278,6 +258,7 @@ viewMap data sharedGameModel _ =
             , SA.height <| pixelsToString h
             ]
         |> Element.html
+        |> el [ Element.inFront menu ]
 
 
 boolToInt : Bool -> number
