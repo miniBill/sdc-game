@@ -1,5 +1,6 @@
 module Types exposing (..)
 
+import Audio
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
 import Bytes exposing (Bytes)
@@ -13,6 +14,10 @@ import Set exposing (Set)
 
 
 type alias FrontendModel =
+    Audio.Model InnerFrontendMsg InnerFrontendModel
+
+
+type alias InnerFrontendModel =
     { key : Key
     , a11y : A11yOptions
     , screenSize : Maybe Size
@@ -58,7 +63,11 @@ type alias BackendModel =
     }
 
 
-type FrontendMsg
+type alias FrontendMsg =
+    Audio.Msg InnerFrontendMsg
+
+
+type InnerFrontendMsg
     = -- Size
       GotResized
     | Resized (Quantity Float Pixels) (Quantity Float Pixels)
@@ -68,6 +77,8 @@ type FrontendMsg
       -- Page-specific messages
     | EditorMsg EditorMsg
     | GameMsg GameMsg
+      -- Nop
+    | Nop
 
 
 type EditorMsg

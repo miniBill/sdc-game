@@ -1,5 +1,6 @@
 module Frontend exposing (app)
 
+import Audio exposing (Audio, AudioCmd, AudioData)
 import Browser exposing (UrlRequest(..))
 import Browser.Dom
 import Browser.Events
@@ -30,7 +31,7 @@ import PkgPorts
 import Random
 import Set
 import Task
-import Types exposing (A11yOptions, EditorModel, EditorMsg(..), FrontendModel, FrontendMsg(..), GameMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
+import Types exposing (A11yOptions, EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
 import Url
 import Url.Parser
 
@@ -45,7 +46,7 @@ app :
     , onUrlChange : Url -> FrontendMsg
     }
 app =
-    Lamdera.frontend
+    Audio.lamderaFrontendWithAudio
         { init = init
         , onUrlRequest = UrlClicked
         , onUrlChange = UrlChanged
@@ -53,11 +54,21 @@ app =
         , update = update
         , subscriptions = subscriptions
         , updateFromBackend = updateFromBackend
+        , audioPort =
+            { toJS = PkgPorts.audioPortToJS
+            , fromJS = PkgPorts.audioPortFromJS
+            }
+        , audio = audio
         }
 
 
-outerView : FrontendModel -> { title : String, body : List (Html.Html FrontendMsg) }
-outerView model =
+audio : AudioData -> InnerFrontendModel -> Audio
+audio _ _ =
+    Audio.silence
+
+
+outerView : AudioData -> InnerFrontendModel -> { title : String, body : List (Html.Html InnerFrontendMsg) }
+outerView _ model =
     let
         attrs =
             [ height fill
@@ -84,7 +95,7 @@ outerView model =
     }
 
 
-css : Html.Html FrontendMsg
+css : Html.Html InnerFrontendMsg
 css =
     let
         content =
@@ -102,12 +113,13 @@ css =
     Html.node "style" [] [ Html.text content ]
 
 
-updateFromBackend : ToFrontend -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
-updateFromBackend msg model =
+updateFromBackend : AudioData -> ToFrontend -> InnerFrontendModel -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
+updateFromBackend _ msg model =
     case msg of
         TFUpdatePerson id person ->
             ( updatePersonInModel id person model
             , getSizeCmd
+            , Audio.cmdNone
             )
 
         TFData data ->
@@ -130,6 +142,7 @@ updateFromBackend msg model =
                 [ getSizeCmd
                 , PkgPorts.localstorage_load {}
                 ]
+            , Audio.cmdNone
             )
 
 
@@ -163,7 +176,7 @@ findOrla data =
         |> List.Extra.find (\( id, p ) -> id /= "" && p.name == "Orla")
 
 
-updatePersonInModel : Id -> Maybe Person -> FrontendModel -> FrontendModel
+updatePersonInModel : Id -> Maybe Person -> InnerFrontendModel -> InnerFrontendModel
 updatePersonInModel id person model =
     let
         updater data =
@@ -192,10 +205,10 @@ updatePersonInModel id person model =
 
 
 updatePage :
-    FrontendModel
+    InnerFrontendModel
     -> (Maybe Data -> EditorModel -> ( Maybe Data, EditorModel ))
     -> (OuterGameModel -> OuterGameModel)
-    -> FrontendModel
+    -> InnerFrontendModel
 updatePage model editor game =
     { model
         | page =
@@ -232,7 +245,7 @@ urlToPage url =
         |> Maybe.withDefault (Game LoadingData)
 
 
-init : Url -> Key -> ( FrontendModel, Cmd FrontendMsg )
+init : Url -> Key -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
 init url key =
     ( { key = key
       , page = urlToPage url
@@ -240,6 +253,12 @@ init url key =
       , a11y = defaultA11yOptions
       }
     , getSizeCmd
+    , Audio.cmdBatch
+        [ Audio.loadAudio (\_ -> Nop) "/art/quack1.mp3"
+        , Audio.loadAudio (\_ -> Nop) "/art/quack2.mp3"
+        , Audio.loadAudio (\_ -> Nop) "/art/quack3.mp3"
+        , Audio.loadAudio (\_ -> Nop) "/art/quackquackquack.mp3"
+        ]
     )
 
 
@@ -252,7 +271,7 @@ defaultA11yOptions =
     }
 
 
-getSizeCmd : Cmd FrontendMsg
+getSizeCmd : Cmd InnerFrontendMsg
 getSizeCmd =
     Task.perform
         (\{ viewport } ->
@@ -263,8 +282,8 @@ getSizeCmd =
         Browser.Dom.getViewport
 
 
-subscriptions : FrontendModel -> Sub FrontendMsg
-subscriptions { page } =
+subscriptions : AudioData -> InnerFrontendModel -> Sub InnerFrontendMsg
+subscriptions _ { page } =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> GotResized)
         , PkgPorts.localstorage_loaded (GameMsg << LocalStorageLoaded)
@@ -301,20 +320,23 @@ subscriptions { page } =
         ]
 
 
-update : FrontendMsg -> FrontendModel -> ( FrontendModel, Cmd FrontendMsg )
-update msg model =
+update : AudioData -> InnerFrontendMsg -> InnerFrontendModel -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
+update _ msg model =
     case ( msg, model.page ) of
         -- Handle generic messages
+        ( Nop, _ ) ->
+            ( model, Cmd.none, Audio.cmdNone )
+
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
                 Internal url ->
-                    ( model, Nav.pushUrl model.key (Url.toString url) )
+                    ( model, Nav.pushUrl model.key (Url.toString url), Audio.cmdNone )
 
                 External url ->
-                    ( model, Nav.load url )
+                    ( model, Nav.load url, Audio.cmdNone )
 
         ( UrlChanged url, _ ) ->
-            ( { model | page = urlToPage url }, Cmd.none )
+            ( { model | page = urlToPage url }, Cmd.none, Audio.cmdNone )
 
         ( Resized width height, _ ) ->
             ( { model
@@ -325,23 +347,24 @@ update msg model =
                         |> Just
               }
             , Cmd.none
+            , Audio.cmdNone
             )
 
         ( GotResized, _ ) ->
-            ( model, getSizeCmd )
+            ( model, getSizeCmd, Audio.cmdNone )
 
         -- Ignore stray cross-page messages
         ( EditorMsg _, Game _ ) ->
-            ( model, Cmd.none )
+            ( model, Cmd.none, Audio.cmdNone )
 
         ( GameMsg _, Editor _ _ ) ->
-            ( model, Cmd.none )
+            ( model, Cmd.none, Audio.cmdNone )
 
         -- Handle page-specifc messages
         ( _, Editor Nothing _ ) ->
             -- Ignore messages received while loading
             -- TODO: queue them instead?
-            ( model, Cmd.none )
+            ( model, Cmd.none, Audio.cmdNone )
 
         ( EditorMsg editorMsg, Editor (Just data) editorModel ) ->
             let
@@ -350,6 +373,7 @@ update msg model =
             in
             ( { model | page = Editor (Just data_) editorModel_ }
             , Cmd.batch [ getSizeCmd, Cmd.map EditorMsg cmd ]
+            , Audio.cmdNone
             )
 
         ( GameMsg gameMsg, Game gameModel ) ->
@@ -362,6 +386,7 @@ update msg model =
                 , a11y = a11y
               }
             , Cmd.batch [ getSizeCmd, Cmd.map GameMsg gameCmd ]
+            , Audio.cmdNone
             )
 
 
@@ -698,7 +723,7 @@ toRegion city =
                 EuropeRegion
 
 
-view : FrontendModel -> Element FrontendMsg
+view : InnerFrontendModel -> Element InnerFrontendMsg
 view model =
     case model.page of
         Game gameModel ->
