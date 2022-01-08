@@ -181,7 +181,7 @@ type Segment msg
 
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
-viewMap data sharedGameModel _ =
+viewMap data sharedGameModel mapModel =
     Element.with identity <| \{ screenSize, a11y } ->
     let
         s =
@@ -207,12 +207,16 @@ viewMap data sharedGameModel _ =
                 |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
                 |> List.concatMap
                     (\( personId, person ) ->
-                        viewPinOnMap
-                            sharedGameModel
-                            a11y
-                            personId
-                            person
+                        viewPinOnMap sharedGameModel a11y mapModel personId person
                     )
+
+        duck =
+            case Dict.get sharedGameModel.currentPerson data of
+                Nothing ->
+                    []
+
+                Just person ->
+                    viewDuckOnMap data mapModel person
 
         mapPixelToString q =
             String.fromFloat <| MapPixels.inPixels q
@@ -238,7 +242,7 @@ viewMap data sharedGameModel _ =
             ]
 
         children =
-            map ++ pins
+            map ++ pins ++ duck
 
         menu =
             el
@@ -275,12 +279,9 @@ pixelsToString pixels =
     String.fromFloat (Pixels.inPixels pixels) ++ "px"
 
 
-viewPinOnMap : SharedGameModel -> A11yOptions -> Id -> Person -> List (Svg GameMsg)
-viewPinOnMap sharedGameModel a11y id { city } =
+viewPinOnMap : SharedGameModel -> A11yOptions -> MapModel -> Id -> Person -> List (Svg GameMsg)
+viewPinOnMap sharedGameModel a11y mapModel id { city } =
     let
-        selected =
-            id == sharedGameModel.currentPerson
-
         radius =
             MapPixels.inPixels mapSize.width * 0.006
 
@@ -291,45 +292,85 @@ viewPinOnMap sharedGameModel a11y id { city } =
             ]
                 ++ handler
 
-        duckRadius =
-            radius * 2
-
-        ( fill, handler ) =
-            ( if Set.member id sharedGameModel.usedTickets then
+        fill =
+            if Set.member id sharedGameModel.usedTickets then
                 if a11y.unlockEverything then
                     "lightgray"
 
                 else
                     "gray"
 
-              else
+            else
                 "white"
-            , if Set.member id sharedGameModel.usedTickets && not a11y.unlockEverything then
+
+        handler =
+            if
+                (mapModel.travellingTo /= Nothing)
+                    || (Set.member id sharedGameModel.usedTickets && not a11y.unlockEverything)
+            then
                 []
 
-              else
+            else
                 [ SA.cursor "pointer"
-                , SE.onClick <| ViewPerson id
+                , SE.onClick <| TravellingTo 0 id
                 ]
-            )
     in
     [ S.circle (SA.fill "black" :: common 1) []
     , S.circle (SA.fill fill :: common 0.8) []
-    , S.g [] <|
-        if selected then
-            [ S.circle (SA.fill "red" :: common 2.3) []
-            , S.image
-                [ SA.x <| String.fromFloat <| city.coordinates.x - duckRadius
-                , SA.y <| String.fromFloat <| city.coordinates.y - duckRadius
-                , SA.width <| String.fromFloat <| duckRadius * 2
-                , SA.height <| String.fromFloat <| duckRadius * 2
-                , SA.xlinkHref "/art/duckon.webp"
-                ]
-                []
+    ]
+
+
+viewDuckOnMap : Data -> MapModel -> Person -> List (Svg GameMsg)
+viewDuckOnMap data mapModel { city } =
+    let
+        radius =
+            MapPixels.inPixels mapSize.width * 0.006
+
+        ( x, y ) =
+            case mapModel.travellingTo of
+                Nothing ->
+                    ( city.coordinates.x, city.coordinates.y )
+
+                Just ( frac, otherPersonId ) ->
+                    case Dict.get otherPersonId data of
+                        Nothing ->
+                            ( city.coordinates.x, city.coordinates.y )
+
+                        Just otherPerson ->
+                            let
+                                ease f t =
+                                    let
+                                        k =
+                                            if frac < 0.5 then
+                                                4 * frac * frac * frac
+
+                                            else
+                                                1 - (-2 * frac + 2) ^ 3 / 2
+                                    in
+                                    f * (1 - k) + t * k
+                            in
+                            ( ease city.coordinates.x otherPerson.city.coordinates.x
+                            , ease city.coordinates.y otherPerson.city.coordinates.y
+                            )
+
+        common k =
+            [ SA.cy <| String.fromFloat y
+            , SA.cx <| String.fromFloat x
+            , SA.r <| String.fromFloat <| k * radius
             ]
 
-        else
-            []
+        duckRadius =
+            radius * 2
+    in
+    [ S.circle (SA.fill "red" :: common 2.3) []
+    , S.image
+        [ SA.x <| String.fromFloat <| x - duckRadius
+        , SA.y <| String.fromFloat <| y - duckRadius
+        , SA.width <| String.fromFloat <| duckRadius * 2
+        , SA.height <| String.fromFloat <| duckRadius * 2
+        , SA.xlinkHref "/art/duckon.webp"
+        ]
+        []
     ]
 
 

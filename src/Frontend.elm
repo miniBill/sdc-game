@@ -264,10 +264,40 @@ getSizeCmd =
 
 
 subscriptions : FrontendModel -> Sub FrontendMsg
-subscriptions _ =
+subscriptions { page } =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> GotResized)
         , PkgPorts.localstorage_loaded (GameMsg << LocalStorageLoaded)
+        , case page of
+            Game (LoadedData data { currentPerson } (ViewingMap { travellingTo })) ->
+                case travellingTo of
+                    Just ( fraction, id ) ->
+                        let
+                            travelTimeInMilliseconds =
+                                case ( Dict.get currentPerson data, Dict.get id data ) of
+                                    ( Just from, Just to ) ->
+                                        let
+                                            fromC =
+                                                from.city.coordinates
+
+                                            toC =
+                                                to.city.coordinates
+                                        in
+                                        10 * sqrt ((fromC.x - toC.x) ^ 2 + (fromC.y - toC.y) ^ 2)
+
+                                    _ ->
+                                        0
+                        in
+                        Browser.Events.onAnimationFrameDelta
+                            (\d ->
+                                GameMsg <| TravellingTo (fraction + d / travelTimeInMilliseconds) id
+                            )
+
+                    Nothing ->
+                        Sub.none
+
+            _ ->
+                Sub.none
         ]
 
 
@@ -418,16 +448,6 @@ updateGame msg a11y outerModel =
 
                 result =
                     case msg of
-                        ViewPerson id ->
-                            { default
-                                | sharedModel =
-                                    { sharedModel
-                                        | currentPerson = id
-                                        , usedTickets = Set.insert id sharedModel.usedTickets
-                                    }
-                                , model = ViewingPerson
-                            }
-
                         ViewMenu { background } ->
                             { default
                                 | model =
@@ -450,7 +470,7 @@ updateGame msg a11y outerModel =
                                             else
                                                 sharedModel.currentPerson
                                     }
-                                , model = ViewingMap {}
+                                , model = ViewingMap { travellingTo = Nothing }
                             }
 
                         ViewTalking dialog chatHistory ->
@@ -495,7 +515,7 @@ updateGame msg a11y outerModel =
                                             else
                                                 sharedModel.currentPerson
                                     }
-                                , model = ViewingMap {}
+                                , model = ViewingMap { travellingTo = Nothing }
                                 , cmd = pickNewTicket data sharedModel
                             }
 
@@ -530,6 +550,31 @@ updateGame msg a11y outerModel =
                                             , a11y = a
                                         }
                                    )
+
+                        TravellingTo fraction id ->
+                            let
+                                usedTickets =
+                                    Set.insert id sharedModel.usedTickets
+                            in
+                            if fraction >= 1 then
+                                { default
+                                    | sharedModel =
+                                        { sharedModel
+                                            | currentPerson = id
+                                            , usedTickets = usedTickets
+                                        }
+                                    , model = ViewingPerson
+                                }
+
+                            else
+                                { default
+                                    | sharedModel =
+                                        { sharedModel
+                                            | usedTickets = usedTickets
+                                        }
+                                    , model =
+                                        ViewingMap { travellingTo = Just ( fraction, id ) }
+                                }
             in
             ( LoadedData data result.sharedModel result.model
             , Cmd.batch

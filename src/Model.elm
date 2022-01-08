@@ -49,7 +49,8 @@ type GameModel
 
 
 type alias MapModel =
-    {}
+    { travellingTo : Maybe ( Float, Id )
+    }
 
 
 type alias TalkingModel =

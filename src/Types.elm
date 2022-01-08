@@ -82,7 +82,7 @@ type EditorMsg
 
 
 type GameMsg
-    = ViewPerson Id
+    = TravellingTo Float Id
     | ViewTalking Dialog ChatHistory
     | ViewMap
     | ViewQuiz Quiz

@@ -96,7 +96,10 @@ gameModelCodec =
 
 mapModelCodec : Codec.Codec Model.MapModel
 mapModelCodec =
-    Codec.object {} |> Codec.buildObject
+    Codec.object
+        (\travellingTo -> { travellingTo = travellingTo })
+        |> Codec.field "travellingTo" .travellingTo (Codec.maybe (Codec.tuple Codec.float idCodec))
+        |> Codec.buildObject
 
 
 talkingModelCodec : Codec.Codec Model.TalkingModel
