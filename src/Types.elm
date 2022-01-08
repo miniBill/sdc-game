@@ -21,6 +21,7 @@ type alias InnerFrontendModel =
     { key : Key
     , a11y : A11yOptions
     , screenSize : Maybe Size
+    , audio : Dict String Audio.Source
     , page : Page
     }
 
@@ -77,6 +78,8 @@ type InnerFrontendMsg
       -- Page-specific messages
     | EditorMsg EditorMsg
     | GameMsg GameMsg
+      -- Audio
+    | LoadedAudio String Audio.Source
       -- Nop
     | Nop
 

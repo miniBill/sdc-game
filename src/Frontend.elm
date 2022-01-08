@@ -247,17 +247,27 @@ urlToPage url =
 
 init : Url -> Key -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
 init url key =
+    let
+        toMsg name res =
+            case res of
+                Ok s ->
+                    LoadedAudio name s
+
+                Err _ ->
+                    Nop
+    in
     ( { key = key
       , page = urlToPage url
       , screenSize = Nothing
+      , audio = Dict.empty
       , a11y = defaultA11yOptions
       }
     , getSizeCmd
     , Audio.cmdBatch
-        [ Audio.loadAudio (\_ -> Nop) "/art/quack1.mp3"
-        , Audio.loadAudio (\_ -> Nop) "/art/quack2.mp3"
-        , Audio.loadAudio (\_ -> Nop) "/art/quack3.mp3"
-        , Audio.loadAudio (\_ -> Nop) "/art/quackquackquack.mp3"
+        [ Audio.loadAudio (toMsg "/art/quack1.mp3") "/art/quack1.mp3"
+        , Audio.loadAudio (toMsg "/art/quack2.mp3") "/art/quack2.mp3"
+        , Audio.loadAudio (toMsg "/art/quack3.mp3") "/art/quack3.mp3"
+        , Audio.loadAudio (toMsg "/art/quackquackquack.mp3") "/art/quackquackquack.mp3"
         ]
     )
 
@@ -326,6 +336,9 @@ update _ msg model =
         -- Handle generic messages
         ( Nop, _ ) ->
             ( model, Cmd.none, Audio.cmdNone )
+
+        ( LoadedAudio name source, _ ) ->
+            ( { model | audio = Dict.insert name source model.audio }, Cmd.none, Audio.cmdNone )
 
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
