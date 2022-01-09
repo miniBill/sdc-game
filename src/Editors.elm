@@ -201,6 +201,16 @@ cityEditor level value =
                     editor
               , simple
               )
+            , let
+                ( editor, simple ) =
+                    soundEditor (level + 1) value.sound
+              in
+              ( "Sound"
+              , Element.map
+                    (\lambdaArg0 -> { value | sound = lambdaArg0 })
+                    editor
+              , simple
+              )
             ]
 
         simples =
@@ -295,6 +305,97 @@ coordinatesEditor level value =
               in
               ( "Y"
               , Element.map (\lambdaArg0 -> { value | y = lambdaArg0 }) editor
+              , simple
+              )
+            ]
+
+        simples =
+            raw
+                |> List.filterMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            Maybe.Just
+                                ( Element.el
+                                    [ Element.centerY ]
+                                    (Element.text fieldName)
+                                , fieldEditor
+                                )
+
+                        else
+                            Maybe.Nothing
+                    )
+
+        simplesTable =
+            if List.length simples <= 2 then
+                simples
+                    |> List.map
+                        (\pair ->
+                            Element.row
+                                [ Theme.spacing, Element.width Element.fill ]
+                                [ Tuple.first pair, Tuple.second pair ]
+                        )
+                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ Theme.spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = \pair -> Tuple.first pair
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = \pair -> Tuple.second pair
+                          }
+                        ]
+                    , data = simples
+                    }
+
+        complexes =
+            raw
+                |> List.concatMap
+                    (\( fieldName, fieldEditor, simple ) ->
+                        if simple then
+                            []
+
+                        else
+                            [ Element.text fieldName, fieldEditor ]
+                    )
+    in
+    ( Element.column
+        [ Element.width Element.fill
+        , Background.color (Theme.getColor level)
+        , Element.width Element.fill
+        , Theme.spacing
+        , Theme.padding
+        , Element.alignTop
+        , Border.width 1
+        , Theme.borderRounded
+        ]
+        (simplesTable :: complexes)
+    , Basics.False
+    )
+
+
+soundEditor : Int -> Model.Sound -> ( Element Model.Sound, Bool )
+soundEditor level value =
+    let
+        raw =
+            [ let
+                ( editor, simple ) =
+                    stringEditor (level + 1) value.name
+              in
+              ( "Name"
+              , Element.map (\lambdaArg0 -> { value | name = lambdaArg0 }) editor
+              , simple
+              )
+            , let
+                ( editor, simple ) =
+                    intEditor (level + 1) value.duration
+              in
+              ( "Duration"
+              , Element.map (\lambdaArg0 -> { value | duration = lambdaArg0 }) editor
               , simple
               )
             ]
@@ -1323,6 +1424,14 @@ cityDefault =
     , image = ""
     , coordinates = coordinatesDefault
     , nation = nationDefault
+    , sound = soundDefault
+    }
+
+
+soundDefault : Model.Sound
+soundDefault =
+    { name = ""
+    , duration = 0
     }
 
 

@@ -25,7 +25,7 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel)
+import Model exposing (City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel, Sound)
 import Pixels
 import PkgPorts
 import Random
@@ -33,7 +33,7 @@ import Set
 import SoundLibrary
 import Task
 import Time
-import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), Sound, ToBackend(..), ToFrontend(..), Track)
+import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..), Track)
 import Url
 import Url.Parser
 

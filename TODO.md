@@ -1,8 +1,7 @@
 # Todo
 
-1. Duck sounds
-2. Images
-3. Content
+1. Images
+2. Content
 
 # Maybe
 
@@ -38,7 +37,8 @@
    - Houseplant in the corner
    - Striped scrunchie
 2. Dublin - Mick
-3. Sweden - Gabriel
+3. Dublin? - Corn
+4. Sweden - Gabriel
 
 ## Done
 

@@ -19,6 +19,7 @@ module Model exposing
     , Person
     , Quiz
     , SharedGameModel
+    , Sound
     , TalkingModel
     , TransportKind(..)
     , mapSize
@@ -96,6 +97,13 @@ type alias City =
     , image : String
     , coordinates : Coordinates
     , nation : Nation
+    , sound : Sound
+    }
+
+
+type alias Sound =
+    { name : String
+    , duration : Int -- In milliseconds
     }
 
 

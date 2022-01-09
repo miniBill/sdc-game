@@ -230,12 +230,13 @@ personCodec =
 cityCodec : Codec.Codec Model.City
 cityCodec =
     Codec.object
-        (\name text image coordinates nation ->
+        (\name text image coordinates nation sound ->
             { name = name
             , text = Maybe.withDefault "" text
             , image = Maybe.withDefault "" image
             , coordinates = coordinates
             , nation = nation
+            , sound = sound
             }
         )
         |> Codec.field "name" .name cityNameCodec
@@ -261,6 +262,20 @@ cityCodec =
             Codec.string
         |> Codec.field "coordinates" .coordinates coordinatesCodec
         |> Codec.field "nation" .nation nationCodec
+        |> Codec.field "sound" .sound soundCodec
+        |> Codec.buildObject
+
+
+soundCodec : Codec.Codec Model.Sound
+soundCodec =
+    Codec.object
+        (\name duration ->
+            { name = name
+            , duration = duration
+            }
+        )
+        |> Codec.field "name" .name Codec.string
+        |> Codec.field "duration" .duration Codec.int
         |> Codec.buildObject
 
 

@@ -7,7 +7,7 @@ import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, SharedGameModel)
+import Model exposing (ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, SharedGameModel, Sound)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -31,12 +31,6 @@ type alias AudioModel =
     { sources : Dict String Audio.Source
     , mainVolume : Float
     , playing : List Track
-    }
-
-
-type alias Sound =
-    { name : String
-    , duration : Int -- In milliseconds
     }
 
 

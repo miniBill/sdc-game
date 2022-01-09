@@ -1,6 +1,6 @@
 module SoundLibrary exposing (..)
 
-import Types exposing (Sound)
+import Model exposing (Sound)
 
 
 all : List Sound
