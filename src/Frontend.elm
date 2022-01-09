@@ -8,6 +8,7 @@ import Browser.Navigation as Nav
 import Codec exposing (Codec)
 import Codecs exposing (a11yOptionsCodec, gameModelCodec, sharedGameModelCodec)
 import Dict
+import Duration
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
 import Element.WithContext.Font as Font
@@ -28,6 +29,8 @@ import List.Extra
 import Model exposing (City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel, Sound)
 import Pixels
 import PkgPorts
+import Process
+import Quantity
 import Random
 import Set
 import SoundLibrary
@@ -68,7 +71,7 @@ audioView : AudioData -> InnerFrontendModel -> Audio
 audioView _ { audio } =
     audio.playing
         |> List.map
-            (\{ from, sound, fadingOutFrom } ->
+            (\{ from, sound, fadingOutFrom, loop } ->
                 case Dict.get sound.name audio.sources of
                     Nothing ->
                         Audio.silence
@@ -76,7 +79,21 @@ audioView _ { audio } =
                     Just source ->
                         let
                             raw =
-                                Audio.audio source from
+                                if loop then
+                                    Audio.audioWithConfig
+                                        { loop =
+                                            Just
+                                                { loopStart = Quantity.zero
+                                                , loopEnd = Duration.milliseconds <| toFloat sound.duration
+                                                }
+                                        , playbackRate = 1
+                                        , startAt = Quantity.zero
+                                        }
+                                        source
+                                        from
+
+                                else
+                                    Audio.audio source from
                         in
                         case fadingOutFrom of
                             Nothing ->
@@ -387,11 +404,11 @@ update _ msg ({ audio } as model) =
                         AudioVolume mainVolume ->
                             { audio | mainVolume = mainVolume }
 
-                        AudioPlay sound ->
+                        AudioPlay sound loop ->
                             { audio
                                 | playing =
                                     cleanupAudio time <|
-                                        toTrack time sound
+                                        toTrack time sound loop
                                             :: audio.playing
                             }
 
@@ -481,16 +498,22 @@ update _ msg ({ audio } as model) =
 cleanupAudio : Time.Posix -> List Track -> List Track
 cleanupAudio now =
     List.filter
-        (\{ from, sound } ->
-            Time.posixToMillis from + sound.duration > Time.posixToMillis now
+        (\{ from, sound, loop, fadingOutFrom } ->
+            case fadingOutFrom of
+                Just fade ->
+                    Time.posixToMillis fade + Frontend.GameTheme.fadeOutTime > Time.posixToMillis now
+
+                Nothing ->
+                    loop || Time.posixToMillis from + sound.duration > Time.posixToMillis now
         )
 
 
-toTrack : Time.Posix -> Sound -> Track
-toTrack now sound =
+toTrack : Time.Posix -> Sound -> Bool -> Track
+toTrack now sound loop =
     { from = now
     , sound = sound
     , fadingOutFrom = Nothing
+    , loop = loop
     }
 
 
@@ -573,8 +596,6 @@ updateGame msg a11y outerModel =
                     , model = model
                     , cmd = Cmd.none
                     , a11y = a11y
-                    , stopAudio = False
-                    , mainVolume = Nothing
                     }
 
                 result =
@@ -627,7 +648,7 @@ updateGame msg a11y outerModel =
                                             { default
                                                 | cmd =
                                                     Random.uniform h t
-                                                        |> Random.generate ViewQuiz
+                                                        |> Random.generate (\quiz -> GameMsg ( ViewQuiz quiz, Nothing ))
                                             }
 
                         ViewQuiz quiz ->
@@ -647,7 +668,7 @@ updateGame msg a11y outerModel =
                                                 sharedModel.currentPerson
                                     }
                                 , model = ViewingMap { travellingTo = Nothing }
-                                , cmd = pickNewTicket data sharedModel
+                                , cmd = Cmd.map (\m -> GameMsg ( m, Nothing )) <| pickNewTicket data sharedModel
                             }
 
                         GotRandomTicket id ->
@@ -695,7 +716,23 @@ updateGame msg a11y outerModel =
                                             , usedTickets = usedTickets
                                         }
                                     , model = ViewingPerson
-                                    , stopAudio = True
+                                    , cmd =
+                                        Cmd.batch
+                                            [ Task.perform (TimedAudioMsg AudioStop) Time.now
+                                            , case Dict.get id data of
+                                                Just { city } ->
+                                                    if String.isEmpty city.sound.name then
+                                                        Cmd.none
+
+                                                    else
+                                                        Task.perform (TimedAudioMsg (AudioPlay city.sound True)) <|
+                                                            Task.map2 always
+                                                                Time.now
+                                                                (Process.sleep 1)
+
+                                                Nothing ->
+                                                    Cmd.none
+                                            ]
                                 }
 
                             else
@@ -709,11 +746,11 @@ updateGame msg a11y outerModel =
                                 }
 
                         MainVolume mainVolume ->
-                            { default | mainVolume = Just mainVolume }
+                            { default | cmd = Task.perform (TimedAudioMsg (AudioVolume mainVolume)) Time.now }
             in
             ( LoadedData data result.sharedModel result.model
             , Cmd.batch
-                [ Cmd.map (\r -> GameMsg ( r, Nothing )) result.cmd
+                [ result.cmd
                 , Cmd.map (\r -> GameMsg ( r, Nothing )) <|
                     PkgPorts.localstorage_store <|
                         Codec.encodeToString 0
@@ -725,17 +762,6 @@ updateGame msg a11y outerModel =
 
                     Just audioMsg ->
                         Task.perform (TimedAudioMsg audioMsg) Time.now
-                , if result.stopAudio then
-                    Task.perform (TimedAudioMsg AudioStop) Time.now
-
-                  else
-                    Cmd.none
-                , case result.mainVolume of
-                    Nothing ->
-                        Cmd.none
-
-                    Just mainVolume ->
-                        Task.perform (TimedAudioMsg (AudioVolume mainVolume)) Time.now
                 ]
             , result.a11y
             )

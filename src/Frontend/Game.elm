@@ -131,7 +131,7 @@ viewMenu { mainVolume } { previous, background } =
                 [ Segment [] { active = not value, label = "No", onPress = False }
                 , Segment [] { active = value, label = "Yes", onPress = True }
                 ]
-                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click ))
+                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click False ))
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
@@ -168,7 +168,7 @@ viewMenu { mainVolume } { previous, background } =
                 |> Element.map
                     (\fontSize ->
                         ( A11y { a11y | fontSize = toFloat <| round fontSize }
-                        , Just <| AudioPlay SoundLibrary.click
+                        , Just <| AudioPlay SoundLibrary.click False
                         )
                     )
             , menuRow []
@@ -197,7 +197,7 @@ viewMenu { mainVolume } { previous, background } =
                 |> Element.map
                     (\volume ->
                         ( MainVolume volume
-                        , Just <| AudioPlay SoundLibrary.click
+                        , Just <| AudioPlay SoundLibrary.click False
                         )
                     )
             , menuRow []
@@ -207,7 +207,7 @@ viewMenu { mainVolume } { previous, background } =
                     , label = "RESET"
                     , onPress =
                         ( Reset
-                        , Just <| AudioPlay SoundLibrary.click
+                        , Just <| AudioPlay SoundLibrary.click False
                         )
                     }
                 ]
@@ -351,7 +351,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
 
             else
                 [ SA.cursor "pointer"
-                , SE.onClick ( TravellingTo 0 id, Just <| AudioPlay SoundLibrary.train )
+                , SE.onClick ( TravellingTo 0 id, Just <| AudioPlay SoundLibrary.train False )
                 ]
     in
     [ S.circle (SA.fill "black" :: common 1) []
@@ -421,7 +421,7 @@ viewPerson person =
 
         avatarBox =
             Input.button [ width fill, height fill ]
-                { onPress = Just ( ViewTalking person.dialog [], Just <| AudioPlay SoundLibrary.quack3 )
+                { onPress = Just ( ViewTalking person.dialog [], Just <| AudioPlay SoundLibrary.quack3 False )
                 , label =
                     semiBox [ width fill, height fill ]
                         (column
@@ -630,7 +630,7 @@ viewQuizAnswer quiz answer =
     in
     Input.button [ width fill ]
         { label = viewDialogLine False duckPerson answer
-        , onPress = Just ( ViewTalking next [], Just <| AudioPlay SoundLibrary.quack1 )
+        , onPress = Just ( ViewTalking next [], Just <| AudioPlay SoundLibrary.quack1 False )
         }
 
 
@@ -692,7 +692,7 @@ viewChoice chatHistory { text, next } =
 
                     NextGiveTicket ->
                         GiveTicketAndViewMap
-                , Just <| AudioPlay SoundLibrary.quack1
+                , Just <| AudioPlay SoundLibrary.quack1 False
                 )
         }
 

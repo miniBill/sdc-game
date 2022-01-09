@@ -38,6 +38,7 @@ type alias Track =
     { from : Time.Posix
     , sound : Sound
     , fadingOutFrom : Maybe Time.Posix
+    , loop : Bool
     }
 
 
@@ -133,7 +134,7 @@ type GameMsg
 
 type AudioMsg
     = AudioStop
-    | AudioPlay Sound
+    | AudioPlay Sound Bool
     | AudioVolume Float
 
 
