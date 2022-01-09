@@ -294,15 +294,6 @@ urlToPage url =
 
 init : Url -> Key -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
 init url key =
-    let
-        toMsg name res =
-            case res of
-                Ok s ->
-                    LoadedAudio name s
-
-                Err _ ->
-                    Nop
-    in
     ( { key = key
       , page = urlToPage url
       , screenSize = Nothing
@@ -315,9 +306,23 @@ init url key =
       }
     , getSizeCmd
     , SoundLibrary.all
-        |> List.map (\sound -> Audio.loadAudio (toMsg sound) sound.name)
+        |> List.map (\sound -> loadAudio sound)
         |> Audio.cmdBatch
     )
+
+
+loadAudio : Sound -> AudioCmd InnerFrontendMsg
+loadAudio sound =
+    let
+        toMsg name res =
+            case res of
+                Ok s ->
+                    LoadedAudio name s
+
+                Err _ ->
+                    Nop
+    in
+    Audio.loadAudio (toMsg sound) sound.name
 
 
 defaultA11yOptions : A11yOptions
@@ -483,7 +488,7 @@ update _ msg ({ audio } as model) =
 
         ( GameMsg gameMsg, Game gameModel ) ->
             let
-                ( gameModel_, gameCmd, a11y ) =
+                ( gameModel_, ( gameCmd, audioCmd ), a11y ) =
                     updateGame gameMsg model.a11y gameModel
             in
             ( { model
@@ -491,7 +496,7 @@ update _ msg ({ audio } as model) =
                 , a11y = a11y
               }
             , Cmd.batch [ getSizeCmd, gameCmd ]
-            , Audio.cmdNone
+            , audioCmd
             )
 
 
@@ -578,16 +583,26 @@ updateEditor msg data model =
             )
 
 
-updateGame : GameMsgTuple -> A11yOptions -> OuterGameModel -> ( OuterGameModel, Cmd InnerFrontendMsg, A11yOptions )
+updateGame :
+    GameMsgTuple
+    -> A11yOptions
+    -> OuterGameModel
+    ->
+        ( OuterGameModel
+        , ( Cmd InnerFrontendMsg
+          , AudioCmd InnerFrontendMsg
+          )
+        , A11yOptions
+        )
 updateGame msg a11y outerModel =
     case outerModel of
         LoadingData ->
             -- Ignore messages received while loading
             -- TODO: queue them instead?
-            ( outerModel, Cmd.none, a11y )
+            ( outerModel, ( Cmd.none, Audio.cmdNone ), a11y )
 
         DataEmpty ->
-            ( outerModel, Cmd.none, a11y )
+            ( outerModel, ( Cmd.none, Audio.cmdNone ), a11y )
 
         LoadedData data sharedModel model ->
             let
@@ -596,6 +611,7 @@ updateGame msg a11y outerModel =
                     , model = model
                     , cmd = Cmd.none
                     , a11y = a11y
+                    , audioCmd = Audio.cmdNone
                     }
 
                 result =
@@ -743,26 +759,43 @@ updateGame msg a11y outerModel =
                                         }
                                     , model =
                                         ViewingMap { travellingTo = Just ( fraction, id ) }
+                                    , audioCmd =
+                                        if fraction == 0 then
+                                            case Dict.get id data of
+                                                Just { city } ->
+                                                    if String.isEmpty city.sound.name then
+                                                        Audio.cmdNone
+
+                                                    else
+                                                        loadAudio city.sound
+
+                                                Nothing ->
+                                                    Audio.cmdNone
+
+                                        else
+                                            Audio.cmdNone
                                 }
 
                         MainVolume mainVolume ->
                             { default | cmd = Task.perform (TimedAudioMsg (AudioVolume mainVolume)) Time.now }
             in
             ( LoadedData data result.sharedModel result.model
-            , Cmd.batch
-                [ result.cmd
-                , Cmd.map (\r -> GameMsg ( r, Nothing )) <|
-                    PkgPorts.localstorage_store <|
-                        Codec.encodeToString 0
-                            localStorageCodec
-                            ( result.sharedModel, result.model, result.a11y )
-                , case Tuple.second msg of
-                    Nothing ->
-                        Cmd.none
+            , ( Cmd.batch
+                    [ result.cmd
+                    , Cmd.map (\r -> GameMsg ( r, Nothing )) <|
+                        PkgPorts.localstorage_store <|
+                            Codec.encodeToString 0
+                                localStorageCodec
+                                ( result.sharedModel, result.model, result.a11y )
+                    , case Tuple.second msg of
+                        Nothing ->
+                            Cmd.none
 
-                    Just audioMsg ->
-                        Task.perform (TimedAudioMsg audioMsg) Time.now
-                ]
+                        Just audioMsg ->
+                            Task.perform (TimedAudioMsg audioMsg) Time.now
+                    ]
+              , result.audioCmd
+              )
             , result.a11y
             )
 
