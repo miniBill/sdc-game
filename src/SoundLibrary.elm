@@ -41,4 +41,4 @@ quackquackquack =
 
 train : Sound
 train =
-    { name = "/art/train.mp3", duration = 50020 }
+    { name = "/art/train-cut.mp3", duration = 10420 }
