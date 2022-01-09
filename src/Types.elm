@@ -30,6 +30,8 @@ type alias InnerFrontendModel =
 type alias AudioModel =
     { sources : Dict String Audio.Source
     , mainVolume : Float
+    , musicVolume : Float
+    , effectsVolume : Float
     , playing : List Track
     }
 
@@ -39,7 +41,13 @@ type alias Track =
     , sound : Sound
     , fadingOutFrom : Maybe Time.Posix
     , loop : Bool
+    , kind : TrackKind
     }
+
+
+type TrackKind
+    = Music
+    | Effect
 
 
 type alias A11yOptions =
@@ -130,12 +138,16 @@ type GameMsg
     | A11y A11yOptions
     | LocalStorageLoaded String
     | MainVolume Float
+    | MusicVolume Float
+    | EffectsVolume Float
 
 
 type AudioMsg
     = AudioStop
-    | AudioPlay Sound Bool
-    | AudioVolume Float
+    | AudioPlay Sound Bool TrackKind
+    | AudioMainVolume Float
+    | AudioMusicVolume Float
+    | AudioEffectsVolume Float
 
 
 type ToBackend

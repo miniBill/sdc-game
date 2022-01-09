@@ -36,7 +36,7 @@ import Set
 import SoundLibrary
 import Task
 import Time
-import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..), Track)
+import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..), Track, TrackKind(..))
 import Url
 import Url.Parser
 
@@ -71,7 +71,7 @@ audioView : AudioData -> InnerFrontendModel -> Audio
 audioView _ { audio } =
     audio.playing
         |> List.map
-            (\{ from, sound, fadingOutFrom, loop } ->
+            (\{ from, sound, fadingOutFrom, loop, kind } ->
                 case Dict.get sound.name audio.sources of
                     Nothing ->
                         Audio.silence
@@ -94,15 +94,23 @@ audioView _ { audio } =
 
                                 else
                                     Audio.audio source from
+
+                            volume =
+                                case kind of
+                                    Music ->
+                                        audio.mainVolume * audio.musicVolume * 0.5
+
+                                    Effect ->
+                                        audio.mainVolume * audio.effectsVolume
                         in
                         case fadingOutFrom of
                             Nothing ->
-                                Audio.scaleVolume audio.mainVolume raw
+                                Audio.scaleVolume volume raw
 
                             Just fadingTime ->
                                 Audio.scaleVolumeAt
-                                    [ ( from, audio.mainVolume )
-                                    , ( fadingTime, audio.mainVolume )
+                                    [ ( from, volume )
+                                    , ( fadingTime, volume )
                                     , ( Time.millisToPosix <|
                                             Time.posixToMillis fadingTime
                                                 + Frontend.GameTheme.fadeOutTime
@@ -300,6 +308,8 @@ init url key =
       , audio =
             { sources = Dict.empty
             , mainVolume = 1
+            , musicVolume = 1
+            , effectsVolume = 1
             , playing = []
             }
       , a11y = defaultA11yOptions
@@ -406,14 +416,25 @@ update _ msg ({ audio } as model) =
             ( { model
                 | audio =
                     case amsg of
-                        AudioVolume mainVolume ->
+                        AudioMainVolume mainVolume ->
                             { audio | mainVolume = mainVolume }
 
-                        AudioPlay sound loop ->
+                        AudioEffectsVolume effectsVolume ->
+                            { audio | effectsVolume = effectsVolume }
+
+                        AudioMusicVolume musicVolume ->
+                            { audio | musicVolume = musicVolume }
+
+                        AudioPlay sound loop kind ->
                             { audio
                                 | playing =
                                     cleanupAudio time <|
-                                        toTrack time sound loop
+                                        { from = time
+                                        , sound = sound
+                                        , fadingOutFrom = Nothing
+                                        , loop = loop
+                                        , kind = kind
+                                        }
                                             :: audio.playing
                             }
 
@@ -511,15 +532,6 @@ cleanupAudio now =
                 Nothing ->
                     loop || Time.posixToMillis from + sound.duration > Time.posixToMillis now
         )
-
-
-toTrack : Time.Posix -> Sound -> Bool -> Track
-toTrack now sound loop =
-    { from = now
-    , sound = sound
-    , fadingOutFrom = Nothing
-    , loop = loop
-    }
 
 
 updateEditor : EditorMsg -> Data -> EditorModel -> ( Data, EditorModel, Cmd EditorMsg )
@@ -741,7 +753,7 @@ updateGame msg a11y outerModel =
                                                         Cmd.none
 
                                                     else
-                                                        Task.perform (TimedAudioMsg (AudioPlay city.sound True)) <|
+                                                        Task.perform (TimedAudioMsg (AudioPlay city.sound True Music)) <|
                                                             Task.map2 always
                                                                 Time.now
                                                                 (Process.sleep 1)
@@ -759,6 +771,18 @@ updateGame msg a11y outerModel =
                                         }
                                     , model =
                                         ViewingMap { travellingTo = Just ( fraction, id ) }
+                                    , cmd =
+                                        if fraction == 0 then
+                                            Cmd.batch
+                                                [ Task.perform (TimedAudioMsg AudioStop) Time.now
+                                                , Task.perform (TimedAudioMsg (AudioPlay SoundLibrary.train False Effect)) <|
+                                                    Task.map2 always
+                                                        Time.now
+                                                        (Process.sleep 1)
+                                                ]
+
+                                        else
+                                            Cmd.none
                                     , audioCmd =
                                         if fraction == 0 then
                                             case Dict.get id data of
@@ -777,7 +801,13 @@ updateGame msg a11y outerModel =
                                 }
 
                         MainVolume mainVolume ->
-                            { default | cmd = Task.perform (TimedAudioMsg (AudioVolume mainVolume)) Time.now }
+                            { default | cmd = Task.perform (TimedAudioMsg (AudioMainVolume mainVolume)) Time.now }
+
+                        MusicVolume musicVolume ->
+                            { default | cmd = Task.perform (TimedAudioMsg (AudioMusicVolume musicVolume)) Time.now }
+
+                        EffectsVolume effectsVolume ->
+                            { default | cmd = Task.perform (TimedAudioMsg (AudioEffectsVolume effectsVolume)) Time.now }
             in
             ( LoadedData data result.sharedModel result.model
             , ( Cmd.batch

@@ -21,7 +21,7 @@ import SoundLibrary
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
-import Types exposing (A11yOptions, AudioModel, AudioMsg(..), GameMsg(..), GameMsgTuple, OuterGameModel(..), Size)
+import Types exposing (A11yOptions, AudioModel, AudioMsg(..), GameMsg(..), GameMsgTuple, OuterGameModel(..), Size, TrackKind(..))
 
 
 view : AudioModel -> OuterGameModel -> Element GameMsgTuple
@@ -63,7 +63,7 @@ view audioModel model =
 
 
 viewMenu : AudioModel -> MenuModel -> Element GameMsgTuple
-viewMenu { mainVolume } { previous, background } =
+viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
     Element.with .a11y <| \a11y ->
     let
         container attrs =
@@ -131,7 +131,38 @@ viewMenu { mainVolume } { previous, background } =
                 [ Segment [] { active = not value, label = "No", onPress = False }
                 , Segment [] { active = value, label = "Yes", onPress = True }
                 ]
-                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click False ))
+                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click False Effect ))
+
+        volumeRow label value toMsg =
+            menuRow []
+                (label ++ " (" ++ String.fromInt (round <| value * 100) ++ "%)")
+                [ Segment []
+                    { active = value == 0
+                    , label = "Mute"
+                    , onPress = 0
+                    }
+                , Segment []
+                    { active = False
+                    , label = "-"
+                    , onPress = max 0 <| value - 0.1
+                    }
+                , Segment []
+                    { active = False
+                    , label = "+"
+                    , onPress = min 1 <| value + 0.1
+                    }
+                , Segment []
+                    { active = value == 1
+                    , label = "Max"
+                    , onPress = 1
+                    }
+                ]
+                |> Element.map
+                    (\volume ->
+                        ( toMsg volume
+                        , Just <| AudioPlay SoundLibrary.click False Effect
+                        )
+                    )
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
@@ -168,38 +199,12 @@ viewMenu { mainVolume } { previous, background } =
                 |> Element.map
                     (\fontSize ->
                         ( A11y { a11y | fontSize = toFloat <| round fontSize }
-                        , Just <| AudioPlay SoundLibrary.click False
+                        , Just <| AudioPlay SoundLibrary.click False Effect
                         )
                     )
-            , menuRow []
-                ("Volume (" ++ String.fromInt (round <| mainVolume * 100) ++ "%)")
-                [ Segment []
-                    { active = mainVolume == 0
-                    , label = "Mute"
-                    , onPress = 0
-                    }
-                , Segment []
-                    { active = False
-                    , label = "-"
-                    , onPress = max 0 <| mainVolume - 0.1
-                    }
-                , Segment []
-                    { active = False
-                    , label = "+"
-                    , onPress = min 1 <| mainVolume + 0.1
-                    }
-                , Segment []
-                    { active = mainVolume == 1
-                    , label = "Max"
-                    , onPress = 1
-                    }
-                ]
-                |> Element.map
-                    (\volume ->
-                        ( MainVolume volume
-                        , Just <| AudioPlay SoundLibrary.click False
-                        )
-                    )
+            , volumeRow "Main Volume" mainVolume MainVolume
+            , volumeRow "Music Volume" musicVolume MusicVolume
+            , volumeRow "Effects Volume" effectsVolume EffectsVolume
             , menuRow []
                 "Reset save"
                 [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
@@ -207,7 +212,7 @@ viewMenu { mainVolume } { previous, background } =
                     , label = "RESET"
                     , onPress =
                         ( Reset
-                        , Just <| AudioPlay SoundLibrary.click False
+                        , Just <| AudioPlay SoundLibrary.click False Effect
                         )
                     }
                 ]
@@ -351,7 +356,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
 
             else
                 [ SA.cursor "pointer"
-                , SE.onClick ( TravellingTo 0 id, Just <| AudioPlay SoundLibrary.train False )
+                , SE.onClick ( TravellingTo 0 id, Nothing )
                 ]
     in
     [ S.circle (SA.fill "black" :: common 1) []
@@ -421,7 +426,7 @@ viewPerson person =
 
         avatarBox =
             Input.button [ width fill, height fill ]
-                { onPress = Just ( ViewTalking person.dialog [], Just <| AudioPlay SoundLibrary.quack3 False )
+                { onPress = Just ( ViewTalking person.dialog [], Just <| AudioPlay SoundLibrary.quack3 False Effect )
                 , label =
                     semiBox [ width fill, height fill ]
                         (column
@@ -630,7 +635,7 @@ viewQuizAnswer quiz answer =
     in
     Input.button [ width fill ]
         { label = viewDialogLine False duckPerson answer
-        , onPress = Just ( ViewTalking next [], Just <| AudioPlay SoundLibrary.quack1 False )
+        , onPress = Just ( ViewTalking next [], Just <| AudioPlay SoundLibrary.quack1 False Effect )
         }
 
 
@@ -692,7 +697,7 @@ viewChoice chatHistory { text, next } =
 
                     NextGiveTicket ->
                         GiveTicketAndViewMap
-                , Just <| AudioPlay SoundLibrary.quack1 False
+                , Just <| AudioPlay SoundLibrary.quack1 False Effect
                 )
         }
 
