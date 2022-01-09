@@ -421,7 +421,7 @@ viewPerson person =
 
         avatarBox =
             Input.button [ width fill, height fill ]
-                { onPress = Just ( ViewTalking person.dialog [], Nothing )
+                { onPress = Just ( ViewTalking person.dialog [], Just <| AudioPlay SoundLibrary.quack3 )
                 , label =
                     semiBox [ width fill, height fill ]
                         (column
@@ -563,6 +563,10 @@ menuButtonAndLabel msg label =
 
 viewQuizzing : Person -> Quiz -> Element GameMsgTuple
 viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
+    let
+        menu =
+            menuButtonAndLabel (ViewMenu { background = person.city.image }) ""
+    in
     column
         (mainContainerAttrs person.city)
         [ semiBox [ width fill ] <|
@@ -585,6 +589,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
             |> List.sort
             |> List.map (viewQuizAnswer quiz)
             |> wrappedRow [ width fill, Theme.spacing ]
+        , menu
         ]
 
 

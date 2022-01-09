@@ -23,7 +23,7 @@ rythm =
 
 fadeOutTime : Int
 fadeOutTime =
-    2000
+    1500
 
 
 defaultFontSize : number
