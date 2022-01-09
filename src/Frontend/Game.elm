@@ -174,19 +174,24 @@ viewMenu { mainVolume } { previous, background } =
             , menuRow []
                 ("Volume (" ++ String.fromInt (round <| mainVolume * 100) ++ "%)")
                 [ Segment []
-                    { active = mainVolume < 1
-                    , label = "-"
-                    , onPress = max 0 <| mainVolume - 0.1
+                    { active = mainVolume == 0
+                    , label = "Mute"
+                    , onPress = 0
                     }
                 , Segment []
-                    { active = mainVolume == 1
-                    , label = "100%"
-                    , onPress = 1
+                    { active = False
+                    , label = "-"
+                    , onPress = max 0 <| mainVolume - 0.1
                     }
                 , Segment []
                     { active = False
                     , label = "+"
                     , onPress = min 1 <| mainVolume + 0.1
+                    }
+                , Segment []
+                    { active = mainVolume == 1
+                    , label = "Max"
+                    , onPress = 1
                     }
                 ]
                 |> Element.map
