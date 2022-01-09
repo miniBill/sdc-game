@@ -86,7 +86,11 @@ audioView _ { audio } =
                                 Audio.scaleVolumeAt
                                     [ ( from, audio.mainVolume )
                                     , ( fadingTime, audio.mainVolume )
-                                    , ( Time.millisToPosix <| Time.posixToMillis fadingTime + Frontend.GameTheme.fadeOutTime, 0 )
+                                    , ( Time.millisToPosix <|
+                                            Time.posixToMillis fadingTime
+                                                + Frontend.GameTheme.fadeOutTime
+                                      , 0
+                                      )
                                     ]
                                     raw
             )
@@ -379,15 +383,21 @@ update _ msg ({ audio } as model) =
         ( TimedAudioMsg amsg time, _ ) ->
             ( { model
                 | audio =
-                    { audio
-                        | playing =
-                            case amsg of
-                                AudioPlay sound ->
+                    case amsg of
+                        AudioVolume mainVolume ->
+                            { audio | mainVolume = mainVolume }
+
+                        AudioPlay sound ->
+                            { audio
+                                | playing =
                                     cleanupAudio time <|
                                         toTrack time sound
                                             :: audio.playing
+                            }
 
-                                AudioStop ->
+                        AudioStop ->
+                            { audio
+                                | playing =
                                     audio.playing
                                         |> cleanupAudio time
                                         |> List.map
@@ -399,7 +409,7 @@ update _ msg ({ audio } as model) =
                                                             |> Just
                                                 }
                                             )
-                    }
+                            }
               }
             , Cmd.none
             , Audio.cmdNone
@@ -564,6 +574,7 @@ updateGame msg a11y outerModel =
                     , cmd = Cmd.none
                     , a11y = a11y
                     , stopAudio = False
+                    , mainVolume = Nothing
                     }
 
                 result =
@@ -696,6 +707,9 @@ updateGame msg a11y outerModel =
                                     , model =
                                         ViewingMap { travellingTo = Just ( fraction, id ) }
                                 }
+
+                        MainVolume mainVolume ->
+                            { default | mainVolume = Just mainVolume }
             in
             ( LoadedData data result.sharedModel result.model
             , Cmd.batch
@@ -716,6 +730,12 @@ updateGame msg a11y outerModel =
 
                   else
                     Cmd.none
+                , case result.mainVolume of
+                    Nothing ->
+                        Cmd.none
+
+                    Just mainVolume ->
+                        Task.perform (TimedAudioMsg (AudioVolume mainVolume)) Time.now
                 ]
             , result.a11y
             )

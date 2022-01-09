@@ -190,8 +190,8 @@ viewMenu { mainVolume } { previous, background } =
                     }
                 ]
                 |> Element.map
-                    (\fontSize ->
-                        ( A11y { a11y | fontSize = toFloat <| round fontSize }
+                    (\volume ->
+                        ( MainVolume volume
                         , Just <| AudioPlay SoundLibrary.click
                         )
                     )

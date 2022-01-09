@@ -22,8 +22,8 @@ type alias InnerFrontendModel =
     { key : Key
     , a11y : A11yOptions
     , screenSize : Maybe Size
-    , audio : AudioModel
     , page : Page
+    , audio : AudioModel
     }
 
 
@@ -134,11 +134,13 @@ type GameMsg
     | Reset
     | A11y A11yOptions
     | LocalStorageLoaded String
+    | MainVolume Float
 
 
 type AudioMsg
     = AudioStop
     | AudioPlay Sound
+    | AudioVolume Float
 
 
 type ToBackend
