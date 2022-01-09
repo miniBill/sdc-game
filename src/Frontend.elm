@@ -30,8 +30,10 @@ import Pixels
 import PkgPorts
 import Random
 import Set
+import SoundLibrary
 import Task
-import Types exposing (A11yOptions, EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..))
+import Time
+import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), Sound, ToBackend(..), ToFrontend(..), Track)
 import Url
 import Url.Parser
 
@@ -58,13 +60,37 @@ app =
             { toJS = PkgPorts.audioPortToJS
             , fromJS = PkgPorts.audioPortFromJS
             }
-        , audio = audio
+        , audio = audioView
         }
 
 
-audio : AudioData -> InnerFrontendModel -> Audio
-audio _ _ =
-    Audio.silence
+audioView : AudioData -> InnerFrontendModel -> Audio
+audioView _ { audio } =
+    audio.playing
+        |> List.map
+            (\{ from, sound, fadingOutFrom } ->
+                case Dict.get sound.name audio.sources of
+                    Nothing ->
+                        Audio.silence
+
+                    Just source ->
+                        let
+                            raw =
+                                Audio.audio source from
+                        in
+                        case fadingOutFrom of
+                            Nothing ->
+                                Audio.scaleVolume audio.mainVolume raw
+
+                            Just fadingTime ->
+                                Audio.scaleVolumeAt
+                                    [ ( from, audio.mainVolume )
+                                    , ( fadingTime, audio.mainVolume )
+                                    , ( Time.millisToPosix <| Time.posixToMillis fadingTime + Frontend.GameTheme.fadeOutTime, 0 )
+                                    ]
+                                    raw
+            )
+        |> Audio.group
 
 
 outerView : AudioData -> InnerFrontendModel -> { title : String, body : List (Html.Html InnerFrontendMsg) }
@@ -259,16 +285,17 @@ init url key =
     ( { key = key
       , page = urlToPage url
       , screenSize = Nothing
-      , audio = Dict.empty
+      , audio =
+            { sources = Dict.empty
+            , mainVolume = 1
+            , playing = []
+            }
       , a11y = defaultA11yOptions
       }
     , getSizeCmd
-    , Audio.cmdBatch
-        [ Audio.loadAudio (toMsg "/art/quack1.mp3") "/art/quack1.mp3"
-        , Audio.loadAudio (toMsg "/art/quack2.mp3") "/art/quack2.mp3"
-        , Audio.loadAudio (toMsg "/art/quack3.mp3") "/art/quack3.mp3"
-        , Audio.loadAudio (toMsg "/art/quackquackquack.mp3") "/art/quackquackquack.mp3"
-        ]
+    , SoundLibrary.all
+        |> List.map (\sound -> Audio.loadAudio (toMsg sound) sound.name)
+        |> Audio.cmdBatch
     )
 
 
@@ -296,7 +323,7 @@ subscriptions : AudioData -> InnerFrontendModel -> Sub InnerFrontendMsg
 subscriptions _ { page } =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> GotResized)
-        , PkgPorts.localstorage_loaded (GameMsg << LocalStorageLoaded)
+        , PkgPorts.localstorage_loaded (\ls -> GameMsg ( LocalStorageLoaded ls, Nothing ))
         , case page of
             Game (LoadedData data { currentPerson } (ViewingMap { travellingTo })) ->
                 case travellingTo of
@@ -319,7 +346,7 @@ subscriptions _ { page } =
                         in
                         Browser.Events.onAnimationFrameDelta
                             (\d ->
-                                GameMsg <| TravellingTo (fraction + d / travelTimeInMilliseconds) id
+                                GameMsg ( TravellingTo (fraction + d / travelTimeInMilliseconds) id, Nothing )
                             )
 
                     Nothing ->
@@ -331,14 +358,52 @@ subscriptions _ { page } =
 
 
 update : AudioData -> InnerFrontendMsg -> InnerFrontendModel -> ( InnerFrontendModel, Cmd InnerFrontendMsg, AudioCmd InnerFrontendMsg )
-update _ msg model =
+update _ msg ({ audio } as model) =
     case ( msg, model.page ) of
         -- Handle generic messages
         ( Nop, _ ) ->
             ( model, Cmd.none, Audio.cmdNone )
 
-        ( LoadedAudio name source, _ ) ->
-            ( { model | audio = Dict.insert name source model.audio }, Cmd.none, Audio.cmdNone )
+        ( LoadedAudio sound source, _ ) ->
+            ( { model
+                | audio =
+                    { audio
+                        | sources =
+                            Dict.insert sound.name source audio.sources
+                    }
+              }
+            , Cmd.none
+            , Audio.cmdNone
+            )
+
+        ( TimedAudioMsg amsg time, _ ) ->
+            ( { model
+                | audio =
+                    { audio
+                        | playing =
+                            case amsg of
+                                AudioPlay sound ->
+                                    cleanupAudio time <|
+                                        toTrack time sound
+                                            :: audio.playing
+
+                                AudioStop ->
+                                    audio.playing
+                                        |> cleanupAudio time
+                                        |> List.map
+                                            (\t ->
+                                                { t
+                                                    | fadingOutFrom =
+                                                        t.fadingOutFrom
+                                                            |> Maybe.withDefault time
+                                                            |> Just
+                                                }
+                                            )
+                    }
+              }
+            , Cmd.none
+            , Audio.cmdNone
+            )
 
         ( UrlClicked urlRequest, _ ) ->
             case urlRequest of
@@ -398,9 +463,25 @@ update _ msg model =
                 | page = Game gameModel_
                 , a11y = a11y
               }
-            , Cmd.batch [ getSizeCmd, Cmd.map GameMsg gameCmd ]
+            , Cmd.batch [ getSizeCmd, gameCmd ]
             , Audio.cmdNone
             )
+
+
+cleanupAudio : Time.Posix -> List Track -> List Track
+cleanupAudio now =
+    List.filter
+        (\{ from, sound } ->
+            Time.posixToMillis from + sound.duration > Time.posixToMillis now
+        )
+
+
+toTrack : Time.Posix -> Sound -> Track
+toTrack now sound =
+    { from = now
+    , sound = sound
+    , fadingOutFrom = Nothing
+    }
 
 
 updateEditor : EditorMsg -> Data -> EditorModel -> ( Data, EditorModel, Cmd EditorMsg )
@@ -464,7 +545,7 @@ updateEditor msg data model =
             )
 
 
-updateGame : GameMsg -> A11yOptions -> OuterGameModel -> ( OuterGameModel, Cmd GameMsg, A11yOptions )
+updateGame : GameMsgTuple -> A11yOptions -> OuterGameModel -> ( OuterGameModel, Cmd InnerFrontendMsg, A11yOptions )
 updateGame msg a11y outerModel =
     case outerModel of
         LoadingData ->
@@ -482,10 +563,11 @@ updateGame msg a11y outerModel =
                     , model = model
                     , cmd = Cmd.none
                     , a11y = a11y
+                    , stopAudio = False
                     }
 
                 result =
-                    case msg of
+                    case Tuple.first msg of
                         ViewMenu { background } ->
                             { default
                                 | model =
@@ -602,6 +684,7 @@ updateGame msg a11y outerModel =
                                             , usedTickets = usedTickets
                                         }
                                     , model = ViewingPerson
+                                    , stopAudio = True
                                 }
 
                             else
@@ -616,11 +699,23 @@ updateGame msg a11y outerModel =
             in
             ( LoadedData data result.sharedModel result.model
             , Cmd.batch
-                [ result.cmd
-                , PkgPorts.localstorage_store <|
-                    Codec.encodeToString 0
-                        localStorageCodec
-                        ( result.sharedModel, result.model, result.a11y )
+                [ Cmd.map (\r -> GameMsg ( r, Nothing )) result.cmd
+                , Cmd.map (\r -> GameMsg ( r, Nothing )) <|
+                    PkgPorts.localstorage_store <|
+                        Codec.encodeToString 0
+                            localStorageCodec
+                            ( result.sharedModel, result.model, result.a11y )
+                , case Tuple.second msg of
+                    Nothing ->
+                        Cmd.none
+
+                    Just audioMsg ->
+                        Task.perform (TimedAudioMsg audioMsg) Time.now
+                , if result.stopAudio then
+                    Task.perform (TimedAudioMsg AudioStop) Time.now
+
+                  else
+                    Cmd.none
                 ]
             , result.a11y
             )
@@ -740,7 +835,7 @@ view : InnerFrontendModel -> Element InnerFrontendMsg
 view model =
     case model.page of
         Game gameModel ->
-            Element.map GameMsg <| Frontend.Game.view gameModel
+            Element.map GameMsg <| Frontend.Game.view model.audio gameModel
 
         Editor data editorModel ->
             Element.map EditorMsg <| Frontend.Editor.view data editorModel

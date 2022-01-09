@@ -1,10 +1,34 @@
-module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fontSize, historicalBackground, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
+module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fadeOutTime, fontSize, historicalBackground, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Types exposing (A11yOptions, Size)
+
+
+
+-- Constants
+
+
+borderSize : number
+borderSize =
+    1
+
+
+rythm : number
+rythm =
+    15
+
+
+fadeOutTime : Int
+fadeOutTime =
+    2000
+
+
+defaultFontSize : number
+defaultFontSize =
+    16
 
 
 
@@ -52,21 +76,6 @@ historicalBackground =
 
     else
         Background.color <| Element.rgba 0.6 0.6 0.6 0.6
-
-
-borderSize : number
-borderSize =
-    1
-
-
-rythm : number
-rythm =
-    15
-
-
-defaultFontSize : number
-defaultFontSize =
-    16
 
 
 padding : Attribute msg

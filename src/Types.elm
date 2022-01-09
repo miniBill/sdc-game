@@ -11,6 +11,7 @@ import Model exposing (ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, S
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
+import Time
 
 
 type alias FrontendModel =
@@ -21,8 +22,28 @@ type alias InnerFrontendModel =
     { key : Key
     , a11y : A11yOptions
     , screenSize : Maybe Size
-    , audio : Dict String Audio.Source
+    , audio : AudioModel
     , page : Page
+    }
+
+
+type alias AudioModel =
+    { sources : Dict String Audio.Source
+    , mainVolume : Float
+    , playing : List Track
+    }
+
+
+type alias Sound =
+    { name : String
+    , duration : Int -- In milliseconds
+    }
+
+
+type alias Track =
+    { from : Time.Posix
+    , sound : Sound
+    , fadingOutFrom : Maybe Time.Posix
     }
 
 
@@ -77,11 +98,16 @@ type InnerFrontendMsg
     | UrlChanged Url
       -- Page-specific messages
     | EditorMsg EditorMsg
-    | GameMsg GameMsg
+    | GameMsg GameMsgTuple
       -- Audio
-    | LoadedAudio String Audio.Source
+    | LoadedAudio Sound Audio.Source
+    | TimedAudioMsg AudioMsg Time.Posix
       -- Nop
     | Nop
+
+
+type alias GameMsgTuple =
+    ( GameMsg, Maybe AudioMsg )
 
 
 type EditorMsg
@@ -108,6 +134,11 @@ type GameMsg
     | Reset
     | A11y A11yOptions
     | LocalStorageLoaded String
+
+
+type AudioMsg
+    = AudioStop
+    | AudioPlay Sound
 
 
 type ToBackend

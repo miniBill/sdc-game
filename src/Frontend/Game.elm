@@ -17,14 +17,15 @@ import Model exposing (ChatHistory, Choice, City, Data, GameModel(..), Id, MapMo
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set
+import SoundLibrary
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
-import Types exposing (A11yOptions, GameMsg(..), OuterGameModel(..), Size)
+import Types exposing (A11yOptions, AudioModel, AudioMsg(..), GameMsg(..), GameMsgTuple, OuterGameModel(..), Size)
 
 
-view : OuterGameModel -> Element GameMsg
-view model =
+view : AudioModel -> OuterGameModel -> Element GameMsgTuple
+view audioModel model =
     case model of
         LoadingData ->
             Frontend.Common.loading
@@ -57,12 +58,12 @@ view model =
                                 viewQuizzing person quiz
 
                             ViewingMenu previous ->
-                                viewMenu previous
+                                viewMenu audioModel previous
                         )
 
 
-viewMenu : MenuModel -> Element GameMsg
-viewMenu { previous, background } =
+viewMenu : AudioModel -> MenuModel -> Element GameMsgTuple
+viewMenu { mainVolume } { previous, background } =
     Element.with .a11y <| \a11y ->
     let
         container attrs =
@@ -99,6 +100,7 @@ viewMenu { previous, background } =
                 , onPress = Just onPress
                 }
 
+        menuRow : List (Attribute msg) -> String -> List (Segment msg) -> Element msg
         menuRow attrs label segments =
             let
                 segmentsCount =
@@ -129,7 +131,7 @@ viewMenu { previous, background } =
                 [ Segment [] { active = not value, label = "No", onPress = False }
                 , Segment [] { active = value, label = "Yes", onPress = True }
                 ]
-                |> Element.map (toMsg >> A11y)
+                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click ))
     in
     el (mainContainerAttrs { image = background }) <|
         column [ width fill, height fill, Theme.spacing ]
@@ -163,13 +165,45 @@ viewMenu { previous, background } =
                     , onPress = a11y.fontSize * 11 / 10
                     }
                 ]
-                |> Element.map (\fontSize -> A11y { a11y | fontSize = toFloat <| round fontSize })
+                |> Element.map
+                    (\fontSize ->
+                        ( A11y { a11y | fontSize = toFloat <| round fontSize }
+                        , Just <| AudioPlay SoundLibrary.click
+                        )
+                    )
+            , menuRow []
+                ("Volume (" ++ String.fromInt (round <| mainVolume * 100) ++ "%)")
+                [ Segment []
+                    { active = mainVolume < 1
+                    , label = "-"
+                    , onPress = max 0 <| mainVolume - 0.1
+                    }
+                , Segment []
+                    { active = mainVolume == 1
+                    , label = "100%"
+                    , onPress = 1
+                    }
+                , Segment []
+                    { active = False
+                    , label = "+"
+                    , onPress = min 1 <| mainVolume + 0.1
+                    }
+                ]
+                |> Element.map
+                    (\fontSize ->
+                        ( A11y { a11y | fontSize = toFloat <| round fontSize }
+                        , Just <| AudioPlay SoundLibrary.click
+                        )
+                    )
             , menuRow []
                 "Reset save"
                 [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
                     { active = False
                     , label = "RESET"
-                    , onPress = Reset
+                    , onPress =
+                        ( Reset
+                        , Just <| AudioPlay SoundLibrary.click
+                        )
                     }
                 ]
             , menuButtonAndLabel (BackTo previous) "Back"
@@ -180,7 +214,7 @@ type Segment msg
     = Segment (List (Attribute msg)) { active : Bool, label : String, onPress : msg }
 
 
-viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsg
+viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsgTuple
 viewMap data sharedGameModel mapModel =
     Element.with identity <| \{ screenSize, a11y } ->
     let
@@ -279,7 +313,7 @@ pixelsToString pixels =
     String.fromFloat (Pixels.inPixels pixels) ++ "px"
 
 
-viewPinOnMap : SharedGameModel -> A11yOptions -> MapModel -> Id -> Person -> List (Svg GameMsg)
+viewPinOnMap : SharedGameModel -> A11yOptions -> MapModel -> Id -> Person -> List (Svg GameMsgTuple)
 viewPinOnMap sharedGameModel a11y mapModel id { city } =
     let
         radius =
@@ -312,7 +346,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
 
             else
                 [ SA.cursor "pointer"
-                , SE.onClick <| TravellingTo 0 id
+                , SE.onClick ( TravellingTo 0 id, Just <| AudioPlay SoundLibrary.train )
                 ]
     in
     [ S.circle (SA.fill "black" :: common 1) []
@@ -320,7 +354,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
     ]
 
 
-viewDuckOnMap : Data -> MapModel -> Person -> List (Svg GameMsg)
+viewDuckOnMap : Data -> MapModel -> Person -> List (Svg GameMsgTuple)
 viewDuckOnMap data mapModel { city } =
     let
         radius =
@@ -374,7 +408,7 @@ viewDuckOnMap data mapModel { city } =
     ]
 
 
-viewPerson : Person -> Element GameMsg
+viewPerson : Person -> Element GameMsgTuple
 viewPerson person =
     let
         style k v =
@@ -382,7 +416,7 @@ viewPerson person =
 
         avatarBox =
             Input.button [ width fill, height fill ]
-                { onPress = Just <| ViewTalking person.dialog []
+                { onPress = Just ( ViewTalking person.dialog [], Nothing )
                 , label =
                     semiBox [ width fill, height fill ]
                         (column
@@ -443,7 +477,7 @@ mainContainerAttrs city =
     ]
 
 
-viewTalking : SharedGameModel -> Person -> TalkingModel -> Element GameMsg
+viewTalking : SharedGameModel -> Person -> TalkingModel -> Element GameMsgTuple
 viewTalking { currentPerson } person { chatHistory, currentDialog } =
     let
         history =
@@ -493,13 +527,13 @@ initialMenuLabel =
     "Menu - Accessibility"
 
 
-menuButtonAndLabel : GameMsg -> String -> Element GameMsg
+menuButtonAndLabel : GameMsg -> String -> Element GameMsgTuple
 menuButtonAndLabel msg label =
     Input.button
         [ alignBottom
         , width fill
         ]
-        { onPress = Just msg
+        { onPress = Just ( msg, Nothing )
         , label =
             row
                 [ Theme.spacing
@@ -522,7 +556,7 @@ menuButtonAndLabel msg label =
         }
 
 
-viewQuizzing : Person -> Quiz -> Element GameMsg
+viewQuizzing : Person -> Quiz -> Element GameMsgTuple
 viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
     column
         (mainContainerAttrs person.city)
@@ -556,7 +590,7 @@ duckPerson =
     }
 
 
-viewQuizAnswer : Quiz -> String -> Element GameMsg
+viewQuizAnswer : Quiz -> String -> Element GameMsgTuple
 viewQuizAnswer quiz answer =
     let
         next =
@@ -586,7 +620,7 @@ viewQuizAnswer quiz answer =
     in
     Input.button [ width fill ]
         { label = viewDialogLine False duckPerson answer
-        , onPress = Just <| ViewTalking next []
+        , onPress = Just ( ViewTalking next [], Just <| AudioPlay SoundLibrary.quack1 )
         }
 
 
@@ -627,13 +661,13 @@ avatar scale person =
         )
 
 
-viewChoice : ChatHistory -> Choice -> Element GameMsg
+viewChoice : ChatHistory -> Choice -> Element GameMsgTuple
 viewChoice chatHistory { text, next } =
     Input.button [ width fill ]
         { label = viewDialogLine False duckPerson text
         , onPress =
-            Just <|
-                case next of
+            Just
+                ( case next of
                     NextDialog n ->
                         ViewTalking n (( Nothing, text ) :: chatHistory)
 
@@ -648,6 +682,8 @@ viewChoice chatHistory { text, next } =
 
                     NextGiveTicket ->
                         GiveTicketAndViewMap
+                , Just <| AudioPlay SoundLibrary.quack1
+                )
         }
 
 
