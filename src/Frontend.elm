@@ -333,7 +333,7 @@ loadAudio sound =
                 Err _ ->
                     Nop
     in
-    Audio.loadAudio (toMsg sound) sound.name
+    Audio.loadAudio (toMsg sound) (Env.imageToUrl sound.name)
 
 
 defaultA11yOptions : A11yOptions
