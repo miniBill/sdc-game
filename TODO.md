@@ -1,7 +1,9 @@
 # Todo
 
 1. Remove old types (items, consequences, ...)
-2. Optimize images
+2. Content pipeline
+   1. Resize and optimize images
+   2. Hash them and cache them
 3. Content
 
 # Maybe
