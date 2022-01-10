@@ -156,13 +156,15 @@ css =
         content =
             """
             @font-face {
-                    font-family: OpenDyslexic;
-                    src: url('""" ++ Env.imageToUrl "OpenDyslexic3-Regular.ttf" ++ """');
+                font-family: OpenDyslexic;
+                src: local('OpenDyslexic') local('Open Dyslexic') url('""" ++ Env.imageToUrl "OpenDyslexic3-Regular.ttf" ++ """');
+                font-display: swap;
             }
 
             @font-face {
-                    font-family: ComicSansMS3;
-                    src: url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """');
+                font-family: ComicSansMS3;
+                src: local('Comic Sans MS') local('Comic Sans') url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """') format('ttf');
+                font-display: swap;
             }"""
     in
     Html.node "style" [] [ Html.text content ]
