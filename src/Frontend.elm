@@ -199,7 +199,9 @@ updateFromBackend _ msg model =
                 [ getSizeCmd
                 , PkgPorts.localstorage_load {}
                 ]
-            , Audio.cmdNone
+            , SoundLibrary.all
+                |> List.map (\sound -> loadAudio sound)
+                |> Audio.cmdBatch
             )
 
 
@@ -317,9 +319,7 @@ init url key =
       , a11y = defaultA11yOptions
       }
     , getSizeCmd
-    , SoundLibrary.all
-        |> List.map (\sound -> loadAudio sound)
-        |> Audio.cmdBatch
+    , Audio.cmdNone
     )
 
 
