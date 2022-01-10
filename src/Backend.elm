@@ -25,7 +25,6 @@ init : ( BackendModel, Cmd BackendMsg )
 init =
     ( { connectedClients = Set.empty
       , data = Dict.empty
-      , images = Dict.empty
       }
     , Cmd.none
     )

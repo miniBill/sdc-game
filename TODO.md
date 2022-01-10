@@ -1,7 +1,8 @@
 # Todo
 
-1. Images
-2. Content
+1. Remove old types (items, consequences, ...)
+2. Images
+3. Content
 
 # Maybe
 

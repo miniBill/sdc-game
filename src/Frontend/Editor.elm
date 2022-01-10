@@ -5,6 +5,7 @@ import Editors
 import Element.WithContext as Element exposing (alignTop, centerY, el, fill, height, image, inFront, padding, paddingXY, px, row, scrollbars, shrink, text, width)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
+import Env
 import Frontend.Common
 import Frontend.EditorTheme exposing (Element)
 import Json.Decode as JD exposing (Decoder)
@@ -154,7 +155,7 @@ peopleButtons mode data model =
                                     ]
                                     { -- If the image has trouble loading, we really don't want to show an alt text
                                       description = ""
-                                    , src = person.image
+                                    , src = Env.filesBaseUrl ++ person.image
                                     }
                             , el [ paddingXY 0 Frontend.EditorTheme.rythm ] <|
                                 text <|
@@ -228,7 +229,7 @@ mapEditor person =
                 clickDecoder
         ]
         [ S.image
-            [ SA.xlinkHref "/art/europe.jpg"
+            [ SA.xlinkHref <| Env.filesBaseUrl ++ "/art/europe.jpg"
             , SA.height <| mapPixelToString mapSize.width
             , SA.height <| mapPixelToString mapSize.height
             ]

@@ -5,6 +5,7 @@ import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
+import Env
 import Frontend.GameTheme as Theme exposing (Element)
 import Html
 import Html.Attributes
@@ -39,7 +40,10 @@ elmUiRenderer =
     , hardLineBreak = Html.br [] [] |> Element.html
     , image =
         \image ->
-            Element.image [ Element.width Element.fill ] { src = image.src, description = image.alt }
+            Element.image [ Element.width Element.fill ]
+                { src = Env.filesBaseUrl ++ image.src
+                , description = image.alt
+                }
     , blockQuote =
         \children ->
             Element.column

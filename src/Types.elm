@@ -3,7 +3,6 @@ module Types exposing (..)
 import Audio
 import Browser exposing (UrlRequest)
 import Browser.Navigation exposing (Key)
-import Bytes exposing (Bytes)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
@@ -84,7 +83,6 @@ type OuterGameModel
 type alias BackendModel =
     { connectedClients : Set ClientId
     , data : Data
-    , images : Dict String Bytes
     }
 
 
