@@ -163,7 +163,7 @@ css =
 
             @font-face {
                 font-family: ComicSansMS3;
-                src: local('Comic Sans MS'), local('Comic Sans'), url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """') format('ttf');
+                src: local('Comic Sans MS'), local('Comic Sans'), url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """');
                 font-display: swap;
             }"""
     in
