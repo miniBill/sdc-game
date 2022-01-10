@@ -1,11 +1,10 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, fillPortion, height, image, px, row, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, fillPortion, height, px, row, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
-import Env
 import Frontend.Common
 import Frontend.GameMarkdown
 import Frontend.GameTheme as Theme exposing (Attribute, Element)
@@ -273,7 +272,7 @@ viewMap data sharedGameModel mapModel =
 
         map =
             [ S.image
-                [ SA.xlinkHref <| Env.filesBaseUrl ++ "/art/europe.jpg"
+                [ Theme.imageXlinkHref "/art/europe.jpg"
                 , SA.width <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
@@ -413,7 +412,7 @@ viewDuckOnMap data mapModel { city } =
         , SA.y <| String.fromFloat <| y - duckRadius
         , SA.width <| String.fromFloat <| duckRadius * 2
         , SA.height <| String.fromFloat <| duckRadius * 2
-        , SA.xlinkHref <| Env.filesBaseUrl ++ "/art/duckon.webp"
+        , Theme.imageXlinkHref "/art/duckon.webp"
         ]
         []
     ]
@@ -440,7 +439,7 @@ viewPerson person =
                             [ el
                                 [ width fill
                                 , height fill
-                                , style "background-image" <| "url(\"" ++ Env.filesBaseUrl ++ person.image ++ "\")"
+                                , Theme.htmlBackgroundImageUrl person.image
                                 , style "background-size" "contain"
                                 , style "background-repeat" "no-repeat"
                                 , style "background-position" "center"
@@ -664,8 +663,8 @@ avatar scale person =
          ]
             ++ size
         )
-        (image (Element.transparent True :: size)
-            { src = Env.filesBaseUrl ++ person.image
+        (Theme.image (Element.transparent True :: size)
+            { src = person.image
             , description =
                 if String.isEmpty person.name then
                     "Menu"
@@ -727,7 +726,7 @@ cityBackground city =
         el
             [ width fill
             , height fill
-            , Element.htmlAttribute <| Html.Attributes.style "background-image" <| "url('" ++ Env.filesBaseUrl ++ city.image ++ "')"
+            , Theme.htmlBackgroundImageUrl city.image
             , Element.htmlAttribute <| Html.Attributes.style "background-position" "center"
             , Element.htmlAttribute <| Html.Attributes.style "background-size" "cover"
             ]

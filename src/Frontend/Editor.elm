@@ -2,12 +2,11 @@ module Frontend.Editor exposing (view)
 
 import Dict
 import Editors
-import Element.WithContext as Element exposing (alignTop, centerY, el, fill, height, image, inFront, padding, paddingXY, px, row, scrollbars, shrink, text, width)
+import Element.WithContext as Element exposing (alignTop, centerY, el, fill, height, inFront, padding, paddingXY, px, row, scrollbars, shrink, text, width)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
-import Env
 import Frontend.Common
-import Frontend.EditorTheme exposing (Element)
+import Frontend.EditorTheme as Theme exposing (Element)
 import Json.Decode as JD exposing (Decoder)
 import MapPixels
 import Model exposing (Data, Id, Person, mapSize)
@@ -37,7 +36,7 @@ view maybeData editorModel =
                         |> Maybe.withDefault Element.none
 
                 scrollableView =
-                    Frontend.EditorTheme.column
+                    Theme.column
                         [ scrollbars
                         , height fill
                         , width fill
@@ -50,25 +49,25 @@ view maybeData editorModel =
             el
                 [ width fill
                 , height fill
-                , Frontend.EditorTheme.spacing
+                , Theme.spacing
                 , inFront <|
                     el
                         [ Element.paddingEach
                             { left = 0
                             , top = 0
-                            , right = Frontend.EditorTheme.rythm
+                            , right = Theme.rythm
                             , bottom = 0
                             }
                         ]
                     <|
                         el
-                            [ Frontend.EditorTheme.padding
-                            , Background.color Frontend.EditorTheme.colors.semitransparent
+                            [ Theme.padding
+                            , Background.color Theme.colors.semitransparent
                             , Border.roundEach
                                 { topLeft = 0
                                 , topRight = 0
                                 , bottomLeft = 0
-                                , bottomRight = Frontend.EditorTheme.rythm
+                                , bottomRight = Theme.rythm
                                 }
                             ]
                             (controls RealMode data editorModel)
@@ -84,7 +83,7 @@ type ControlsMode
 controls : ControlsMode -> Data -> EditorModel -> Element EditorMsg
 controls mode data model =
     Element.wrappedRow
-        [ Frontend.EditorTheme.spacing
+        [ Theme.spacing
         , alignTop
         ]
         (commonControls mode
@@ -106,7 +105,7 @@ commonControls : ControlsMode -> List (Element EditorMsg)
 commonControls mode =
     let
         btn msg color label =
-            Frontend.EditorTheme.button
+            Theme.button
                 [ alignTop
                 , Background.color color
                 , Element.transparent <| mode == GhostMode
@@ -115,9 +114,9 @@ commonControls mode =
                 , label = text label
                 }
     in
-    [ btn FileSelect Frontend.EditorTheme.colors.white "Upload JSON"
-    , btn DownloadJson Frontend.EditorTheme.colors.white "Save as JSON"
-    , btn AddPerson Frontend.EditorTheme.colors.addNew "Add Person"
+    [ btn FileSelect Theme.colors.white "Upload JSON"
+    , btn DownloadJson Theme.colors.white "Save as JSON"
+    , btn AddPerson Theme.colors.addNew "Add Person"
     ]
 
 
@@ -128,36 +127,36 @@ peopleButtons mode data model =
         |> List.sortBy (\( _, { name } ) -> name)
         |> List.map
             (\( id, person ) ->
-                Frontend.EditorTheme.button
+                Theme.button
                     [ alignTop
                     , padding 0
                     , Background.color <|
                         if Just id == model.currentPerson then
-                            Frontend.EditorTheme.colors.selectedTab
+                            Theme.colors.selectedTab
 
                         else
-                            Frontend.EditorTheme.colors.tab
+                            Theme.colors.tab
                     , Element.transparent <| mode == GhostMode
                     ]
                     { onPress = Just <| EditPerson id
                     , label =
                         row
-                            [ paddingXY Frontend.EditorTheme.rythm 0
-                            , Frontend.EditorTheme.spacing
+                            [ paddingXY Theme.rythm 0
+                            , Theme.spacing
                             ]
                             [ if String.isEmpty person.image then
                                 Element.none
 
                               else
-                                image
+                                Theme.image
                                     [ height <| px 30
                                     , centerY
                                     ]
                                     { -- If the image has trouble loading, we really don't want to show an alt text
                                       description = ""
-                                    , src = Env.filesBaseUrl ++ person.image
+                                    , src = person.image
                                     }
-                            , el [ paddingXY 0 Frontend.EditorTheme.rythm ] <|
+                            , el [ paddingXY 0 Theme.rythm ] <|
                                 text <|
                                     if String.isEmpty person.name then
                                         "<New>"
@@ -174,7 +173,7 @@ viewPerson id person =
     Element.map (\newPerson -> UpdatePerson id <| Just newPerson) <|
         Element.column
             [ alignTop
-            , Frontend.EditorTheme.spacing
+            , Theme.spacing
             , width fill
             , height shrink
             ]
@@ -229,7 +228,7 @@ mapEditor person =
                 clickDecoder
         ]
         [ S.image
-            [ SA.xlinkHref <| Env.filesBaseUrl ++ "/art/europe.jpg"
+            [ Theme.imageXlinkHref "/art/europe.jpg"
             , SA.height <| mapPixelToString mapSize.width
             , SA.height <| mapPixelToString mapSize.height
             ]

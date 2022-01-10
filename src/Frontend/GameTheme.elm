@@ -1,9 +1,13 @@
-module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fadeOutTime, fontSize, historicalBackground, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
+module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fadeOutTime, fontSize, historicalBackground, htmlBackgroundImageUrl, image, imageXlinkHref, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
+import Env
+import Html.Attributes
+import Svg
+import Svg.Attributes
 import Types exposing (A11yOptions, Size)
 
 
@@ -163,3 +167,24 @@ autoscaling k f =
 autoscalingI : Float -> (Int -> Attribute msg) -> Attribute msg
 autoscalingI k f =
     autoscaling k (f << round)
+
+
+
+-- Images
+
+
+image : List (Attribute msg) -> { description : String, src : String } -> Element msg
+image attrs config =
+    Element.image attrs { config | src = String.replace "//" "/" <| Env.filesBaseUrl ++ config.src }
+
+
+htmlBackgroundImageUrl : String -> Attribute msg
+htmlBackgroundImageUrl src =
+    Element.htmlAttribute <|
+        Html.Attributes.style "background-image" <|
+            String.replace "//" "/" ("url('" ++ Env.filesBaseUrl ++ src ++ "')")
+
+
+imageXlinkHref : String -> Svg.Attribute msg
+imageXlinkHref src =
+    Svg.Attributes.xlinkHref <| String.replace "//" "/" <| Env.filesBaseUrl ++ src

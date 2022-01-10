@@ -1,9 +1,12 @@
-module Frontend.EditorTheme exposing (Attribute, Context, Element, borderRounded, button, colors, column, fontSizes, getColor, padding, rythm, spacing, tabButton)
+module Frontend.EditorTheme exposing (Attribute, Context, Element, borderRounded, button, colors, column, fontSizes, getColor, image, imageXlinkHref, padding, rythm, spacing, tabButton)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
+import Env
+import Svg
+import Svg.Attributes
 import Types exposing (A11yOptions, Size)
 
 
@@ -165,3 +168,13 @@ tabButton attrs =
          ]
             ++ attrs
         )
+
+
+image : List (Attribute msg) -> { description : String, src : String } -> Element msg
+image attrs config =
+    Element.image attrs { config | src = String.replace "//" "/" <| Env.filesBaseUrl ++ config.src }
+
+
+imageXlinkHref : String -> Svg.Attribute msg
+imageXlinkHref src =
+    Svg.Attributes.xlinkHref <| String.replace "//" "/" <| Env.filesBaseUrl ++ src
