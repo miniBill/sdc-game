@@ -273,7 +273,7 @@ viewMap data sharedGameModel mapModel =
 
         map =
             [ S.image
-                [ Theme.imageXlinkHref "/art/europe.jpg"
+                [ Theme.imageXlinkHref "/art/europe.webp"
                 , SA.width <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
@@ -296,7 +296,7 @@ viewMap data sharedGameModel mapModel =
                 , Element.htmlAttribute <| Html.Attributes.style "bottom" "0px"
                 ]
                 (menuButtonAndLabel
-                    (ViewMenu { background = "/art/europe.jpg" })
+                    (ViewMenu { background = "/art/europe.webp" })
                     ""
                 )
     in
@@ -550,7 +550,7 @@ menuButtonAndLabel msg label =
                 [ Theme.spacing
                 , width fill
                 ]
-                [ avatar 1 { image = "/art/sdc.jpg", name = "" }
+                [ avatar 1 { image = "/art/sdc.webp", name = "" }
                 , if String.isEmpty label then
                     Element.none
 
