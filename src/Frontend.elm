@@ -157,12 +157,12 @@ css =
             """
             @font-face {
                     font-family: OpenDyslexic;
-                    src: url('""" ++ Env.imageToUrl "art/OpenDyslexic3-Regular.ttf" ++ """');
+                    src: url('""" ++ Env.imageToUrl "OpenDyslexic3-Regular.ttf" ++ """');
             }
 
             @font-face {
                     font-family: ComicSansMS3;
-                    src: url('""" ++ Env.imageToUrl "art/ComicSansMS3.ttf" ++ """');
+                    src: url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """');
             }"""
     in
     Html.node "style" [] [ Html.text content ]
