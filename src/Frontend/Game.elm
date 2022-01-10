@@ -535,7 +535,7 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
 
 initialMenuLabel : String
 initialMenuLabel =
-    "Menu - Accessibility"
+    "Menu / Accessibility"
 
 
 menuButtonAndLabel : GameMsg -> String -> Element GameMsgTuple
