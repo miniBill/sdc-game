@@ -175,16 +175,16 @@ autoscalingI k f =
 
 image : List (Attribute msg) -> { description : String, src : String } -> Element msg
 image attrs config =
-    Element.image attrs { config | src = String.replace "//" "/" <| Env.filesBaseUrl ++ config.src }
+    Element.image attrs { config | src = Env.imageToUrl config.src }
 
 
 htmlBackgroundImageUrl : String -> Attribute msg
 htmlBackgroundImageUrl src =
     Element.htmlAttribute <|
         Html.Attributes.style "background-image" <|
-            String.replace "//" "/" ("url('" ++ Env.filesBaseUrl ++ src ++ "')")
+            ("url('" ++ Env.imageToUrl src ++ "')")
 
 
 imageXlinkHref : String -> Svg.Attribute msg
 imageXlinkHref src =
-    Svg.Attributes.xlinkHref <| String.replace "//" "/" <| Env.filesBaseUrl ++ src
+    Svg.Attributes.xlinkHref <| Env.imageToUrl src
