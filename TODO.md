@@ -1,7 +1,7 @@
 # Todo
 
 1. Remove old types (items, consequences, ...)
-2. Images
+2. Optimize images
 3. Content
 
 # Maybe
