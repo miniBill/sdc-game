@@ -12,6 +12,7 @@ import Duration
 import Editors
 import Element.WithContext as Element exposing (fill, height, width)
 import Element.WithContext.Font as Font
+import Env
 import File
 import File.Download
 import File.Select
@@ -157,12 +158,12 @@ css =
             """
             @font-face {
                     font-family: OpenDyslexic;
-                    src: url(art/OpenDyslexic3-Regular.ttf);
+                    src: url('""" ++ Env.imageToUrl "art/OpenDyslexic3-Regular.ttf" ++ """');
             }
 
             @font-face {
                     font-family: ComicSansMS3;
-                    src: url(art/ComicSansMS3.ttf);
+                    src: url('""" ++ Env.imageToUrl "art/ComicSansMS3.ttf" ++ """');
             }"""
     in
     Html.node "style" [] [ Html.text content ]
