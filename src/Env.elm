@@ -20,7 +20,7 @@ backblazeApplicationKey =
 
 filesBaseUrl : String
 filesBaseUrl =
-    "/"
+    "/art"
 
 
 imageToUrl : String -> String
@@ -31,8 +31,8 @@ imageToUrl src =
                 |> String.split "/"
                 |> List.filter (not << String.isEmpty)
     in
-    if filesBaseUrl == "/" then
-        Url.Builder.absolute segments []
+    if filesBaseUrl == "/art" then
+        Url.Builder.absolute ("art" :: segments) []
 
     else
         Url.Builder.crossOrigin filesBaseUrl segments []

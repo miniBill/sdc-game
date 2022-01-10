@@ -273,7 +273,7 @@ viewMap data sharedGameModel mapModel =
 
         map =
             [ S.image
-                [ Theme.imageXlinkHref "/art/europe.webp"
+                [ Theme.imageXlinkHref "europe.webp"
                 , SA.width <| mapPixelToString mapSize.width
                 , SA.height <| mapPixelToString mapSize.height
                 ]
@@ -296,7 +296,7 @@ viewMap data sharedGameModel mapModel =
                 , Element.htmlAttribute <| Html.Attributes.style "bottom" "0px"
                 ]
                 (menuButtonAndLabel
-                    (ViewMenu { background = "/art/europe.webp" })
+                    (ViewMenu { background = "europe.webp" })
                     ""
                 )
     in
@@ -413,7 +413,7 @@ viewDuckOnMap data mapModel { city } =
         , SA.y <| String.fromFloat <| y - duckRadius
         , SA.width <| String.fromFloat <| duckRadius * 2
         , SA.height <| String.fromFloat <| duckRadius * 2
-        , Theme.imageXlinkHref "/art/duckon.webp"
+        , Theme.imageXlinkHref "duckon.webp"
         ]
         []
     ]
@@ -550,7 +550,7 @@ menuButtonAndLabel msg label =
                 [ Theme.spacing
                 , width fill
                 ]
-                [ avatar 1 { image = "/art/sdc.webp", name = "" }
+                [ avatar 1 { image = "sdc.webp", name = "" }
                 , if String.isEmpty label then
                     Element.none
 
@@ -601,7 +601,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
 
 duckPerson : { image : String, name : String }
 duckPerson =
-    { image = "/art/duck.webp"
+    { image = "duck.webp"
     , name = "DUCK"
     }
 

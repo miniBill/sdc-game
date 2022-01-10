@@ -16,29 +16,29 @@ all =
 
 click : Sound
 click =
-    { name = "/art/click.mp3", duration = 240 }
+    { name = "click.mp3", duration = 240 }
 
 
 quack1 : Sound
 quack1 =
-    { name = "/art/quack1.mp3", duration = 440 }
+    { name = "quack1.mp3", duration = 440 }
 
 
 quack2 : Sound
 quack2 =
-    { name = "/art/quack2.mp3", duration = 440 }
+    { name = "quack2.mp3", duration = 440 }
 
 
 quack3 : Sound
 quack3 =
-    { name = "/art/quack3.mp3", duration = 370 }
+    { name = "quack3.mp3", duration = 370 }
 
 
 quackquackquack : Sound
 quackquackquack =
-    { name = "/art/quackquackquack.mp3", duration = 1180 }
+    { name = "quackquackquack.mp3", duration = 1180 }
 
 
 train : Sound
 train =
-    { name = "/art/train-cut.mp3", duration = 10420 }
+    { name = "train-cut.mp3", duration = 10420 }

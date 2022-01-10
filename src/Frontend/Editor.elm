@@ -228,7 +228,7 @@ mapEditor person =
                 clickDecoder
         ]
         [ S.image
-            [ Theme.imageXlinkHref "/art/europe.webp"
+            [ Theme.imageXlinkHref "europe.webp"
             , SA.height <| mapPixelToString mapSize.width
             , SA.height <| mapPixelToString mapSize.height
             ]
