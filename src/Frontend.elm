@@ -110,8 +110,7 @@ audioView _ { audio } =
 
                             Just fadingTime ->
                                 Audio.scaleVolumeAt
-                                    [ ( from, volume )
-                                    , ( fadingTime, volume )
+                                    [ ( fadingTime, volume )
                                     , ( Time.millisToPosix <|
                                             Time.posixToMillis fadingTime
                                                 + Frontend.GameTheme.fadeOutTime
