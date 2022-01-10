@@ -103,6 +103,7 @@ type InnerFrontendMsg
       -- Audio
     | LoadedAudio Sound Audio.Source
     | TimedAudioMsg AudioMsg Time.Posix
+    | LoadSoundLibrary
       -- Nop
     | Nop
 

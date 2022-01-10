@@ -199,9 +199,7 @@ updateFromBackend _ msg model =
                 [ getSizeCmd
                 , PkgPorts.localstorage_load {}
                 ]
-            , SoundLibrary.all
-                |> List.map (\sound -> loadAudio sound)
-                |> Audio.cmdBatch
+            , Audio.cmdNone
             )
 
 
@@ -412,6 +410,14 @@ update _ msg ({ audio } as model) =
               }
             , Cmd.none
             , Audio.cmdNone
+            )
+
+        ( LoadSoundLibrary, _ ) ->
+            ( model
+            , Cmd.none
+            , SoundLibrary.all
+                |> List.map (\sound -> loadAudio sound)
+                |> Audio.cmdBatch
             )
 
         ( TimedAudioMsg amsg time, _ ) ->
@@ -730,6 +736,9 @@ updateGame msg a11y outerModel =
                                             | sharedModel = s
                                             , model = m
                                             , a11y = a
+                                            , cmd =
+                                                Process.sleep 100
+                                                    |> Task.perform (\_ -> LoadSoundLibrary)
                                         }
                                    )
 
