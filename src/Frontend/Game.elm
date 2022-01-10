@@ -601,7 +601,7 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
 
 duckPerson : { image : String, name : String }
 duckPerson =
-    { image = "/art/duck.jpg"
+    { image = "/art/duck.webp"
     , name = "DUCK"
     }
 
