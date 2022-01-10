@@ -10,6 +10,7 @@
 
 1. Kidnap
 2. Consider: America
+3. Soph is in a wandering place
 
 # Not doing
 
