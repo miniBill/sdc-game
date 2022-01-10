@@ -5,6 +5,7 @@ import Element.WithContext as Element exposing (Orientation(..), alignBottom, al
 import Element.WithContext.Background as Background
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
+import Env
 import Frontend.Common
 import Frontend.GameMarkdown
 import Frontend.GameTheme as Theme exposing (Attribute, Element)
@@ -659,6 +660,7 @@ avatar scale person =
     el
         ([ Theme.borderWidth
          , Theme.borderRounded
+         , Background.image <| Env.imageToUrl person.image
          , alignTop
          ]
             ++ size
