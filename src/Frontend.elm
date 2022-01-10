@@ -139,8 +139,7 @@ outerView _ model =
     in
     { title = "SDC Game"
     , body =
-        [ Html.node "link" [ Html.Attributes.rel "preconnect", Html.Attributes.href Env.filesBaseUrl ] []
-        , css
+        [ css
         , case model.screenSize of
             Nothing ->
                 Element.layout { a11y = model.a11y } attrs Frontend.Common.loading
