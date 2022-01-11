@@ -4,14 +4,11 @@ module Model exposing
     , City
     , CityName
     , Condition(..)
-    , Consequence(..)
     , Coordinates
     , Data
     , Dialog
     , GameModel(..)
     , Id
-    , Item(..)
-    , ItemName(..)
     , MapModel
     , MenuModel
     , Nation(..)
@@ -21,7 +18,6 @@ module Model exposing
     , SharedGameModel
     , Sound
     , TalkingModel
-    , TransportKind(..)
     , mapSize
     )
 
@@ -157,47 +153,8 @@ type alias Quiz =
     }
 
 
-type Consequence
-    = ConsequenceGetMoney Int
-    | ConsequenceLoseMoney Int
-    | ConsequenceGetItem Item
-    | ConsequenceLoseItem String
-    | ConsequenceSetLocalFlag String Bool
-
-
-type Item
-    = GenericItem
-        { name : String
-        , image : String
-        }
-    | Ticket
-        { from : CityName
-        , to : CityName
-        , kind : TransportKind
-        , consequences : List Consequence
-        }
-
-
-type TransportKind
-    = Plane
-    | Train
-    | Coach
-    | Bike
-    | Boat
-    | Ferry
-    | DuckWalk
-
-
 type Condition
     = ConditionNot Condition
-
-
-type ItemName
-    = TicketName
-        { from : CityName
-        , to : CityName
-        , kind : TransportKind
-        }
 
 
 mapSize :
