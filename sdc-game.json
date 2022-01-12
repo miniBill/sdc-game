@@ -287,7 +287,7 @@
         "city": {
             "sound": {},
             "nation": {
-                "tag": "Austria",
+                "tag": "Norway",
                 "args": []
             },
             "coordinates": {
@@ -517,11 +517,11 @@
                         "tag": "NextRandomQuiz",
                         "args": []
                     },
-                    "text": "?"
+                    "text": "Yes! I need a train ticket to get to Emily!"
                 },
                 []
             ],
-            "text": "?"
+            "text": "Oh poor duckie, did you get lost?"
         },
         "image": "cassie.webp",
         "city": {
