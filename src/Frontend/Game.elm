@@ -187,7 +187,7 @@ viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
                     }
                 , Segment []
                     { active = a11y.fontSize == Theme.defaultFontSize
-                    , label = "100%"
+                    , label = "Reset"
                     , onPress = Theme.defaultFontSize
                     }
                 , Segment []
