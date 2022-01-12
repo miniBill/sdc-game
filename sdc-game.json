@@ -1,1 +1,647 @@
-{"28312800":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"?"},[]],"text":"?"},"image":"david.webp","city":{"sound":{},"nation":{"tag":"Belgium","args":[]},"coordinates":{"y":689.1465346534653,"x":444.1533816425121},"name":"Brussels"},"name":"David"},"":{"dialog":{"choices":[{"next":{"tag":"NextDialog","args":[{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"Thank you!"},[]],"text":"I have no clue how to get you to Nijmegen, but I can give you this ticket to start your journey."}]},"text":"Don't worry, I can travel on my own!  I'll go to Nijmegen while you work on this month's demo!"},[]],"text":"Oh no! I still haven't sent the duck to Emily!"},"image":"orla.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":636.8505516549649,"x":343.61990212071777},"image":"london.webp","name":"London"},"name":"(Initial) Orla"},"1ff04dbf":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"hannah.webp","city":{"sound":{},"nation":{"tag":"Germany","args":[]},"coordinates":{"y":658,"x":492},"image":"https://www.mk-illumination.com/wp-content/uploads/2018/10/Blog-header-image_Essen-Lichtwochen-800x800.webp","name":"Essen"},"name":"Hannah"},"210f75f4":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"soph.webp","city":{"sound":{},"nation":{"tag":"Germany","args":[]},"coordinates":{"y":707.5316831683168,"x":649.3297101449275},"name":"<Soph>"},"name":"Soph"},"2325b6fc":{"dialog":{"choices":[{"next":{"tag":"NextDialog","args":[{"choices":[{"next":{"tag":"NextQuiz","args":[{"wrongAnswers":["Opening beer bottles","Cutting open sacks of wheat","Hanging birthday ornaments"],"correctAnswer":"A standard measure for trade","question":"What were the spikes on Bremens Rolands knees used for?"}]},"text":"Quack! (Yes please!)"},[]],"text":"Quack? (Do you need a ticket?)"}]},"text":"Quack quack quack! (Oh, finally someone speaks my language!)"},[]],"text":"Quack! (Hello!)"},"image":"alex.webp","city":{"sound":{},"nation":{"tag":"Germany","args":[]},"coordinates":{"y":618.8264794383149,"x":519.0342577487766},"image":"bremen.webp","text":"Bremen is a city straddling the Weser River in northwest Germany. It’s known for its role in maritime trade, represented by Hanseatic buildings on the Market Square.","name":"Bremen"},"name":"Alex"},"237821cd":{"quizzes":[{"wrongAnswers":["a) Approximately 60","b) Approximately 80","c) Approximately 100"],"messageIfWrong":"Nah, we've got more!","messageIfCorrect":"That's right! Here, have a ticket!","correctAnswer":"d) ​Approximately 120","question":"How many different kinds of pasta exist in Italy?"},{"wrongAnswers":["a) Phoenician, Byzantine","b) Greek, Roman","c) Arab, Norman"],"messageIfWrong":"Are you sure? Doesn't seem right...","messageIfCorrect":"Yeah! Crazy, isn't it?","correctAnswer":"d) All of the above","question":"Which civilizations had settlements in Sicily?"}],"dialog":{"choices":[{"next":{"tag":"NextRandomQuiz","args":[]},"text":"Yes, I could really use a train ticket!"},[]],"text":"Hello, little duckie! Do you need help?"},"image":"minibill.webp","city":{"sound":{"duration":131950,"name":"udine.mp3"},"nation":{"tag":"Italy","args":[]},"coordinates":{"y":829.7039603960396,"x":594.774154589372},"image":"udine.webp","text":"The hilltop Udine Castle is home to several museums and an art gallery with works by Tiepolo and Caravaggio.","name":"Udine"},"name":"Leonardo"},"2b65d32d":{"dialog":{"choices":[{"next":{"tag":"NextViewMap","args":[]},"text":"I've seen so many people! Haven't reached Emily yet, though..."},[]],"text":"How is your voyage going?"},"image":"orla.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":636.8505516549649,"x":343.61990212071777},"image":"london.webp","text":"London, the capital of England and the United Kingdom, is a 21st-century city with history stretching back to Roman times.","name":"London"},"name":"Orla"},"3e08f810":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"gerrit.webp","city":{"sound":{},"nation":{"tag":"Norway","args":[]},"coordinates":{"y":306.40922768304915,"x":521.4371941272431},"image":"trondheim.webp","name":"Trondheim"},"name":"Gerrit"},"42e1b40b":{"quizzes":[{}],"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"wouter.webp","city":{"sound":{},"nation":{"tag":"Netherlands","args":[]},"coordinates":{"y":601.9653465346535,"x":480.32608695652175},"image":"zoetermeer.webp","text":"Zoetermeer is a city in the Western Netherlands, in the province of South Holland.","name":"Zoetermeer"},"name":"Wouter"},"48e3ea03":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"skylar.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":648.2247524752476,"x":321.9963768115942},"image":"london.webp","name":"Portsmouth"},"name":"Skylar"},"532197cc":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"Matt 2021"},[]],"text":"Words, they hard"},"image":"matt.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":614.419801980198,"x":305.39251207729467},"image":"gloucester.webp","text":"Gloucester is a cathedral city and the county town of Gloucestershire ","name":"Gloucester"},"name":"Matt"},"609345c2":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"?"},[]],"text":"?"},"image":"lotte.webp","city":{"sound":{},"nation":{"tag":"Netherlands","args":[]},"coordinates":{"y":634.5841584158416,"x":435.25845410628017},"text":"Utrecht is the fourth-largest city and a municipality of the Netherlands, capital and most populous city of the province of Utrecht.","name":"Utrecht"},"name":"Lotte"},"7312dbcc":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"jake.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":567.5673267326732,"x":311.32246376811594},"image":"liverpool.webp","text":"Liverpool is a city and metropolitan borough in Merseyside, England.","name":"Liverpool"},"name":"Jake"},"73ea97cf":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"YES MOMMY!"},[]],"text":"You're finally here, _my precious_!"},"image":"emily.webp","city":{"sound":{},"nation":{"tag":"Netherlands","args":[]},"coordinates":{"y":638.0521564694083,"x":462.5652528548124},"image":"nijmegen.webp","text":"You've reached the end of your journey!","name":"Nijmegen"},"name":"Emily"},"754f4495":{"quizzes":[{"wrongAnswers":["Queen's Lynn","Jester's Lynn","Prince's Lynn"],"correctAnswer":"Bishop's Lynn","question":"The nearby town \"King's Lynn\" had a previous name, what was it?"},{"wrongAnswers":["David Tennant","Christopher Eccleston","Paul McGann"],"correctAnswer":"Matt Smith","question":"Norwich's University UEA has had a time travelling Alumni, who was it?"},{"wrongAnswers":["Dapple","Tawny","Carrow"],"correctAnswer":"Swaledale","question":"Which of the following is not a cheese that comes from Norfolk?"}],"dialog":{"choices":[{"next":{"tag":"NextRandomQuiz","args":[]},"text":"?"},[]],"text":"?"},"image":"cassie.webp","city":{"sound":{},"nation":{"tag":"England","args":[]},"coordinates":{"y":603.7445544554455,"x":372.993961352657},"image":"norwich.webp","text":"Description of Norwich I guess","name":"Norwich"},"name":"Cassie"},"769e5c5a":{"dialog":{"choices":[{"next":{"tag":"NextDialog","args":[{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"Thank you!"},[]],"text":"Sure, this is a ticket for you!"}]},"text":"It smells amazing! Hey, can you help me get to Nijmegen?"},[]],"text":"Hello, here is some tea!"},"image":"liv.webp","city":{"sound":{},"nation":{"tag":"Germany","args":[]},"coordinates":{"y":772.6318956870612,"x":556.2797716150081},"image":"munich.webp","name":"Munich"},"name":"Liv"},"7ab42b2a":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]}},[]]},"image":"mina.webp","city":{"sound":{},"nation":{"tag":"Norway","args":[]},"coordinates":{"y":404.9408224674022,"x":567.0929853181077},"image":"oslo.webp","text":"Oslo sits on the country’s southern coast at the head of the Oslofjord. It’s known for its green spaces and museums.","name":"Oslo"},"name":"Mina"},"c0153b0":{"dialog":{"choices":[{"next":{"tag":"NextGiveTicket","args":[]},"text":"?"},[]],"text":"We"},"image":"greta.webp","city":{"sound":{},"nation":{"tag":"Italy","args":[]},"coordinates":{"y":845.9297893681044,"x":498.6092985318108},"image":"monza.webp","text":"Monza is the fastest circuit on the Formula One calendar.","name":"Monza"},"name":"Greta"}}
+{
+    "28312800": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    },
+                    "text": "?"
+                },
+                []
+            ],
+            "text": "?"
+        },
+        "image": "david.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Belgium",
+                "args": []
+            },
+            "coordinates": {
+                "y": 689.1465346534653,
+                "x": 444.1533816425121
+            },
+            "name": "Brussels"
+        },
+        "name": "David"
+    },
+    "": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextDialog",
+                        "args": [
+                            {
+                                "choices": [
+                                    {
+                                        "next": {
+                                            "tag": "NextGiveTicket",
+                                            "args": []
+                                        },
+                                        "text": "Thank you!"
+                                    },
+                                    []
+                                ],
+                                "text": "I have no clue how to get you to Nijmegen, but I can give you this ticket to start your journey."
+                            }
+                        ]
+                    },
+                    "text": "Don't worry, I can travel on my own!  I'll go to Nijmegen while you work on this month's demo!"
+                },
+                []
+            ],
+            "text": "Oh no! I still haven't sent the duck to Emily!"
+        },
+        "image": "orla.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 636.8505516549649,
+                "x": 343.61990212071777
+            },
+            "image": "london.webp",
+            "name": "London"
+        },
+        "name": "(Initial) Orla"
+    },
+    "1ff04dbf": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "hannah.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Germany",
+                "args": []
+            },
+            "coordinates": {
+                "y": 658,
+                "x": 492
+            },
+            "image": "https://www.mk-illumination.com/wp-content/uploads/2018/10/Blog-header-image_Essen-Lichtwochen-800x800.webp",
+            "name": "Essen"
+        },
+        "name": "Hannah"
+    },
+    "210f75f4": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "soph.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Germany",
+                "args": []
+            },
+            "coordinates": {
+                "y": 707.5316831683168,
+                "x": 649.3297101449275
+            },
+            "name": "<Soph>"
+        },
+        "name": "Soph"
+    },
+    "2325b6fc": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextDialog",
+                        "args": [
+                            {
+                                "choices": [
+                                    {
+                                        "next": {
+                                            "tag": "NextQuiz",
+                                            "args": [
+                                                {
+                                                    "wrongAnswers": [
+                                                        "Opening beer bottles",
+                                                        "Cutting open sacks of wheat",
+                                                        "Hanging birthday ornaments"
+                                                    ],
+                                                    "correctAnswer": "A standard measure for trade",
+                                                    "question": "What were the spikes on Bremens Rolands knees used for?"
+                                                }
+                                            ]
+                                        },
+                                        "text": "Quack! (Yes please!)"
+                                    },
+                                    []
+                                ],
+                                "text": "Quack? (Do you need a ticket?)"
+                            }
+                        ]
+                    },
+                    "text": "Quack quack quack! (Oh, finally someone speaks my language!)"
+                },
+                []
+            ],
+            "text": "Quack! (Hello!)"
+        },
+        "image": "alex.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Germany",
+                "args": []
+            },
+            "coordinates": {
+                "y": 618.8264794383149,
+                "x": 519.0342577487766
+            },
+            "image": "bremen.webp",
+            "text": "Bremen is a city straddling the Weser River in northwest Germany. It’s known for its role in maritime trade, represented by Hanseatic buildings on the Market Square.",
+            "name": "Bremen"
+        },
+        "name": "Alex"
+    },
+    "237821cd": {
+        "quizzes": [
+            {
+                "wrongAnswers": [
+                    "a) Approximately 60",
+                    "b) Approximately 80",
+                    "c) Approximately 100"
+                ],
+                "messageIfWrong": "Nah, we've got more!",
+                "messageIfCorrect": "That's right! Here, have a ticket!",
+                "correctAnswer": "d) ​Approximately 120",
+                "question": "How many different kinds of pasta exist in Italy?"
+            },
+            {
+                "wrongAnswers": [
+                    "a) Phoenician, Byzantine",
+                    "b) Greek, Roman",
+                    "c) Arab, Norman"
+                ],
+                "messageIfWrong": "Are you sure? Doesn't seem right...",
+                "messageIfCorrect": "Yeah! Crazy, isn't it?",
+                "correctAnswer": "d) All of the above",
+                "question": "Which civilizations had settlements in Sicily?"
+            }
+        ],
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextRandomQuiz",
+                        "args": []
+                    },
+                    "text": "Yes, I could really use a train ticket!"
+                },
+                []
+            ],
+            "text": "Hello, little duckie! Do you need help?"
+        },
+        "image": "minibill.webp",
+        "city": {
+            "sound": {
+                "duration": 131950,
+                "name": "udine.mp3"
+            },
+            "nation": {
+                "tag": "Italy",
+                "args": []
+            },
+            "coordinates": {
+                "y": 829.7039603960396,
+                "x": 594.774154589372
+            },
+            "image": "udine.webp",
+            "text": "The hilltop Udine Castle is home to several museums and an art gallery with works by Tiepolo and Caravaggio.",
+            "name": "Udine"
+        },
+        "name": "Leonardo"
+    },
+    "2b65d32d": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextViewMap",
+                        "args": []
+                    },
+                    "text": "I've seen so many people! Haven't reached Emily yet, though..."
+                },
+                []
+            ],
+            "text": "How is your voyage going?"
+        },
+        "image": "orla.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 636.8505516549649,
+                "x": 343.61990212071777
+            },
+            "image": "london.webp",
+            "text": "London, the capital of England and the United Kingdom, is a 21st-century city with history stretching back to Roman times.",
+            "name": "London"
+        },
+        "name": "Orla"
+    },
+    "3e08f810": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "gerrit.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Austria",
+                "args": []
+            },
+            "coordinates": {
+                "y": 306.40922768304915,
+                "x": 521.4371941272431
+            },
+            "image": "trondheim.webp",
+            "name": "Trondheim"
+        },
+        "name": "Gerrit"
+    },
+    "42e1b40b": {
+        "quizzes": [
+            {}
+        ],
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "wouter.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Netherlands",
+                "args": []
+            },
+            "coordinates": {
+                "y": 601.9653465346535,
+                "x": 480.32608695652175
+            },
+            "image": "zoetermeer.webp",
+            "text": "Zoetermeer is a city in the Western Netherlands, in the province of South Holland.",
+            "name": "Zoetermeer"
+        },
+        "name": "Wouter"
+    },
+    "48e3ea03": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "skylar.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 648.2247524752476,
+                "x": 321.9963768115942
+            },
+            "image": "london.webp",
+            "name": "Portsmouth"
+        },
+        "name": "Skylar"
+    },
+    "532197cc": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    },
+                    "text": "Matt 2021"
+                },
+                []
+            ],
+            "text": "Words, they hard"
+        },
+        "image": "matt.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 614.419801980198,
+                "x": 305.39251207729467
+            },
+            "image": "gloucester.webp",
+            "text": "Gloucester is a cathedral city and the county town of Gloucestershire ",
+            "name": "Gloucester"
+        },
+        "name": "Matt"
+    },
+    "609345c2": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    },
+                    "text": "?"
+                },
+                []
+            ],
+            "text": "?"
+        },
+        "image": "lotte.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Netherlands",
+                "args": []
+            },
+            "coordinates": {
+                "y": 634.5841584158416,
+                "x": 435.25845410628017
+            },
+            "text": "Utrecht is the fourth-largest city and a municipality of the Netherlands, capital and most populous city of the province of Utrecht.",
+            "name": "Utrecht"
+        },
+        "name": "Lotte"
+    },
+    "7312dbcc": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "jake.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 567.5673267326732,
+                "x": 311.32246376811594
+            },
+            "image": "liverpool.webp",
+            "text": "Liverpool is a city and metropolitan borough in Merseyside, England.",
+            "name": "Liverpool"
+        },
+        "name": "Jake"
+    },
+    "73ea97cf": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextWin",
+                        "args": []
+                    },
+                    "text": "YES MOMMY!"
+                },
+                []
+            ],
+            "text": "You're finally here, _my precious_!"
+        },
+        "image": "emily.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Netherlands",
+                "args": []
+            },
+            "coordinates": {
+                "y": 638.0521564694083,
+                "x": 462.5652528548124
+            },
+            "image": "nijmegen.webp",
+            "text": "You've reached the end of your journey!",
+            "name": "Nijmegen"
+        },
+        "name": "Emily"
+    },
+    "754f4495": {
+        "quizzes": [
+            {
+                "wrongAnswers": [
+                    "Queen's Lynn",
+                    "Jester's Lynn",
+                    "Prince's Lynn"
+                ],
+                "correctAnswer": "Bishop's Lynn",
+                "question": "The nearby town \"King's Lynn\" had a previous name, what was it?"
+            },
+            {
+                "wrongAnswers": [
+                    "David Tennant",
+                    "Christopher Eccleston",
+                    "Paul McGann"
+                ],
+                "correctAnswer": "Matt Smith",
+                "question": "Norwich's University UEA has had a time travelling Alumni, who was it?"
+            },
+            {
+                "wrongAnswers": [
+                    "Dapple",
+                    "Tawny",
+                    "Carrow"
+                ],
+                "correctAnswer": "Swaledale",
+                "question": "Which of the following is not a cheese that comes from Norfolk?"
+            }
+        ],
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextRandomQuiz",
+                        "args": []
+                    },
+                    "text": "?"
+                },
+                []
+            ],
+            "text": "?"
+        },
+        "image": "cassie.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "England",
+                "args": []
+            },
+            "coordinates": {
+                "y": 603.7445544554455,
+                "x": 372.993961352657
+            },
+            "image": "norwich.webp",
+            "text": "Description of Norwich I guess",
+            "name": "Norwich"
+        },
+        "name": "Cassie"
+    },
+    "769e5c5a": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextDialog",
+                        "args": [
+                            {
+                                "choices": [
+                                    {
+                                        "next": {
+                                            "tag": "NextGiveTicket",
+                                            "args": []
+                                        },
+                                        "text": "Thank you!"
+                                    },
+                                    []
+                                ],
+                                "text": "Sure, this is a ticket for you!"
+                            }
+                        ]
+                    },
+                    "text": "It smells amazing! Hey, can you help me get to Nijmegen?"
+                },
+                []
+            ],
+            "text": "Hello, here is some tea!"
+        },
+        "image": "liv.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Germany",
+                "args": []
+            },
+            "coordinates": {
+                "y": 772.6318956870612,
+                "x": 556.2797716150081
+            },
+            "image": "munich.webp",
+            "name": "Munich"
+        },
+        "name": "Liv"
+    },
+    "7ab42b2a": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    }
+                },
+                []
+            ]
+        },
+        "image": "mina.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Norway",
+                "args": []
+            },
+            "coordinates": {
+                "y": 404.9408224674022,
+                "x": 567.0929853181077
+            },
+            "image": "oslo.webp",
+            "text": "Oslo sits on the country’s southern coast at the head of the Oslofjord. It’s known for its green spaces and museums.",
+            "name": "Oslo"
+        },
+        "name": "Mina"
+    },
+    "c0153b0": {
+        "dialog": {
+            "choices": [
+                {
+                    "next": {
+                        "tag": "NextGiveTicket",
+                        "args": []
+                    },
+                    "text": "?"
+                },
+                []
+            ],
+            "text": "We"
+        },
+        "image": "greta.webp",
+        "city": {
+            "sound": {},
+            "nation": {
+                "tag": "Italy",
+                "args": []
+            },
+            "coordinates": {
+                "y": 845.9297893681044,
+                "x": 498.6092985318108
+            },
+            "image": "monza.webp",
+            "text": "Monza is the fastest circuit on the Formula One calendar.",
+            "name": "Monza"
+        },
+        "name": "Greta"
+    }
+}
