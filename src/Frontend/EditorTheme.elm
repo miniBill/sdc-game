@@ -37,6 +37,15 @@ borderWidth =
     1
 
 
+borderWidths : { left : number, right : number, top : number, bottom : number }
+borderWidths =
+    { left = 1
+    , right = 1
+    , top = 1
+    , bottom = 1
+    }
+
+
 borderRounded : Attribute msg
 borderRounded =
     Border.rounded rythm
@@ -132,10 +141,17 @@ column attrs =
     Element.column ([ padding, spacing ] ++ attrs)
 
 
+row : List (Attribute msg) -> List (Element msg) -> Element msg
+row attrs =
+    Element.row ([ padding, spacing ] ++ attrs)
+
+
 
 -- Inputs
 
 
+{-| `[ Border.width borderWidth, borderRounded, padding ]`
+-}
 button :
     List (Attribute msg)
     ->
@@ -148,27 +164,6 @@ button attrs =
         ([ Border.width borderWidth
          , borderRounded
          , padding
-         ]
-            ++ attrs
-        )
-
-
-tabButton :
-    List (Attribute msg)
-    ->
-        { onPress : Maybe msg
-        , label : Element msg
-        }
-    -> Element msg
-tabButton attrs =
-    button
-        ([ Border.widthEach { left = borderWidth, top = borderWidth, right = borderWidth, bottom = 0 }
-         , Border.roundEach
-            { topLeft = rythm
-            , topRight = rythm
-            , bottomLeft = 0
-            , bottomRight = 0
-            }
          ]
             ++ attrs
         )
@@ -190,6 +185,42 @@ imageXlinkHref src =
 
 type alias Editor msg =
     Int -> Element msg
+
+
+roundTop : Attribute e
+roundTop =
+    Border.roundEach
+        { topLeft = rythm
+        , topRight = rythm
+        , bottomLeft = 0
+        , bottomRight = 0
+        }
+
+
+roundBottom : Attribute e
+roundBottom =
+    Border.roundEach
+        { topLeft = 0
+        , topRight = 0
+        , bottomLeft = rythm
+        , bottomRight = rythm
+        }
+
+
+chubby : (List (Attribute msg) -> child -> Element a) -> List (Attribute msg) -> child -> Editor a
+chubby container attrs child level =
+    container
+        ([ Background.color (getColor level)
+         , borderRounded
+         , Border.width borderWidth
+         , spacing
+         , padding
+         , Element.width Element.fill
+         , Element.alignTop
+         ]
+            ++ attrs
+        )
+        child
 
 
 objectEditor : List ( String, Editor msg ) -> List ( String, Editor msg ) -> Editor msg
@@ -234,17 +265,7 @@ objectEditor rawSimples rawComplexes level =
                 )
                 rawComplexes
     in
-    Element.column
-        [ Element.width Element.fill
-        , Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , borderRounded
-        ]
-        (simplesTable :: complexes)
+    chubby Element.column [] (simplesTable :: complexes) level
 
 
 listEditor :
@@ -257,7 +278,7 @@ listEditor typeName valueEditor valueDefault value level =
     let
         rows =
             List.indexedMap
-                (\i row ->
+                (\i rowData ->
                     Element.map
                         (\lambdaArg0 ->
                             if lambdaArg0 == valueDefault then
@@ -266,11 +287,11 @@ listEditor typeName valueEditor valueDefault value level =
                             else
                                 List.Extra.setAt i lambdaArg0 value
                         )
-                        (toRow row)
+                        (toRow rowData)
                 )
                 value
 
-        toRow row =
+        toRow rowData =
             Element.column
                 [ Element.width Element.fill ]
                 [ Element.el
@@ -282,12 +303,10 @@ listEditor typeName valueEditor valueDefault value level =
                         }
                     , Element.alignRight
                     ]
-                    (tabButton
-                        [ spacing
-                        , padding
+                    (button
+                        [ Border.widthEach { borderWidths | bottom = 0 }
+                        , roundTop
                         , Element.alignTop
-                        , Border.width 1
-                        , borderRounded
                         , Background.gradient
                             { angle = 0
                             , steps =
@@ -295,18 +314,6 @@ listEditor typeName valueEditor valueDefault value level =
                                 , colors.delete
                                 , colors.delete
                                 ]
-                            }
-                        , Border.widthEach
-                            { bottom = 0
-                            , left = 1
-                            , right = 1
-                            , top = 1
-                            }
-                        , Border.roundEach
-                            { topLeft = rythm
-                            , topRight = rythm
-                            , bottomLeft = 0
-                            , bottomRight = 0
                             }
                         , Element.htmlAttribute
                             (Html.Attributes.style "z-index" "1")
@@ -317,32 +324,18 @@ listEditor typeName valueEditor valueDefault value level =
                     )
                 , Element.el
                     [ Element.width Element.fill, Element.moveUp 1 ]
-                    (valueEditor row (level + 1))
+                    (valueEditor rowData (level + 1))
                 ]
     in
     Element.column
         [ Element.width Element.fill ]
-        [ Element.column
-            [ Background.color (getColor level)
-            , Element.width Element.fill
-            , spacing
-            , padding
-            , Element.alignTop
-            , Border.width 1
-            , borderRounded
-            ]
-            rows
+        [ chubby Element.column [] rows level
         , Element.el
-            [ Element.paddingEach
-                { top = 0, right = rythm, bottom = 0, left = rythm }
+            [ Element.paddingXY rythm 0
             , Element.alignRight
             ]
             (button
-                [ spacing
-                , padding
-                , Element.alignTop
-                , Border.width 1
-                , borderRounded
+                [ Element.alignTop
                 , Background.gradient
                     { angle = 0
                     , steps =
@@ -352,13 +345,8 @@ listEditor typeName valueEditor valueDefault value level =
                         , getColor level
                         ]
                     }
-                , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
-                , Border.roundEach
-                    { topLeft = 0
-                    , topRight = 0
-                    , bottomLeft = rythm
-                    , bottomRight = rythm
-                    }
+                , Border.widthEach { borderWidths | top = 0 }
+                , roundBottom
                 , Element.moveUp 1
                 ]
                 { onPress = Just (value ++ [ valueDefault ])
@@ -370,18 +358,12 @@ listEditor typeName valueEditor valueDefault value level =
 
 customEditor : List ( String, a ) -> List (Editor a) -> a -> Editor a
 customEditor variants inputsRow value level =
-    Element.column
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , borderRounded
-        ]
+    chubby Element.column
+        []
         [ variantRow variants value
         , Element.row [ Element.width Element.fill, spacing ] (List.map (\e -> e (level + 1)) inputsRow)
         ]
+        level
 
 
 variantRow : List ( String, a ) -> a -> Element a
@@ -398,17 +380,8 @@ variantRow variants value =
 
 
 enumEditor : List ( String, a ) -> a -> Editor a
-enumEditor variants value level =
-    Element.el
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , borderRounded
-        ]
-        (variantRow variants value)
+enumEditor variants value =
+    chubby Element.el [] (variantRow variants value)
 
 
 tupleEditor :
@@ -419,76 +392,42 @@ tupleEditor :
     -> ( l, r )
     -> Editor ( l, r )
 tupleEditor leftEditor leftSimple rightEditor rightSimple ( left, right ) level =
-    let
-        le =
-            leftEditor left (level + 1)
+    chubby
+        (if leftSimple && rightSimple then
+            Element.row
 
-        re =
-            rightEditor right (level + 1)
-    in
-    (if leftSimple && rightSimple then
-        Element.row
-
-     else
-        Element.column
-    )
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , borderRounded
+         else
+            Element.column
+        )
+        []
+        [ Element.map (\newLeft -> ( newLeft, right )) (leftEditor left (level + 1))
+        , Element.map (\newRight -> ( left, newRight )) (rightEditor right (level + 1))
         ]
-        [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
-        , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
-        ]
+        level
 
 
 intEditor : Int -> Editor Int
-intEditor value level =
-    Element.map
-        (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
-        (Input.text
-            [ Element.width (Element.minimum 100 Element.fill)
-            , Element.alignTop
-            , Background.color (getColor level)
-            ]
-            { onChange = identity
-            , text = String.fromInt value
-            , placeholder = Maybe.Nothing
-            , label = Input.labelHidden ""
-            }
-        )
+intEditor =
+    input String.toInt String.fromInt
 
 
 floatEditor : Float -> Editor Float
-floatEditor value level =
-    Element.map
-        (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
-        (Input.text
-            [ Element.width (Element.minimum 100 Element.fill)
-            , Element.alignTop
-            , Background.color (getColor level)
-            ]
-            { onChange = identity
-            , text = String.fromFloat value
-            , placeholder = Maybe.Nothing
-            , label = Input.labelHidden ""
-            }
-        )
+floatEditor =
+    input String.toFloat String.fromFloat
 
 
 stringEditor : String -> Editor String
-stringEditor value level =
-    Input.text
-        [ Element.width (Element.minimum 100 Element.fill)
-        , Element.alignTop
-        , Background.color (getColor level)
-        ]
-        { onChange = identity
-        , text = value
-        , placeholder = Maybe.Nothing
+stringEditor =
+    input Just identity
+
+
+input : (String -> Maybe a) -> (a -> String) -> a -> Editor a
+input onChange toString value =
+    chubby Input.text
+        [ Element.width <| Element.minimum 100 Element.fill, Border.color <| Element.rgb 0 0 0 ]
+        { onChange = \newValue -> onChange newValue |> Maybe.withDefault value
+        , text = toString value
+        , placeholder = Nothing
         , label = Input.labelHidden ""
         }
 
