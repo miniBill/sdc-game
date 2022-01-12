@@ -6,6 +6,7 @@
    2. Hash them and cache them
 2. Content
 3. Explaination
+4. Free travel only when won
 
 # Maybe
 
