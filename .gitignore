@@ -5,3 +5,4 @@ dist
 src-gba/logic.c
 out
 public/font
+public/art
