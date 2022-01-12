@@ -1,10 +1,12 @@
 # Todo
 
-1. Remove old types (items, consequences, ...)
-2. Content pipeline
+1. Highlight where to click next when the map is first shown
+2. Make click targets Way Bigger in map
+3. Content pipeline
    1. Resize and optimize images
+      1. Need n versions of avatar (big page vs smol chat), explore imageset
    2. Hash them and cache them
-3. Content
+4. Content
 
 # Maybe
 

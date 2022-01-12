@@ -6,9 +6,10 @@ import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Env
 import Html.Attributes
+import Model exposing (A11yOptions)
 import Svg
 import Svg.Attributes
-import Types exposing (A11yOptions, Size)
+import Types exposing (Size)
 
 
 

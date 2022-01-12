@@ -177,7 +177,7 @@ viewPerson id person =
             , width fill
             , height shrink
             ]
-            [ Tuple.first <| Editors.personEditor 0 person
+            [ Editors.personEditor 0 person
             , mapEditor person
             ]
 

@@ -1,9 +1,10 @@
 module Model exposing
-    ( ChatHistory
+    ( A11yOptions
+    , ChatHistory
+    , ChatLine
     , Choice
     , City
     , CityName
-    , Condition(..)
     , Coordinates
     , Data
     , Dialog
@@ -28,6 +29,14 @@ import Set exposing (Set)
 
 
 -- Game Model
+
+
+type alias A11yOptions =
+    { unlockEverything : Bool
+    , openDyslexic : Bool
+    , fontSize : Float
+    , opaqueBackgrounds : Bool
+    }
 
 
 type alias SharedGameModel =
@@ -57,7 +66,14 @@ type alias TalkingModel =
 
 
 type alias ChatHistory =
-    List ( Maybe { image : String, name : String }, String )
+    List ChatLine
+
+
+type alias ChatLine =
+    { image : String
+    , name : String
+    , line : String
+    }
 
 
 type alias MenuModel =
@@ -151,10 +167,6 @@ type alias Quiz =
     , messageIfWrong : String
     , wrongAnswers : List String
     }
-
-
-type Condition
-    = ConditionNot Condition
 
 
 mapSize :

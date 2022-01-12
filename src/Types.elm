@@ -6,7 +6,7 @@ import Browser.Navigation exposing (Key)
 import Dict exposing (Dict)
 import File exposing (File)
 import Lamdera exposing (ClientId, SessionId, Url)
-import Model exposing (ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, SharedGameModel, Sound)
+import Model exposing (A11yOptions, ChatHistory, Data, Dialog, GameModel, Id, Person, Quiz, SharedGameModel, Sound)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set exposing (Set)
@@ -47,14 +47,6 @@ type alias Track =
 type TrackKind
     = Music
     | Effect
-
-
-type alias A11yOptions =
-    { unlockEverything : Bool
-    , openDyslexic : Bool
-    , fontSize : Float
-    , opaqueBackgrounds : Bool
-    }
 
 
 type alias Size =

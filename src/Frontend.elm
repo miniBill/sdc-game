@@ -27,7 +27,7 @@ import Html.Attributes
 import Json.Decode
 import Lamdera exposing (Key, Url)
 import List.Extra
-import Model exposing (City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel, Sound)
+import Model exposing (A11yOptions, City, Data, GameModel(..), Id, Nation(..), Person, SharedGameModel, Sound)
 import Pixels
 import PkgPorts
 import Process
@@ -37,7 +37,7 @@ import Set
 import SoundLibrary
 import Task
 import Time
-import Types exposing (A11yOptions, AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..), Track, TrackKind(..))
+import Types exposing (AudioMsg(..), EditorModel, EditorMsg(..), FrontendModel, FrontendMsg, GameMsg(..), GameMsgTuple, InnerFrontendModel, InnerFrontendMsg(..), OuterGameModel(..), Page(..), ToBackend(..), ToFrontend(..), Track, TrackKind(..))
 import Url
 import Url.Parser
 

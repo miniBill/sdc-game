@@ -1,13 +1,19 @@
-module Frontend.EditorTheme exposing (Attribute, Context, Element, borderRounded, button, colors, column, fontSizes, getColor, image, imageXlinkHref, padding, rythm, spacing, tabButton)
+module Frontend.EditorTheme exposing (Attribute, Context, Element, boolEditor, borderRounded, button, colors, column, customEditor, dictEditor, enumEditor, floatEditor, fontSizes, getColor, image, imageXlinkHref, intEditor, listEditor, map, maybeEditor, objectEditor, padding, rythm, setEditor, spacing, stringEditor, tabButton, tupleEditor)
 
+import Dict exposing (Dict)
 import Element.WithContext as Element exposing (Color)
+import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
 import Env
+import Html.Attributes
+import List.Extra
+import Model exposing (A11yOptions)
+import Set exposing (Set)
 import Svg
 import Svg.Attributes
-import Types exposing (A11yOptions, Size)
+import Types exposing (Size)
 
 
 type alias Context =
@@ -178,3 +184,440 @@ image attrs config =
 imageXlinkHref : String -> Svg.Attribute msg
 imageXlinkHref src =
     Svg.Attributes.xlinkHref <| Env.imageToUrl src
+
+
+
+-- Editors
+
+
+objectEditor : List ( String, Element msg ) -> List ( String, Element msg ) -> Int -> Element msg
+objectEditor rawSimples rawComplexes level =
+    let
+        simpleLabel =
+            Element.el
+                [ Element.centerY ]
+                << Element.text
+
+        simplesTable =
+            if List.length rawSimples <= 2 then
+                rawSimples
+                    |> List.map
+                        (\( fieldName, fieldEditor ) ->
+                            Element.row
+                                [ spacing, Element.width Element.fill ]
+                                [ simpleLabel fieldName, fieldEditor ]
+                        )
+                    |> Element.row [ spacing, Element.width Element.fill ]
+
+            else
+                Element.table
+                    [ spacing, Element.width Element.fill ]
+                    { columns =
+                        [ { header = Element.none
+                          , width = Element.shrink
+                          , view = simpleLabel << Tuple.first
+                          }
+                        , { header = Element.none
+                          , width = Element.fill
+                          , view = Tuple.second
+                          }
+                        ]
+                    , data = rawSimples
+                    }
+
+        complexes =
+            List.concatMap
+                (\( fieldName, fieldEditor ) ->
+                    [ Element.text fieldName, fieldEditor ]
+                )
+                rawComplexes
+    in
+    Element.column
+        [ Element.width Element.fill
+        , Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        (simplesTable :: complexes)
+
+
+setEditor :
+    String
+    -> (Int -> comparable -> Element comparable)
+    -> comparable
+    -> Int
+    -> Set comparable
+    -> Element (Set comparable)
+setEditor typeName valueEditor valueDefault level value =
+    Element.map Set.fromList <| listEditor typeName valueEditor valueDefault level <| Set.toList value
+
+
+listEditor :
+    String
+    -> (Int -> e -> Element e)
+    -> e
+    -> Int
+    -> List e
+    -> Element (List e)
+listEditor typeName valueEditor valueDefault level value =
+    let
+        rows =
+            List.indexedMap
+                (\i row ->
+                    Element.map
+                        (\lambdaArg0 ->
+                            if lambdaArg0 == valueDefault then
+                                List.Extra.removeAt i value
+
+                            else
+                                List.Extra.setAt i lambdaArg0 value
+                        )
+                        (Element.column
+                            [ Element.width Element.fill ]
+                            [ Element.el
+                                [ Element.paddingEach
+                                    { top = 0
+                                    , right = rythm
+                                    , bottom = 0
+                                    , left = 0
+                                    }
+                                , Element.alignRight
+                                ]
+                                (tabButton
+                                    [ spacing
+                                    , padding
+                                    , Element.alignTop
+                                    , Border.width 1
+                                    , Border.rounded rythm
+                                    , Background.gradient
+                                        { angle = 0
+                                        , steps =
+                                            [ getColor (level + 1)
+                                            , colors.delete
+                                            , colors.delete
+                                            ]
+                                        }
+                                    , Border.widthEach
+                                        { bottom = 0
+                                        , left = 1
+                                        , right = 1
+                                        , top = 1
+                                        }
+                                    , Border.roundEach
+                                        { topLeft = rythm
+                                        , topRight = rythm
+                                        , bottomLeft = 0
+                                        , bottomRight = 0
+                                        }
+                                    , Element.htmlAttribute
+                                        (Html.Attributes.style "z-index" "1")
+                                    ]
+                                    { onPress = Maybe.Just valueDefault
+                                    , label = Element.text "Delete"
+                                    }
+                                )
+                            , Element.el
+                                [ Element.width Element.fill, Element.moveUp 1 ]
+                                (valueEditor (level + 1) row)
+                            ]
+                        )
+                )
+                value
+    in
+    Element.column
+        [ Element.width Element.fill ]
+        [ Element.column
+            [ Background.color (getColor level)
+            , Element.width Element.fill
+            , spacing
+            , padding
+            , Element.alignTop
+            , Border.width 1
+            , Border.rounded rythm
+            ]
+            rows
+        , Element.el
+            [ Element.paddingEach
+                { top = 0, right = rythm, bottom = 0, left = rythm }
+            , Element.alignRight
+            ]
+            (button
+                [ spacing
+                , padding
+                , Element.alignTop
+                , Border.width 1
+                , Border.rounded rythm
+                , Background.gradient
+                    { angle = 0
+                    , steps =
+                        [ colors.addNew
+                        , colors.addNew
+                        , colors.addNew
+                        , getColor level
+                        ]
+                    }
+                , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
+                , Border.roundEach
+                    { topLeft = 0
+                    , topRight = 0
+                    , bottomLeft = rythm
+                    , bottomRight = rythm
+                    }
+                , Element.moveUp 1
+                ]
+                { onPress = Just (value ++ [ valueDefault ])
+                , label = Element.text ("Add new " ++ typeName)
+                }
+            )
+        ]
+
+
+customEditor : List ( String, a ) -> List (Element a) -> Int -> a -> Element a
+customEditor variants inputsRow level value =
+    Element.column
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        [ variantRow variants value
+        , Element.row [ Element.width Element.fill, spacing ] inputsRow
+        ]
+
+
+variantRow : List ( String, a ) -> a -> Element a
+variantRow variants value =
+    Input.radioRow
+        [ spacing ]
+        { onChange = identity
+        , options =
+            variants
+                |> List.map (\( label, v ) -> Input.option v (Element.text label))
+        , selected = Maybe.Just value
+        , label = Input.labelHidden ""
+        }
+
+
+enumEditor : List ( String, a ) -> a -> Int -> Element a
+enumEditor variants value level =
+    Element.el
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        (variantRow variants value)
+
+
+tupleEditor :
+    (Int -> l -> Element l)
+    -> Bool
+    -> (Int -> r -> Element r)
+    -> Bool
+    -> Int
+    -> ( l, r )
+    -> Element ( l, r )
+tupleEditor leftEditor leftSimple rightEditor rightSimple level ( left, right ) =
+    let
+        le =
+            leftEditor (level + 1) left
+
+        re =
+            rightEditor (level + 1) right
+    in
+    (if leftSimple && rightSimple then
+        Element.row
+
+     else
+        Element.column
+    )
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
+        , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
+        ]
+
+
+maybeEditor :
+    String
+    -> (Int -> e -> Element e)
+    -> e
+    -> Int
+    -> Maybe e
+    -> Element (Maybe e)
+maybeEditor typeName valueEditor valueDefault level value =
+    let
+        extracted =
+            Maybe.withDefault valueDefault value
+
+        variants =
+            [ ( "Nothing", Nothing )
+            , ( typeName, Just extracted )
+            ]
+
+        inputsRow =
+            case value of
+                Nothing ->
+                    Element.none
+
+                Just inner ->
+                    Element.map Just
+                        (valueEditor (level + 1) inner)
+    in
+    Element.column
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        [ variantRow variants value, inputsRow ]
+
+
+intEditor : Int -> Int -> Element Int
+intEditor level value =
+    Element.map
+        (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
+        (Input.text
+            [ Element.width (Element.minimum 100 Element.fill)
+            , Element.alignTop
+            , Background.color (getColor level)
+            ]
+            { onChange = identity
+            , text = String.fromInt value
+            , placeholder = Maybe.Nothing
+            , label = Input.labelHidden ""
+            }
+        )
+
+
+floatEditor : Int -> Float -> Element Float
+floatEditor level value =
+    Element.map
+        (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
+        (Input.text
+            [ Element.width (Element.minimum 100 Element.fill)
+            , Element.alignTop
+            , Background.color (getColor level)
+            ]
+            { onChange = identity
+            , text = String.fromFloat value
+            , placeholder = Maybe.Nothing
+            , label = Input.labelHidden ""
+            }
+        )
+
+
+stringEditor : Int -> String -> Element String.String
+stringEditor level value =
+    Input.text
+        [ Element.width (Element.minimum 100 Element.fill)
+        , Element.alignTop
+        , Background.color (getColor level)
+        ]
+        { onChange = identity
+        , text = value
+        , placeholder = Maybe.Nothing
+        , label = Input.labelHidden ""
+        }
+
+
+boolEditor : Int -> Bool -> Element Bool
+boolEditor _ value =
+    Input.radioRow
+        [ spacing, Element.alignTop ]
+        { onChange = identity
+        , options =
+            [ Input.option True (Element.text "True")
+            , Input.option False (Element.text "False")
+            ]
+        , selected = Maybe.Just value
+        , label = Input.labelHidden ""
+        }
+
+
+dictEditor :
+    (Int -> comparable -> Element comparable)
+    -> comparable
+    -> (Int -> v -> Element v)
+    -> v
+    -> Int
+    -> Dict comparable v
+    -> Element (Dict comparable v)
+dictEditor keyEditor keyDefault valueEditor valueDefault level value =
+    let
+        keysColumn =
+            { header = Element.none
+            , width = Element.shrink
+            , view =
+                \( key, memberValue ) ->
+                    Element.map
+                        (\lambdaArg0 ->
+                            if
+                                lambdaArg0
+                                    == keyDefault
+                                    && memberValue
+                                    == valueDefault
+                            then
+                                Dict.remove key value
+
+                            else
+                                Dict.insert
+                                    lambdaArg0
+                                    memberValue
+                                    (Dict.remove key value)
+                        )
+                        (keyEditor (level + 1) key)
+            }
+
+        valuesColumn =
+            { header = Element.none
+            , width = Element.fill
+            , view =
+                \( key, memberValue ) ->
+                    Element.map
+                        (\lambdaArg0 ->
+                            if key == keyDefault && lambdaArg0 == valueDefault then
+                                Dict.remove key value
+
+                            else
+                                Dict.insert key lambdaArg0 value
+                        )
+                        (valueEditor (level + 1) memberValue)
+            }
+    in
+    Element.table
+        [ Background.color (getColor level)
+        , Element.width Element.fill
+        , spacing
+        , padding
+        , Element.alignTop
+        , Border.width 1
+        , Border.rounded rythm
+        ]
+        { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
+        , columns = [ keysColumn, valuesColumn ]
+        }
+
+
+map : (f -> v) -> Element f -> Element v
+map =
+    Element.map

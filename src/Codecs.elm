@@ -1,31 +1,66 @@
-module Codecs exposing (sharedGameModelCodec, gameModelCodec, dataCodec, a11yOptionsCodec)
+module Codecs exposing (a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, chatLineCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, soundCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec)
 
 {-|
 
-@docs sharedGameModelCodec, gameModelCodec, dataCodec, a11yOptionsCodec
+@docs a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, chatLineCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, soundCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec
 
 -}
 
 import Codec
 import Model
 import Set
-import Types exposing (A11yOptions)
 
 
-a11yOptionsCodec : Codec.Codec A11yOptions
+a11yOptionsCodec : Codec.Codec Model.A11yOptions
 a11yOptionsCodec =
     Codec.object
         (\unlockEverything openDyslexic fontSize opaqueBackgrounds ->
-            { unlockEverything = unlockEverything
-            , openDyslexic = openDyslexic
-            , fontSize = fontSize
-            , opaqueBackgrounds = opaqueBackgrounds
+            { unlockEverything = Maybe.withDefault True unlockEverything
+            , openDyslexic = Maybe.withDefault True openDyslexic
+            , fontSize = Maybe.withDefault 0 fontSize
+            , opaqueBackgrounds = Maybe.withDefault True opaqueBackgrounds
             }
         )
-        |> Codec.field "unlockEverything" .unlockEverything Codec.bool
-        |> Codec.field "openDyslexic" .openDyslexic Codec.bool
-        |> Codec.field "fontSize" .fontSize Codec.float
-        |> Codec.field "opaqueBackgrounds" .opaqueBackgrounds Codec.bool
+        |> Codec.maybeField
+            "unlockEverything"
+            (\lambdaArg0 ->
+                if lambdaArg0.unlockEverything == True then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.unlockEverything
+            )
+            Codec.bool
+        |> Codec.maybeField
+            "openDyslexic"
+            (\lambdaArg0 ->
+                if lambdaArg0.openDyslexic == True then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.openDyslexic
+            )
+            Codec.bool
+        |> Codec.maybeField
+            "fontSize"
+            (\lambdaArg0 ->
+                if lambdaArg0.fontSize == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.fontSize
+            )
+            Codec.float
+        |> Codec.maybeField
+            "opaqueBackgrounds"
+            (\lambdaArg0 ->
+                if lambdaArg0.opaqueBackgrounds == True then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.opaqueBackgrounds
+            )
+            Codec.bool
         |> Codec.buildObject
 
 
@@ -96,9 +131,11 @@ gameModelCodec =
 
 mapModelCodec : Codec.Codec Model.MapModel
 mapModelCodec =
-    Codec.object
-        (\travellingTo -> { travellingTo = travellingTo })
-        |> Codec.field "travellingTo" .travellingTo (Codec.maybe (Codec.tuple Codec.float idCodec))
+    Codec.object (\travellingTo -> { travellingTo = travellingTo })
+        |> Codec.maybeField
+            "travellingTo"
+            .travellingTo
+            (Codec.tuple Codec.float idCodec)
         |> Codec.buildObject
 
 
@@ -115,40 +152,49 @@ talkingModelCodec =
 
 chatHistoryCodec : Codec.Codec Model.ChatHistory
 chatHistoryCodec =
-    Codec.list
-        (Codec.tuple
-            (Codec.maybe
-                (Codec.object
-                    (\image name ->
-                        { image = Maybe.withDefault "" image
-                        , name = Maybe.withDefault "" name
-                        }
-                    )
-                    |> Codec.maybeField
-                        "image"
-                        (\lambdaArg0 ->
-                            if lambdaArg0.image == "" then
-                                Maybe.Nothing
+    Codec.list chatLineCodec
 
-                            else
-                                Maybe.Just lambdaArg0.image
-                        )
-                        Codec.string
-                    |> Codec.maybeField
-                        "name"
-                        (\lambdaArg0 ->
-                            if lambdaArg0.name == "" then
-                                Maybe.Nothing
 
-                            else
-                                Maybe.Just lambdaArg0.name
-                        )
-                        Codec.string
-                    |> Codec.buildObject
-                )
+chatLineCodec : Codec.Codec Model.ChatLine
+chatLineCodec =
+    Codec.object
+        (\image name line ->
+            { image = Maybe.withDefault "" image
+            , name = Maybe.withDefault "" name
+            , line = Maybe.withDefault "" line
+            }
+        )
+        |> Codec.maybeField
+            "image"
+            (\lambdaArg0 ->
+                if lambdaArg0.image == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.image
             )
             Codec.string
-        )
+        |> Codec.maybeField
+            "name"
+            (\lambdaArg0 ->
+                if lambdaArg0.name == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.name
+            )
+            Codec.string
+        |> Codec.maybeField
+            "line"
+            (\lambdaArg0 ->
+                if lambdaArg0.line == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.line
+            )
+            Codec.string
+        |> Codec.buildObject
 
 
 menuModelCodec : Codec.Codec Model.MenuModel
@@ -270,12 +316,30 @@ soundCodec : Codec.Codec Model.Sound
 soundCodec =
     Codec.object
         (\name duration ->
-            { name = name
-            , duration = duration
+            { name = Maybe.withDefault "" name
+            , duration = Maybe.withDefault 0 duration
             }
         )
-        |> Codec.field "name" .name Codec.string
-        |> Codec.field "duration" .duration Codec.int
+        |> Codec.maybeField
+            "name"
+            (\lambdaArg0 ->
+                if lambdaArg0.name == "" then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.name
+            )
+            Codec.string
+        |> Codec.maybeField
+            "duration"
+            (\lambdaArg0 ->
+                if lambdaArg0.duration == 0 then
+                    Maybe.Nothing
+
+                else
+                    Maybe.Just lambdaArg0.duration
+            )
+            Codec.int
         |> Codec.buildObject
 
 

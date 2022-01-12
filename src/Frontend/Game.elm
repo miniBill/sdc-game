@@ -14,7 +14,7 @@ import MapPixels
 import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Parser
 import Markdown.Renderer
-import Model exposing (ChatHistory, Choice, City, Data, GameModel(..), Id, MapModel, MenuModel, Next(..), Person, Quiz, SharedGameModel, TalkingModel, mapSize)
+import Model exposing (A11yOptions, ChatHistory, Choice, City, Data, GameModel(..), Id, MapModel, MenuModel, Next(..), Person, Quiz, SharedGameModel, TalkingModel, mapSize)
 import Pixels exposing (Pixels)
 import Quantity exposing (Quantity)
 import Set
@@ -22,7 +22,7 @@ import SoundLibrary
 import Svg as S exposing (Svg)
 import Svg.Attributes as SA
 import Svg.Events as SE
-import Types exposing (A11yOptions, AudioModel, AudioMsg(..), GameMsg(..), GameMsgTuple, OuterGameModel(..), Size, TrackKind(..))
+import Types exposing (AudioModel, AudioMsg(..), GameMsg(..), GameMsgTuple, OuterGameModel(..), Size, TrackKind(..))
 
 
 view : AudioModel -> OuterGameModel -> Element GameMsgTuple
@@ -493,10 +493,8 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
     let
         history =
             List.map
-                (\( p, t ) ->
-                    viewDialogLine True
-                        (Maybe.withDefault duckPerson p)
-                        t
+                (\{ image, name, line } ->
+                    viewDialogLine True { image = image, name = name } line
                 )
                 (List.reverse chatHistory)
 
@@ -506,12 +504,10 @@ viewTalking { currentPerson } person { chatHistory, currentDialog } =
                 |> (\( h, t ) -> h :: t)
                 |> List.map
                     (viewChoice
-                        (( Just
-                            { name = person.name
-                            , image = person.image
-                            }
-                         , currentDialog.text
-                         )
+                        ({ name = person.name
+                         , image = person.image
+                         , line = currentDialog.text
+                         }
                             :: chatHistory
                         )
                     )
@@ -685,7 +681,13 @@ viewChoice chatHistory { text, next } =
             Just
                 ( case next of
                     NextDialog n ->
-                        ViewTalking n (( Nothing, text ) :: chatHistory)
+                        ViewTalking n
+                            ({ image = duckPerson.image
+                             , name = duckPerson.name
+                             , line = text
+                             }
+                                :: chatHistory
+                            )
 
                     NextViewMap ->
                         ViewMap

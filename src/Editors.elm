@@ -1,708 +1,507 @@
-module Editors exposing (personEditor, personDefault)
+module Editors exposing (a11yOptionsEditor, sharedGameModelEditor, gameModelEditor, mapModelEditor, talkingModelEditor, chatHistoryEditor, chatLineEditor, menuModelEditor, dataEditor, idEditor, personEditor, cityEditor, soundEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, a11yOptionsDefault, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, chatLineDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, soundDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault)
 
 {-|
 
-@docs personEditor, personDefault
+@docs a11yOptionsEditor, sharedGameModelEditor, gameModelEditor, mapModelEditor, talkingModelEditor, chatHistoryEditor, chatLineEditor, menuModelEditor, dataEditor, idEditor, personEditor, cityEditor, soundEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, a11yOptionsDefault, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, chatLineDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, soundDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault
 
 -}
 
-import Element.WithContext as Element
-import Element.WithContext.Background as Background
-import Element.WithContext.Border as Border
-import Element.WithContext.Input as Input
-import Frontend.EditorTheme as Theme exposing (Element)
-import Html.Attributes
-import List.Extra
+import Dict
+import Frontend.EditorTheme
 import Model
-import Tuple
+import Set
 
 
-personEditor : Int -> Model.Person -> ( Element Model.Person, Bool )
+a11yOptionsEditor : Int -> Model.A11yOptions -> Frontend.EditorTheme.Element Model.A11yOptions
+a11yOptionsEditor level value =
+    let
+        rawSimples =
+            [ ( "Unlock everything"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | unlockEverything = f })
+                    (Frontend.EditorTheme.boolEditor
+                        (level + 1)
+                        value.unlockEverything
+                    )
+              )
+            , ( "Open dyslexic"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | openDyslexic = f })
+                    (Frontend.EditorTheme.boolEditor
+                        (level + 1)
+                        value.openDyslexic
+                    )
+              )
+            , ( "Font size"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | fontSize = f })
+                    (Frontend.EditorTheme.floatEditor (level + 1) value.fontSize)
+              )
+            , ( "Opaque backgrounds"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | opaqueBackgrounds = f })
+                    (Frontend.EditorTheme.boolEditor
+                        (level + 1)
+                        value.opaqueBackgrounds
+                    )
+              )
+            ]
+
+        rawComplexes =
+            []
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+sharedGameModelEditor :
+    Int
+    -> Model.SharedGameModel
+    -> Frontend.EditorTheme.Element Model.SharedGameModel
+sharedGameModelEditor level value =
+    let
+        rawSimples =
+            [ ( "Current person"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | currentPerson = f })
+                    (idEditor (level + 1) value.currentPerson)
+              )
+            ]
+
+        rawComplexes =
+            [ ( "Tickets"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | tickets = f })
+                    (Frontend.EditorTheme.setEditor
+                        "Id"
+                        idEditor
+                        idDefault
+                        (level + 1)
+                        value.tickets
+                    )
+              )
+            , ( "Used tickets"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | usedTickets = f })
+                    (Frontend.EditorTheme.setEditor
+                        "Id"
+                        idEditor
+                        idDefault
+                        (level + 1)
+                        value.usedTickets
+                    )
+              )
+            ]
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+gameModelEditor : Int -> Model.GameModel -> Frontend.EditorTheme.Element Model.GameModel
+gameModelEditor level value =
+    let
+        extractedDefault =
+            { mapModelExtracted = mapModelDefault
+            , menuModelExtracted = menuModelDefault
+            , quizExtracted = quizDefault
+            , talkingModelExtracted = talkingModelDefault
+            }
+
+        { mapModelExtracted, menuModelExtracted, quizExtracted, talkingModelExtracted } =
+            case value of
+                Model.ViewingMap mapModel ->
+                    { extractedDefault | mapModelExtracted = mapModel }
+
+                Model.ViewingPerson ->
+                    extractedDefault
+
+                Model.ViewingTalking talkingModel ->
+                    { extractedDefault | talkingModelExtracted = talkingModel }
+
+                Model.Quizzing quiz ->
+                    { extractedDefault | quizExtracted = quiz }
+
+                Model.ViewingMenu menuModel ->
+                    { extractedDefault | menuModelExtracted = menuModel }
+
+        variants =
+            [ ( "Viewing map", Model.ViewingMap mapModelExtracted )
+            , ( "Viewing person", Model.ViewingPerson )
+            , ( "Viewing talking", Model.ViewingTalking talkingModelExtracted )
+            , ( "Quizzing", Model.Quizzing quizExtracted )
+            , ( "Viewing menu", Model.ViewingMenu menuModelExtracted )
+            ]
+
+        inputsRow =
+            case value of
+                Model.ViewingMap mapModel ->
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.ViewingMap f)
+                        (mapModelEditor (level + 1) mapModel)
+                    ]
+
+                Model.ViewingPerson ->
+                    []
+
+                Model.ViewingTalking talkingModel ->
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.ViewingTalking f)
+                        (talkingModelEditor (level + 1) talkingModel)
+                    ]
+
+                Model.Quizzing quiz ->
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.Quizzing f)
+                        (quizEditor (level + 1) quiz)
+                    ]
+
+                Model.ViewingMenu menuModel ->
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.ViewingMenu f)
+                        (menuModelEditor (level + 1) menuModel)
+                    ]
+    in
+    Frontend.EditorTheme.customEditor variants inputsRow level value
+
+
+mapModelEditor : Int -> Model.MapModel -> Frontend.EditorTheme.Element Model.MapModel
+mapModelEditor level value =
+    let
+        rawSimples =
+            []
+
+        rawComplexes =
+            [ ( "Travelling to"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | travellingTo = f })
+                    (Frontend.EditorTheme.maybeEditor
+                        "(Float, Id)"
+                        (Frontend.EditorTheme.tupleEditor
+                            Frontend.EditorTheme.floatEditor
+                            True
+                            idEditor
+                            True
+                        )
+                        ( 0, idDefault )
+                        (level + 1)
+                        value.travellingTo
+                    )
+              )
+            ]
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+talkingModelEditor : Int -> Model.TalkingModel -> Frontend.EditorTheme.Element Model.TalkingModel
+talkingModelEditor level value =
+    let
+        rawSimples =
+            []
+
+        rawComplexes =
+            [ ( "Chat history"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | chatHistory = f })
+                    (chatHistoryEditor (level + 1) value.chatHistory)
+              )
+            , ( "Current dialog"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | currentDialog = f })
+                    (dialogEditor (level + 1) value.currentDialog)
+              )
+            ]
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+chatHistoryEditor : Int -> Model.ChatHistory -> Frontend.EditorTheme.Element Model.ChatHistory
+chatHistoryEditor level value =
+    Frontend.EditorTheme.listEditor
+        "ChatLine"
+        chatLineEditor
+        chatLineDefault
+        level
+        value
+
+
+chatLineEditor : Int -> Model.ChatLine -> Frontend.EditorTheme.Element Model.ChatLine
+chatLineEditor level value =
+    let
+        rawSimples =
+            [ ( "Image"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | image = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.image)
+              )
+            , ( "Name"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | name = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.name)
+              )
+            , ( "Line"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | line = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.line)
+              )
+            ]
+
+        rawComplexes =
+            []
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+menuModelEditor : Int -> Model.MenuModel -> Frontend.EditorTheme.Element Model.MenuModel
+menuModelEditor level value =
+    let
+        rawSimples =
+            [ ( "Background"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | background = f })
+                    (Frontend.EditorTheme.stringEditor
+                        (level + 1)
+                        value.background
+                    )
+              )
+            ]
+
+        rawComplexes =
+            [ ( "Previous"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | previous = f })
+                    (gameModelEditor (level + 1) value.previous)
+              )
+            ]
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+dataEditor : Int -> Model.Data -> Frontend.EditorTheme.Element Model.Data
+dataEditor level value =
+    Frontend.EditorTheme.dictEditor
+        idEditor
+        idDefault
+        personEditor
+        personDefault
+        level
+        value
+
+
+idEditor : Int -> Model.Id -> Frontend.EditorTheme.Element Model.Id
+idEditor level value =
+    Frontend.EditorTheme.stringEditor level value
+
+
+personEditor : Int -> Model.Person -> Frontend.EditorTheme.Element Model.Person
 personEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.name
-              in
-              ( "Name"
-              , Element.map
-                    (\lambdaArg0 -> { value | name = lambdaArg0 })
-                    editor
-              , simple
+        rawSimples =
+            [ ( "Name"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | name = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.name)
               )
-            , let
-                ( editor, simple ) =
-                    cityEditor (level + 1) value.city
-              in
-              ( "City"
-              , Element.map
-                    (\lambdaArg0 -> { value | city = lambdaArg0 })
-                    editor
-              , simple
+            , ( "Image"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | image = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.image)
               )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.image
-              in
-              ( "Image"
-              , Element.map
-                    (\lambdaArg0 -> { value | image = lambdaArg0 })
-                    editor
-              , simple
+            ]
+
+        rawComplexes =
+            [ ( "City"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | city = f })
+                    (cityEditor (level + 1) value.city)
               )
-            , let
-                ( editor, simple ) =
-                    dialogEditor (level + 1) value.dialog
-              in
-              ( "Dialog"
-              , Element.map
-                    (\lambdaArg0 -> { value | dialog = lambdaArg0 })
-                    editor
-              , simple
+            , ( "Dialog"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | dialog = f })
+                    (dialogEditor (level + 1) value.dialog)
               )
-            , let
-                ( editor, simple ) =
-                    listEditor
+            , ( "Quizzes"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | quizzes = f })
+                    (Frontend.EditorTheme.listEditor
                         "Quiz"
                         quizEditor
                         quizDefault
                         (level + 1)
                         value.quizzes
-              in
-              ( "Quizzes"
-              , Element.map
-                    (\lambdaArg0 -> { value | quizzes = lambdaArg0 })
-                    editor
-              , simple
+                    )
               )
             ]
-
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-cityEditor : Int -> Model.City -> ( Element Model.City, Bool )
+cityEditor : Int -> Model.City -> Frontend.EditorTheme.Element Model.City
 cityEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    cityNameEditor (level + 1) value.name
-              in
-              ( "Name"
-              , Element.map
-                    (\lambdaArg0 -> { value | name = lambdaArg0 })
-                    editor
-              , simple
+        rawSimples =
+            [ ( "Name"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | name = f })
+                    (cityNameEditor (level + 1) value.name)
               )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.text
-              in
-              ( "Text"
-              , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
-                    editor
-              , simple
+            , ( "Text"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | text = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.text)
               )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.image
-              in
-              ( "Image"
-              , Element.map
-                    (\lambdaArg0 -> { value | image = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    coordinatesEditor (level + 1) value.coordinates
-              in
-              ( "Coordinates"
-              , Element.map
-                    (\lambdaArg0 -> { value | coordinates = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    nationEditor (level + 1) value.nation
-              in
-              ( "Nation"
-              , Element.map
-                    (\lambdaArg0 -> { value | nation = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    soundEditor (level + 1) value.sound
-              in
-              ( "Sound"
-              , Element.map
-                    (\lambdaArg0 -> { value | sound = lambdaArg0 })
-                    editor
-              , simple
+            , ( "Image"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | image = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.image)
               )
             ]
 
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
-    in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
-
-
-cityNameEditor : Int -> Model.CityName -> ( Element Model.CityName, Bool )
-cityNameEditor level value =
-    stringEditor level value
-
-
-coordinatesEditor : Int -> Model.Coordinates -> ( Element Model.Coordinates, Bool )
-coordinatesEditor level value =
-    let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    floatEditor (level + 1) value.x
-              in
-              ( "X"
-              , Element.map (\lambdaArg0 -> { value | x = lambdaArg0 }) editor
-              , simple
+        rawComplexes =
+            [ ( "Coordinates"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | coordinates = f })
+                    (coordinatesEditor (level + 1) value.coordinates)
               )
-            , let
-                ( editor, simple ) =
-                    floatEditor (level + 1) value.y
-              in
-              ( "Y"
-              , Element.map (\lambdaArg0 -> { value | y = lambdaArg0 }) editor
-              , simple
+            , ( "Nation"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | nation = f })
+                    (nationEditor (level + 1) value.nation)
+              )
+            , ( "Sound"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | sound = f })
+                    (soundEditor (level + 1) value.sound)
               )
             ]
-
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-soundEditor : Int -> Model.Sound -> ( Element Model.Sound, Bool )
+soundEditor : Int -> Model.Sound -> Frontend.EditorTheme.Element Model.Sound
 soundEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.name
-              in
-              ( "Name"
-              , Element.map (\lambdaArg0 -> { value | name = lambdaArg0 }) editor
-              , simple
+        rawSimples =
+            [ ( "Name"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | name = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.name)
               )
-            , let
-                ( editor, simple ) =
-                    intEditor (level + 1) value.duration
-              in
-              ( "Duration"
-              , Element.map (\lambdaArg0 -> { value | duration = lambdaArg0 }) editor
-              , simple
+            , ( "Duration"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | duration = f })
+                    (Frontend.EditorTheme.intEditor (level + 1) value.duration)
               )
             ]
 
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
+        rawComplexes =
+            []
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-nationEditor : Int -> Model.Nation -> ( Element Model.Nation, Bool )
+cityNameEditor : Int -> Model.CityName -> Frontend.EditorTheme.Element Model.CityName
+cityNameEditor level value =
+    Frontend.EditorTheme.stringEditor level value
+
+
+coordinatesEditor : Int -> Model.Coordinates -> Frontend.EditorTheme.Element Model.Coordinates
+coordinatesEditor level value =
+    let
+        rawSimples =
+            [ ( "X"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | x = f })
+                    (Frontend.EditorTheme.floatEditor (level + 1) value.x)
+              )
+            , ( "Y"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | y = f })
+                    (Frontend.EditorTheme.floatEditor (level + 1) value.y)
+              )
+            ]
+
+        rawComplexes =
+            []
+    in
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+nationEditor : Int -> Model.Nation -> Frontend.EditorTheme.Element Model.Nation
 nationEditor level value =
-    ( let
-        variantRow =
-            Input.radioRow
-                [ Theme.spacing ]
-                { onChange = Basics.identity
-                , options =
-                    [ Input.option Model.Austria (Element.text "Austria")
-                    , Input.option Model.Belgium (Element.text "Belgium")
-                    , Input.option Model.England (Element.text "England")
-                    , Input.option Model.France (Element.text "France")
-                    , Input.option Model.Germany (Element.text "Germany")
-                    , Input.option Model.Italy (Element.text "Italy")
-                    , Input.option Model.Netherlands (Element.text "Netherlands")
-                    , Input.option Model.Norway (Element.text "Norway")
-                    ]
-                , selected = Maybe.Just value
-                , label = Input.labelHidden ""
-                }
-      in
-      Element.el
-        [ Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        variantRow
-    , Basics.False
-    )
+    let
+        variants =
+            [ ( "Austria", Model.Austria )
+            , ( "Belgium", Model.Belgium )
+            , ( "England", Model.England )
+            , ( "France", Model.France )
+            , ( "Germany", Model.Germany )
+            , ( "Italy", Model.Italy )
+            , ( "Netherlands", Model.Netherlands )
+            , ( "Norway", Model.Norway )
+            ]
+    in
+    Frontend.EditorTheme.enumEditor variants value level
 
 
-dialogEditor : Int -> Model.Dialog -> ( Element Model.Dialog, Bool )
+dialogEditor : Int -> Model.Dialog -> Frontend.EditorTheme.Element Model.Dialog
 dialogEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.text
-              in
-              ( "Text"
-              , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
-                    editor
-              , simple
+        rawSimples =
+            [ ( "Text"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | text = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.text)
               )
-            , let
-                ( editor, simple ) =
-                    tupleEditor
+            ]
+
+        rawComplexes =
+            [ ( "Choices"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | choices = f })
+                    (Frontend.EditorTheme.tupleEditor
                         choiceEditor
-                        choiceDefault
-                        (listEditor "Choice" choiceEditor choiceDefault)
-                        []
+                        False
+                        (Frontend.EditorTheme.listEditor
+                            "Choice"
+                            choiceEditor
+                            choiceDefault
+                        )
+                        False
                         (level + 1)
                         value.choices
-              in
-              ( "Choices"
-              , Element.map
-                    (\lambdaArg0 -> { value | choices = lambdaArg0 })
-                    editor
-              , simple
+                    )
               )
             ]
-
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-choiceEditor : Int -> Model.Choice -> ( Element Model.Choice, Bool )
+choiceEditor : Int -> Model.Choice -> Frontend.EditorTheme.Element Model.Choice
 choiceEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.text
-              in
-              ( "Text"
-              , Element.map
-                    (\lambdaArg0 -> { value | text = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    nextEditor (level + 1) value.next
-              in
-              ( "Next"
-              , Element.map
-                    (\lambdaArg0 -> { value | next = lambdaArg0 })
-                    editor
-              , simple
+        rawSimples =
+            [ ( "Text"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | text = f })
+                    (Frontend.EditorTheme.stringEditor (level + 1) value.text)
               )
             ]
 
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
-                    )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
+        rawComplexes =
+            [ ( "Next"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | next = f })
+                    (nextEditor (level + 1) value.next)
+              )
+            ]
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-nextEditor : Int -> Model.Next -> ( Element Model.Next, Bool )
+nextEditor : Int -> Model.Next -> Frontend.EditorTheme.Element Model.Next
 nextEditor level value =
-    ( let
+    let
+        extractedDefault =
+            { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
+
         { dialogExtracted, quizExtracted } =
             case value of
                 Model.NextDialog dialog ->
@@ -720,38 +519,20 @@ nextEditor level value =
                 Model.NextGiveTicket ->
                     extractedDefault
 
-        extractedDefault =
-            { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
-
-        variantRow =
-            Input.radioRow
-                [ Theme.spacing ]
-                { onChange = Basics.identity
-                , options =
-                    [ Input.option
-                        (Model.NextDialog dialogExtracted)
-                        (Element.text "Dialog")
-                    , Input.option Model.NextViewMap (Element.text "View map")
-                    , Input.option
-                        Model.NextRandomQuiz
-                        (Element.text "Random quiz")
-                    , Input.option
-                        (Model.NextQuiz quizExtracted)
-                        (Element.text "Quiz")
-                    , Input.option
-                        Model.NextGiveTicket
-                        (Element.text "Give ticket")
-                    ]
-                , selected = Maybe.Just value
-                , label = Input.labelHidden ""
-                }
+        variants =
+            [ ( "Dialog", Model.NextDialog dialogExtracted )
+            , ( "View map", Model.NextViewMap )
+            , ( "Random quiz", Model.NextRandomQuiz )
+            , ( "Quiz", Model.NextQuiz quizExtracted )
+            , ( "Give ticket", Model.NextGiveTicket )
+            ]
 
         inputsRow =
             case value of
                 Model.NextDialog dialog ->
-                    [ Element.map
-                        Model.NextDialog
-                        (Tuple.first (dialogEditor (level + 1) dialog))
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.NextDialog f)
+                        (dialogEditor (level + 1) dialog)
                     ]
 
                 Model.NextViewMap ->
@@ -761,158 +542,124 @@ nextEditor level value =
                     []
 
                 Model.NextQuiz quiz ->
-                    [ Element.map
-                        Model.NextQuiz
-                        (Tuple.first (quizEditor (level + 1) quiz))
+                    [ Frontend.EditorTheme.map
+                        (\f -> Model.NextQuiz f)
+                        (quizEditor (level + 1) quiz)
                     ]
 
                 Model.NextGiveTicket ->
                     []
-      in
-      Element.column
-        [ Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        [ variantRow
-        , Element.row [ Element.width Element.fill, Theme.spacing ] inputsRow
-        ]
-    , Basics.False
-    )
+    in
+    Frontend.EditorTheme.customEditor variants inputsRow level value
 
 
-quizEditor : Int -> Model.Quiz -> ( Element Model.Quiz, Bool )
+quizEditor : Int -> Model.Quiz -> Frontend.EditorTheme.Element Model.Quiz
 quizEditor level value =
     let
-        raw =
-            [ let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.question
-              in
-              ( "Question"
-              , Element.map
-                    (\lambdaArg0 -> { value | question = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.correctAnswer
-              in
-              ( "Correct answer"
-              , Element.map
-                    (\lambdaArg0 -> { value | correctAnswer = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.messageIfCorrect
-              in
-              ( "Message if correct"
-              , Element.map
-                    (\lambdaArg0 -> { value | messageIfCorrect = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    stringEditor (level + 1) value.messageIfWrong
-              in
-              ( "Message if wrong"
-              , Element.map
-                    (\lambdaArg0 -> { value | messageIfWrong = lambdaArg0 })
-                    editor
-              , simple
-              )
-            , let
-                ( editor, simple ) =
-                    listEditor
-                        "String"
-                        stringEditor
-                        ""
+        rawSimples =
+            [ ( "Question"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | question = f })
+                    (Frontend.EditorTheme.stringEditor
                         (level + 1)
-                        value.wrongAnswers
-              in
-              ( "Wrong answers"
-              , Element.map
-                    (\lambdaArg0 -> { value | wrongAnswers = lambdaArg0 })
-                    editor
-              , simple
+                        value.question
+                    )
+              )
+            , ( "Correct answer"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | correctAnswer = f })
+                    (Frontend.EditorTheme.stringEditor
+                        (level + 1)
+                        value.correctAnswer
+                    )
+              )
+            , ( "Message if correct"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | messageIfCorrect = f })
+                    (Frontend.EditorTheme.stringEditor
+                        (level + 1)
+                        value.messageIfCorrect
+                    )
+              )
+            , ( "Message if wrong"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | messageIfWrong = f })
+                    (Frontend.EditorTheme.stringEditor
+                        (level + 1)
+                        value.messageIfWrong
+                    )
               )
             ]
 
-        simples =
-            raw
-                |> List.filterMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            Maybe.Just
-                                ( Element.el
-                                    [ Element.centerY ]
-                                    (Element.text fieldName)
-                                , fieldEditor
-                                )
-
-                        else
-                            Maybe.Nothing
+        rawComplexes =
+            [ ( "Wrong answers"
+              , Frontend.EditorTheme.map
+                    (\f -> { value | wrongAnswers = f })
+                    (Frontend.EditorTheme.listEditor
+                        "String"
+                        Frontend.EditorTheme.stringEditor
+                        ""
+                        (level + 1)
+                        value.wrongAnswers
                     )
-
-        simplesTable =
-            if List.length simples <= 2 then
-                simples
-                    |> List.map
-                        (\pair ->
-                            Element.row
-                                [ Theme.spacing, Element.width Element.fill ]
-                                [ Tuple.first pair, Tuple.second pair ]
-                        )
-                    |> Element.row [ Theme.spacing, Element.width Element.fill ]
-
-            else
-                Element.table
-                    [ Theme.spacing, Element.width Element.fill ]
-                    { columns =
-                        [ { header = Element.none
-                          , width = Element.shrink
-                          , view = \pair -> Tuple.first pair
-                          }
-                        , { header = Element.none
-                          , width = Element.fill
-                          , view = \pair -> Tuple.second pair
-                          }
-                        ]
-                    , data = simples
-                    }
-
-        complexes =
-            raw
-                |> List.concatMap
-                    (\( fieldName, fieldEditor, simple ) ->
-                        if simple then
-                            []
-
-                        else
-                            [ Element.text fieldName, fieldEditor ]
-                    )
+              )
+            ]
     in
-    ( Element.column
-        [ Element.width Element.fill
-        , Background.color (Theme.getColor level)
-        , Element.width Element.fill
-        , Theme.spacing
-        , Theme.padding
-        , Element.alignTop
-        , Border.width 1
-        , Theme.borderRounded
-        ]
-        (simplesTable :: complexes)
-    , Basics.False
-    )
+    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+
+
+a11yOptionsDefault : Model.A11yOptions
+a11yOptionsDefault =
+    { unlockEverything = True
+    , openDyslexic = True
+    , fontSize = 0
+    , opaqueBackgrounds = True
+    }
+
+
+sharedGameModelDefault : Model.SharedGameModel
+sharedGameModelDefault =
+    { currentPerson = idDefault, tickets = Set.empty, usedTickets = Set.empty }
+
+
+gameModelDefault : Model.GameModel
+gameModelDefault =
+    Model.ViewingPerson
+
+
+mapModelDefault : Model.MapModel
+mapModelDefault =
+    { travellingTo = Maybe.Nothing }
+
+
+talkingModelDefault : Model.TalkingModel
+talkingModelDefault =
+    { chatHistory = chatHistoryDefault, currentDialog = dialogDefault }
+
+
+chatHistoryDefault : Model.ChatHistory
+chatHistoryDefault =
+    []
+
+
+chatLineDefault : Model.ChatLine
+chatLineDefault =
+    { image = "", name = "", line = "" }
+
+
+menuModelDefault : Model.MenuModel
+menuModelDefault =
+    { previous = gameModelDefault, background = "" }
+
+
+dataDefault : Model.Data
+dataDefault =
+    Dict.empty
+
+
+idDefault : Model.Id
+idDefault =
+    ""
 
 
 personDefault : Model.Person
@@ -938,9 +685,7 @@ cityDefault =
 
 soundDefault : Model.Sound
 soundDefault =
-    { name = ""
-    , duration = 0
-    }
+    { name = "", duration = 0 }
 
 
 cityNameDefault : Model.CityName
@@ -981,233 +726,3 @@ quizDefault =
     , messageIfWrong = ""
     , wrongAnswers = []
     }
-
-
-intEditor : Int -> Int -> ( Element Basics.Int, Bool )
-intEditor level value =
-    ( Element.map
-        (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
-        (Input.text
-            [ Element.width (Element.minimum 100 Element.fill)
-            , Element.alignTop
-            , Background.color (Theme.getColor level)
-            ]
-            { onChange = Basics.identity
-            , text = String.fromInt value
-            , placeholder = Maybe.Nothing
-            , label = Input.labelHidden ""
-            }
-        )
-    , Basics.True
-    )
-
-
-floatEditor : Int -> Float -> ( Element Basics.Float, Bool )
-floatEditor level value =
-    ( Element.map
-        (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
-        (Input.text
-            [ Element.width (Element.minimum 100 Element.fill)
-            , Element.alignTop
-            , Background.color (Theme.getColor level)
-            ]
-            { onChange = Basics.identity
-            , text = String.fromFloat value
-            , placeholder = Maybe.Nothing
-            , label = Input.labelHidden ""
-            }
-        )
-    , Basics.True
-    )
-
-
-tupleEditor :
-    (Int -> l -> ( Element l, Bool ))
-    -> l
-    -> (Int -> r -> ( Element r, Bool ))
-    -> r
-    -> Int
-    -> ( l, r )
-    -> ( Element ( l, r ), Bool )
-tupleEditor leftEditor _ rightEditor _ level ( left, right ) =
-    let
-        ( le, lb ) =
-            leftEditor (level + 1) left
-
-        ( re, rb ) =
-            rightEditor (level + 1) right
-
-        editor =
-            (if lb && rb then
-                Element.row
-
-             else
-                Element.column
-            )
-                [ Background.color (Theme.getColor level)
-                , Element.width Element.fill
-                , Theme.spacing
-                , Theme.padding
-                , Element.alignTop
-                , Border.width 1
-                , Theme.borderRounded
-                ]
-                [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
-                , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
-                ]
-    in
-    ( editor, Basics.False )
-
-
-stringEditor : Int -> String -> ( Element String.String, Bool )
-stringEditor level value =
-    ( Input.text
-        [ Element.width (Element.minimum 100 Element.fill)
-        , Element.alignTop
-        , Background.color (Theme.getColor level)
-        ]
-        { onChange = Basics.identity
-        , text = value
-        , placeholder = Maybe.Nothing
-        , label = Input.labelHidden ""
-        }
-    , Basics.True
-    )
-
-
-boolEditor : Int -> Bool -> ( Element Basics.Bool, Bool )
-boolEditor _ value =
-    ( Input.radioRow
-        [ Theme.spacing, Element.alignTop ]
-        { onChange = Basics.identity
-        , options =
-            [ Input.option Basics.True (Element.text "True")
-            , Input.option Basics.False (Element.text "False")
-            ]
-        , selected = Maybe.Just value
-        , label = Input.labelHidden ""
-        }
-    , Basics.True
-    )
-
-
-listEditor :
-    String
-    -> (Int -> e -> ( Element e, Bool ))
-    -> e
-    -> Int
-    -> List e
-    -> ( Element (List e), Bool )
-listEditor typeName valueEditor valueDefault level value =
-    let
-        rows =
-            List.indexedMap
-                (\i row ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if lambdaArg0 == valueDefault then
-                                List.Extra.removeAt i value
-
-                            else
-                                List.Extra.setAt i lambdaArg0 value
-                        )
-                        (Element.column
-                            [ Element.width Element.fill ]
-                            [ Element.el
-                                [ Element.paddingEach
-                                    { top = 0
-                                    , right = Theme.rythm
-                                    , bottom = 0
-                                    , left = 0
-                                    }
-                                , Element.alignRight
-                                ]
-                                (Theme.tabButton
-                                    [ Theme.spacing
-                                    , Theme.padding
-                                    , Element.alignTop
-                                    , Border.width 1
-                                    , Theme.borderRounded
-                                    , Background.gradient
-                                        { angle = 0
-                                        , steps =
-                                            [ Theme.getColor (level + 1)
-                                            , Theme.colors.delete
-                                            , Theme.colors.delete
-                                            ]
-                                        }
-                                    , Border.widthEach
-                                        { bottom = 0
-                                        , left = 1
-                                        , right = 1
-                                        , top = 1
-                                        }
-                                    , Border.roundEach
-                                        { topLeft = Theme.rythm
-                                        , topRight = Theme.rythm
-                                        , bottomLeft = 0
-                                        , bottomRight = 0
-                                        }
-                                    , Element.htmlAttribute
-                                        (Html.Attributes.style "z-index" "1")
-                                    ]
-                                    { onPress = Maybe.Just valueDefault
-                                    , label = Element.text "Delete"
-                                    }
-                                )
-                            , Element.el
-                                [ Element.width Element.fill, Element.moveUp 1 ]
-                                (Tuple.first (valueEditor (level + 1) row))
-                            ]
-                        )
-                )
-                value
-    in
-    ( Element.column
-        [ Element.width Element.fill ]
-        [ Element.column
-            [ Background.color (Theme.getColor level)
-            , Element.width Element.fill
-            , Theme.spacing
-            , Theme.padding
-            , Element.alignTop
-            , Border.width 1
-            , Theme.borderRounded
-            ]
-            rows
-        , Element.el
-            [ Element.paddingEach
-                { top = 0, right = Theme.rythm, bottom = 0, left = Theme.rythm }
-            , Element.alignRight
-            ]
-            (Theme.button
-                [ Theme.spacing
-                , Theme.padding
-                , Element.alignTop
-                , Border.width 1
-                , Theme.borderRounded
-                , Background.gradient
-                    { angle = 0
-                    , steps =
-                        [ Theme.colors.addNew
-                        , Theme.colors.addNew
-                        , Theme.colors.addNew
-                        , Theme.getColor level
-                        ]
-                    }
-                , Border.widthEach { bottom = 1, left = 1, right = 1, top = 0 }
-                , Border.roundEach
-                    { topLeft = 0
-                    , topRight = 0
-                    , bottomLeft = Theme.rythm
-                    , bottomRight = Theme.rythm
-                    }
-                , Element.moveUp 1
-                ]
-                { onPress = Maybe.Just (value ++ [ valueDefault ])
-                , label = Element.text ("Add new " ++ typeName)
-                }
-            )
-        ]
-    , Basics.False
-    )
