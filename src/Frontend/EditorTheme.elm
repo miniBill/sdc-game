@@ -141,11 +141,6 @@ column attrs =
     Element.column ([ padding, spacing ] ++ attrs)
 
 
-row : List (Attribute msg) -> List (Element msg) -> Element msg
-row attrs =
-    Element.row ([ padding, spacing ] ++ attrs)
-
-
 
 -- Inputs
 
