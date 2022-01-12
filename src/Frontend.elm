@@ -237,7 +237,7 @@ updatePersonInModel : Id -> Maybe Person -> InnerFrontendModel -> InnerFrontendM
 updatePersonInModel id person model =
     let
         updater data =
-            Dict.update id (always person) data
+            Dict.update id (\_ -> person) data
     in
     updatePage model
         (\data editorModel ->
@@ -558,7 +558,7 @@ updateEditor msg data model =
             )
 
         ( UpdatePerson id person, _ ) ->
-            ( Dict.update id (always person) data
+            ( Dict.update id (\_ -> person) data
             , model
             , Lamdera.sendToBackend <| TBUpdatePerson id person
             )
@@ -764,10 +764,7 @@ updateGame msg a11y outerModel =
                                                         Cmd.none
 
                                                     else
-                                                        Task.perform (TimedAudioMsg (AudioPlay city.sound True Music)) <|
-                                                            Task.map2 always
-                                                                Time.now
-                                                                (Process.sleep 1)
+                                                        runDelayed (TimedAudioMsg (AudioPlay city.sound True Music))
 
                                                 Nothing ->
                                                     Cmd.none
@@ -786,10 +783,7 @@ updateGame msg a11y outerModel =
                                         if fraction == 0 then
                                             Cmd.batch
                                                 [ Task.perform (TimedAudioMsg AudioStop) Time.now
-                                                , Task.perform (TimedAudioMsg (AudioPlay SoundLibrary.train False Effect)) <|
-                                                    Task.map2 always
-                                                        Time.now
-                                                        (Process.sleep 1)
+                                                , runDelayed (TimedAudioMsg (AudioPlay SoundLibrary.train False Effect))
                                                 ]
 
                                         else
@@ -839,6 +833,14 @@ updateGame msg a11y outerModel =
               )
             , result.a11y
             )
+
+
+runDelayed : (Time.Posix -> InnerFrontendMsg) -> Cmd InnerFrontendMsg
+runDelayed toMsg =
+    Task.perform toMsg <|
+        Task.map2 always
+            Time.now
+            (Process.sleep 1)
 
 
 localStorageCodec : Codec ( SharedGameModel, GameModel, A11yOptions )

@@ -3,7 +3,7 @@ module Backend exposing (..)
 import Dict
 import Lamdera exposing (ClientId, SessionId)
 import Set
-import Types exposing (..)
+import Types exposing (BackendModel, BackendMsg(..), ToBackend(..), ToFrontend(..))
 
 
 app :
@@ -46,7 +46,7 @@ updateFromFrontend : SessionId -> ClientId -> ToBackend -> BackendModel -> ( Bac
 updateFromFrontend _ clientId msg model =
     case msg of
         TBUpdatePerson id person ->
-            ( { model | data = Dict.update id (always person) model.data }
+            ( { model | data = Dict.update id (\_ -> person) model.data }
             , almostBroadcast model clientId <| TFUpdatePerson id person
             )
 
