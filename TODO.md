@@ -1,13 +1,11 @@
 # Todo
 
-1. Highlight where to click next when the map is first shown
-2. Make click targets Way Bigger in map
-3. Content pipeline
+1. Content pipeline
    1. Resize and optimize images
       1. Need n versions of avatar (big page vs smol chat), explore imageset
    2. Hash them and cache them
-4. Content
-5. Explaination
+2. Content
+3. Explaination
 
 # Maybe
 

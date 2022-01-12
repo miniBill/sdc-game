@@ -1,7 +1,7 @@
 module Frontend.Game exposing (view)
 
 import Dict
-import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, fillPortion, height, px, row, text, width, wrappedRow)
+import Element.WithContext as Element exposing (Orientation(..), alignBottom, alignTop, centerX, centerY, column, el, fill, fillPortion, height, paragraph, px, row, text, width, wrappedRow)
 import Element.WithContext.Background as Background
 import Element.WithContext.Font as Font
 import Element.WithContext.Input as Input
@@ -375,26 +375,53 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
         outer =
             2.5
 
-        ring pointer fl sz =
+        cy =
+            String.fromFloat city.coordinates.y
+
+        cx =
+            String.fromFloat city.coordinates.x
+
+        ring attrs pointer fl sz =
             S.circle
                 ([ SA.fill fl
-                 , SA.cy <| String.fromFloat city.coordinates.y
-                 , SA.cx <| String.fromFloat city.coordinates.x
+                 , SA.cy cy
+                 , SA.cx cx
                  , SA.r <| String.fromFloat <| sz * radius
                  ]
+                    ++ attrs
                     ++ handler pointer
                 )
                 []
     in
-    ( [ ring True "black" inner
-      , ring True fill (inner - 0.2)
+    ( [ if not disabled then
+            ring
+                [ [ ( "animation-duration", "2s" )
+                  , ( "animation-name", "pulse" )
+                  , ( "animation-iteration-count", "infinite" )
+                  , ( "transform-origin", "center" )
+                  , ( "stroke-width", String.fromFloat <| 0.1 * radius )
+                  , ( "stroke", "black" )
+                  ]
+                    |> List.map (\( k, v ) -> k ++ ":" ++ v)
+                    |> String.join ";"
+                    |> SA.style
+                , SA.stroke "black"
+                ]
+                True
+                "transparent"
+                inner
+
+        else
+            S.g [] []
+      , ring [] True "black" inner
+      , ring [] True fill (inner - 0.2)
       ]
     , if disabled then
         ( [], [] )
 
       else
-        ( [ ring False "transparent" <| (inner + outer) / 2 ]
-        , [ ring False "transparent" outer ]
+        ( [ ring [] False "transparent" <| (inner + outer) / 2 ]
+        , [ ring [] False "transparent" outer ]
         )
     )
 
@@ -606,13 +633,13 @@ viewQuizzing person ({ question, correctAnswer, wrongAnswers } as quiz) =
     column
         (mainContainerAttrs person.city)
         [ semiBox [ width fill ] <|
-            el
+            paragraph
                 [ Font.center
                 , Font.bold
                 , width fill
                 , Theme.fontSize 3
                 ]
-                (text "QUIZ TIME!")
+                [ text "QUIZ TIME!" ]
         , semiBox [ width fill ] <|
             row
                 [ height fill

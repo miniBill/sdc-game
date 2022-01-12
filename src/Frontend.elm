@@ -165,6 +165,19 @@ css =
                 font-family: ComicSansMS3;
                 src: local('Comic Sans MS'), local('Comic Sans'), url('""" ++ Env.imageToUrl "ComicSansMS3.ttf" ++ """');
                 font-display: swap;
+            }
+
+            svg * {
+                transform-box: fill-box;
+            }
+
+            @keyframes pulse {
+                from {
+                    transform: scale(1);
+                }
+                to {
+                    transform: scale(2);
+                }
             }"""
     in
     Html.node "style" [] [ Html.text content ]
