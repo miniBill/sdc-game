@@ -1,4 +1,4 @@
-module Frontend.Common exposing (..)
+module Frontend.Common exposing (loading)
 
 import Element.WithContext exposing (Element, centerX, centerY, el, text)
 import Element.WithContext.Font as Font

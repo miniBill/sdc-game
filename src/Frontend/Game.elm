@@ -64,160 +64,161 @@ view audioModel model =
 
 viewMenu : AudioModel -> MenuModel -> Element GameMsgTuple
 viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
-    Element.with .a11y <| \a11y ->
-    let
-        container attrs =
-            semiBox
-                ([ width fill
-                 , Theme.borderWidth
-                 , Theme.borderRounded
-                 , Theme.padding
-                 ]
-                    ++ attrs
-                )
-
-        viewSegment attrs index segmentsCount { active, label, onPress } =
-            Input.button
-                ([ Theme.padding
-                 , width fill
-                 , Font.center
-                 , { topLeft = index == 0
-                   , topRight = index == segmentsCount - 1
-                   , bottomLeft = index == 0
-                   , bottomRight = index == segmentsCount - 1
-                   }
-                    |> Theme.borderRoundedEachWithCoeff
-                 , Theme.borderWidthEach { top = True, bottom = True, right = True, left = index == 0 }
-                 , if active then
-                    Background.color Theme.colors.selectedTab
-
-                   else
-                    Theme.semitransparentBackground
-                 ]
-                    ++ attrs
-                )
-                { label = text label
-                , onPress = Just onPress
-                }
-
-        menuRow : List (Attribute msg) -> String -> List (Segment msg) -> Element msg
-        menuRow attrs label segments =
+    Element.with .a11y <|
+        \a11y ->
             let
-                segmentsCount =
-                    List.length segments
-            in
-            [ el [ width <| fillPortion 3 ] <| text label
-            , segments
-                |> List.indexedMap
-                    (\index (Segment sattrs segment) ->
-                        viewSegment
-                            sattrs
-                            index
-                            segmentsCount
-                            segment
-                    )
-                |> Element.row [ width <| fillPortion 2 ]
-            ]
-                |> row [ width fill, Theme.spacing ]
-                |> container attrs
+                container attrs =
+                    semiBox
+                        ([ width fill
+                         , Theme.borderWidth
+                         , Theme.borderRounded
+                         , Theme.padding
+                         ]
+                            ++ attrs
+                        )
 
-        toggle attrs label getter toMsg =
-            let
-                value =
-                    getter a11y
-            in
-            menuRow attrs
-                label
-                [ Segment [] { active = not value, label = "No", onPress = False }
-                , Segment [] { active = value, label = "Yes", onPress = True }
-                ]
-                |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click False Effect ))
+                viewSegment attrs index segmentsCount { active, label, onPress } =
+                    Input.button
+                        ([ Theme.padding
+                         , width fill
+                         , Font.center
+                         , { topLeft = index == 0
+                           , topRight = index == segmentsCount - 1
+                           , bottomLeft = index == 0
+                           , bottomRight = index == segmentsCount - 1
+                           }
+                            |> Theme.borderRoundedEachWithCoeff
+                         , Theme.borderWidthEach { top = True, bottom = True, right = True, left = index == 0 }
+                         , if active then
+                            Background.color Theme.colors.selectedTab
 
-        volumeRow label value toMsg =
-            menuRow []
-                (label ++ " (" ++ String.fromInt (round <| value * 100) ++ "%)")
-                [ Segment []
-                    { active = value == 0
-                    , label = "Mute"
-                    , onPress = 0
-                    }
-                , Segment []
-                    { active = False
-                    , label = "-"
-                    , onPress = max 0 <| value - 0.1
-                    }
-                , Segment []
-                    { active = False
-                    , label = "+"
-                    , onPress = min 1 <| value + 0.1
-                    }
-                , Segment []
-                    { active = value == 1
-                    , label = "Max"
-                    , onPress = 1
-                    }
-                ]
-                |> Element.map
-                    (\volume ->
-                        ( toMsg volume
-                        , Just <| AudioPlay SoundLibrary.click False Effect
+                           else
+                            Theme.semitransparentBackground
+                         ]
+                            ++ attrs
                         )
-                    )
-    in
-    el (mainContainerAttrs { image = background }) <|
-        column [ width fill, height fill, Theme.spacing ]
-            [ toggle [ Background.color <| Element.rgb 1 1 1 ]
-                "Opaque backgrounds"
-                .opaqueBackgrounds
-                (\newValue -> { a11y | opaqueBackgrounds = newValue })
-            , toggle []
-                "Allow free travel"
-                .unlockEverything
-                (\newValue -> { a11y | unlockEverything = newValue })
-            , toggle []
-                "Use Open Dyslexic"
-                .openDyslexic
-                (\newValue -> { a11y | openDyslexic = newValue })
-            , menuRow []
-                ("Scale (" ++ String.fromInt (round <| a11y.fontSize / Theme.defaultFontSize * 100) ++ "%)")
-                [ Segment []
-                    { active = a11y.fontSize < Theme.defaultFontSize
-                    , label = "-"
-                    , onPress = a11y.fontSize * 10 / 11
-                    }
-                , Segment []
-                    { active = a11y.fontSize == Theme.defaultFontSize
-                    , label = "100%"
-                    , onPress = Theme.defaultFontSize
-                    }
-                , Segment []
-                    { active = a11y.fontSize > Theme.defaultFontSize
-                    , label = "+"
-                    , onPress = a11y.fontSize * 11 / 10
-                    }
-                ]
-                |> Element.map
-                    (\fontSize ->
-                        ( A11y { a11y | fontSize = toFloat <| round fontSize }
-                        , Just <| AudioPlay SoundLibrary.click False Effect
-                        )
-                    )
-            , volumeRow "Main Volume" mainVolume MainVolume
-            , volumeRow "Music Volume" musicVolume MusicVolume
-            , volumeRow "Effects Volume" effectsVolume EffectsVolume
-            , menuRow []
-                "Reset save"
-                [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
-                    { active = False
-                    , label = "RESET"
-                    , onPress =
-                        ( Reset
-                        , Just <| AudioPlay SoundLibrary.click False Effect
-                        )
-                    }
-                ]
-            , menuButtonAndLabel (BackTo previous) "Back"
-            ]
+                        { label = text label
+                        , onPress = Just onPress
+                        }
+
+                menuRow : List (Attribute msg) -> String -> List (Segment msg) -> Element msg
+                menuRow attrs label segments =
+                    let
+                        segmentsCount =
+                            List.length segments
+                    in
+                    [ el [ width <| fillPortion 3 ] <| text label
+                    , segments
+                        |> List.indexedMap
+                            (\index (Segment sattrs segment) ->
+                                viewSegment
+                                    sattrs
+                                    index
+                                    segmentsCount
+                                    segment
+                            )
+                        |> row [ width <| fillPortion 2 ]
+                    ]
+                        |> row [ width fill, Theme.spacing ]
+                        |> container attrs
+
+                toggle attrs label getter toMsg =
+                    let
+                        value =
+                            getter a11y
+                    in
+                    menuRow attrs
+                        label
+                        [ Segment [] { active = not value, label = "No", onPress = False }
+                        , Segment [] { active = value, label = "Yes", onPress = True }
+                        ]
+                        |> Element.map (\v -> ( A11y <| toMsg v, Just <| AudioPlay SoundLibrary.click False Effect ))
+
+                volumeRow label value toMsg =
+                    menuRow []
+                        (label ++ " (" ++ String.fromInt (round <| value * 100) ++ "%)")
+                        [ Segment []
+                            { active = value == 0
+                            , label = "Mute"
+                            , onPress = 0
+                            }
+                        , Segment []
+                            { active = False
+                            , label = "-"
+                            , onPress = max 0 <| value - 0.1
+                            }
+                        , Segment []
+                            { active = False
+                            , label = "+"
+                            , onPress = min 1 <| value + 0.1
+                            }
+                        , Segment []
+                            { active = value == 1
+                            , label = "Max"
+                            , onPress = 1
+                            }
+                        ]
+                        |> Element.map
+                            (\volume ->
+                                ( toMsg volume
+                                , Just <| AudioPlay SoundLibrary.click False Effect
+                                )
+                            )
+            in
+            el (mainContainerAttrs { image = background }) <|
+                column [ width fill, height fill, Theme.spacing ]
+                    [ toggle [ Background.color <| Element.rgb 1 1 1 ]
+                        "Opaque backgrounds"
+                        .opaqueBackgrounds
+                        (\newValue -> { a11y | opaqueBackgrounds = newValue })
+                    , toggle []
+                        "Allow free travel"
+                        .unlockEverything
+                        (\newValue -> { a11y | unlockEverything = newValue })
+                    , toggle []
+                        "Use Open Dyslexic"
+                        .openDyslexic
+                        (\newValue -> { a11y | openDyslexic = newValue })
+                    , menuRow []
+                        ("Scale (" ++ String.fromInt (round <| a11y.fontSize / Theme.defaultFontSize * 100) ++ "%)")
+                        [ Segment []
+                            { active = a11y.fontSize < Theme.defaultFontSize
+                            , label = "-"
+                            , onPress = a11y.fontSize * 10 / 11
+                            }
+                        , Segment []
+                            { active = a11y.fontSize == Theme.defaultFontSize
+                            , label = "100%"
+                            , onPress = Theme.defaultFontSize
+                            }
+                        , Segment []
+                            { active = a11y.fontSize > Theme.defaultFontSize
+                            , label = "+"
+                            , onPress = a11y.fontSize * 11 / 10
+                            }
+                        ]
+                        |> Element.map
+                            (\fontSize ->
+                                ( A11y { a11y | fontSize = toFloat <| round fontSize }
+                                , Just <| AudioPlay SoundLibrary.click False Effect
+                                )
+                            )
+                    , volumeRow "Main Volume" mainVolume MainVolume
+                    , volumeRow "Music Volume" musicVolume MusicVolume
+                    , volumeRow "Effects Volume" effectsVolume EffectsVolume
+                    , menuRow []
+                        "Reset save"
+                        [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
+                            { active = False
+                            , label = "RESET"
+                            , onPress =
+                                ( Reset
+                                , Just <| AudioPlay SoundLibrary.click False Effect
+                                )
+                            }
+                        ]
+                    , menuButtonAndLabel (BackTo previous) "Back"
+                    ]
 
 
 type Segment msg
@@ -226,87 +227,88 @@ type Segment msg
 
 viewMap : Data -> SharedGameModel -> MapModel -> Element GameMsgTuple
 viewMap data sharedGameModel mapModel =
-    Element.with identity <| \{ screenSize, a11y } ->
-    let
-        s =
-            Quantity.max
-                (Quantity.per mapSize.width screenSize.width)
-                (Quantity.per mapSize.height screenSize.height)
+    Element.with identity <|
+        \{ screenSize, a11y } ->
+            let
+                s =
+                    Quantity.max
+                        (Quantity.per mapSize.width screenSize.width)
+                        (Quantity.per mapSize.height screenSize.height)
 
-        w =
-            mapSize.width
-                |> Quantity.at s
+                w =
+                    mapSize.width
+                        |> Quantity.at s
 
-        h =
-            mapSize.height
-                |> Quantity.at s
+                h =
+                    mapSize.height
+                        |> Quantity.at s
 
-        pins =
-            data
-                |> Dict.toList
-                |> List.filter
-                    (\( personId, _ ) ->
-                        a11y.unlockEverything || Set.member personId sharedGameModel.tickets
-                    )
-                |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
-                |> List.concatMap
-                    (\( personId, person ) ->
-                        viewPinOnMap sharedGameModel a11y mapModel personId person
-                    )
+                pins =
+                    data
+                        |> Dict.toList
+                        |> List.filter
+                            (\( personId, _ ) ->
+                                a11y.unlockEverything || Set.member personId sharedGameModel.tickets
+                            )
+                        |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
+                        |> List.concatMap
+                            (\( personId, person ) ->
+                                viewPinOnMap sharedGameModel a11y mapModel personId person
+                            )
 
-        duck =
-            case Dict.get sharedGameModel.currentPerson data of
-                Nothing ->
-                    []
+                duck =
+                    case Dict.get sharedGameModel.currentPerson data of
+                        Nothing ->
+                            []
 
-                Just person ->
-                    viewDuckOnMap data mapModel person
+                        Just person ->
+                            viewDuckOnMap data mapModel person
 
-        mapPixelToString q =
-            String.fromFloat <| MapPixels.inPixels q
+                mapPixelToString q =
+                    String.fromFloat <| MapPixels.inPixels q
 
-        viewBox =
-            [ Quantity.zero, Quantity.zero, mapSize.width, mapSize.height ]
-                |> List.map mapPixelToString
-                |> String.join " "
+                viewBox =
+                    [ Quantity.zero, Quantity.zero, mapSize.width, mapSize.height ]
+                        |> List.map mapPixelToString
+                        |> String.join " "
 
-        map =
-            [ S.image
-                [ Theme.imageXlinkHref "europe.webp"
-                , SA.width <| mapPixelToString mapSize.width
-                , SA.height <| mapPixelToString mapSize.height
-                ]
-                []
-            , S.rect
-                [ SA.width <| mapPixelToString mapSize.width
-                , SA.height <| mapPixelToString mapSize.height
-                , SA.fillOpacity "0.10"
-                ]
-                []
-            ]
+                map =
+                    [ S.image
+                        [ Theme.imageXlinkHref "europe.webp"
+                        , SA.width <| mapPixelToString mapSize.width
+                        , SA.height <| mapPixelToString mapSize.height
+                        ]
+                        []
+                    , S.rect
+                        [ SA.width <| mapPixelToString mapSize.width
+                        , SA.height <| mapPixelToString mapSize.height
+                        , SA.fillOpacity "0.10"
+                        ]
+                        []
+                    ]
 
-        children =
-            map ++ pins ++ duck
+                children =
+                    map ++ pins ++ duck
 
-        menu =
-            el
-                [ Theme.padding
-                , Element.htmlAttribute <| Html.Attributes.style "position" "fixed"
-                , Element.htmlAttribute <| Html.Attributes.style "bottom" "0px"
-                ]
-                (menuButtonAndLabel
-                    (ViewMenu { background = "europe.webp" })
-                    ""
-                )
-    in
-    children
-        |> S.svg
-            [ SA.viewBox viewBox
-            , SA.width <| pixelsToString w
-            , SA.height <| pixelsToString h
-            ]
-        |> Element.html
-        |> el [ Element.inFront menu ]
+                menu =
+                    el
+                        [ Theme.padding
+                        , Element.htmlAttribute <| Html.Attributes.style "position" "fixed"
+                        , Element.htmlAttribute <| Html.Attributes.style "bottom" "0px"
+                        ]
+                        (menuButtonAndLabel
+                            (ViewMenu { background = "europe.webp" })
+                            ""
+                        )
+            in
+            children
+                |> S.svg
+                    [ SA.viewBox viewBox
+                    , SA.width <| pixelsToString w
+                    , SA.height <| pixelsToString h
+                    ]
+                |> Element.html
+                |> el [ Element.inFront menu ]
 
 
 boolToInt : Bool -> number
@@ -455,13 +457,13 @@ viewPerson person =
         (\orientation ->
             case orientation of
                 Portrait ->
-                    Element.column (mainContainerAttrs person.city)
+                    column (mainContainerAttrs person.city)
                         [ viewCityDescription [] person.city
                         , avatarBox
                         ]
 
                 Landscape ->
-                    Element.row (mainContainerAttrs person.city)
+                    row (mainContainerAttrs person.city)
                         [ viewCityDescription [ height fill ] person.city
                         , avatarBox
                         ]

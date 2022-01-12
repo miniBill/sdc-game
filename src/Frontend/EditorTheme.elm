@@ -84,7 +84,7 @@ colors =
     }
 
 
-getColor : Int -> Element.Color
+getColor : Int -> Color
 getColor index =
     case modBy 5 index of
         0 ->

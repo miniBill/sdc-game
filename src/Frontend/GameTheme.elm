@@ -1,4 +1,4 @@
-module Frontend.GameTheme exposing (Attribute, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fadeOutTime, fontSize, historicalBackground, htmlBackgroundImageUrl, image, imageXlinkHref, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
+module Frontend.GameTheme exposing (Attribute, Context, Element, autoscalingI, borderRounded, borderRoundedEachWithCoeff, borderWidth, borderWidthEach, colors, defaultFontSize, fadeOutTime, fontSize, historicalBackground, htmlBackgroundImageUrl, image, imageXlinkHref, padding, paddingXYWithCoeff, semitransparentBackground, spacing)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
@@ -65,22 +65,24 @@ colors =
 
 semitransparentBackground : Attribute msg
 semitransparentBackground =
-    Element.withAttribute .a11y <| \{ opaqueBackgrounds } ->
-    if opaqueBackgrounds then
-        Background.color <| Element.rgb255 0xFF 0xFF 0xFF
+    Element.withAttribute .a11y <|
+        \{ opaqueBackgrounds } ->
+            if opaqueBackgrounds then
+                Background.color <| Element.rgb255 0xFF 0xFF 0xFF
 
-    else
-        Background.color <| Element.rgba255 0xFF 0xFF 0xFF 0.7
+            else
+                Background.color <| Element.rgba255 0xFF 0xFF 0xFF 0.7
 
 
 historicalBackground : Attribute msg
 historicalBackground =
-    Element.withAttribute .a11y <| \{ opaqueBackgrounds } ->
-    if opaqueBackgrounds then
-        Background.color <| Element.rgb 0.6 0.6 0.6
+    Element.withAttribute .a11y <|
+        \{ opaqueBackgrounds } ->
+            if opaqueBackgrounds then
+                Background.color <| Element.rgb 0.6 0.6 0.6
 
-    else
-        Background.color <| Element.rgba 0.6 0.6 0.6 0.6
+            else
+                Background.color <| Element.rgba 0.6 0.6 0.6 0.6
 
 
 padding : Attribute msg
@@ -105,8 +107,9 @@ spacing =
 
 fontSize : Float -> Attribute msg
 fontSize k =
-    Element.withAttribute .a11y <| \a11y ->
-    autoscalingI (a11y.fontSize * k) Font.size
+    Element.withAttribute .a11y <|
+        \a11y ->
+            autoscalingI (a11y.fontSize * k) Font.size
 
 
 borderWidth : Attribute msg
@@ -121,13 +124,14 @@ borderRounded =
 
 borderRoundedEachWithCoeff : { topRight : Bool, topLeft : Bool, bottomRight : Bool, bottomLeft : Bool } -> Attribute msg
 borderRoundedEachWithCoeff { topRight, topLeft, bottomRight, bottomLeft } =
-    autoscalingI (rythm * 4) <| \s ->
-    Border.roundEach
-        { topRight = s * rythm * boolToInt topRight
-        , topLeft = s * rythm * boolToInt topLeft
-        , bottomRight = s * rythm * boolToInt bottomRight
-        , bottomLeft = s * rythm * boolToInt bottomLeft
-        }
+    autoscalingI (rythm * 4) <|
+        \s ->
+            Border.roundEach
+                { topRight = s * rythm * boolToInt topRight
+                , topLeft = s * rythm * boolToInt topLeft
+                , bottomRight = s * rythm * boolToInt bottomRight
+                , bottomLeft = s * rythm * boolToInt bottomLeft
+                }
 
 
 borderWidthEach :
@@ -161,8 +165,9 @@ boolToInt b =
 
 autoscaling : Float -> (Float -> Attribute msg) -> Attribute msg
 autoscaling k f =
-    Element.withAttribute .a11y <| \a11y ->
-    f <| k * a11y.fontSize / defaultFontSize
+    Element.withAttribute .a11y <|
+        \a11y ->
+            f <| k * a11y.fontSize / defaultFontSize
 
 
 autoscalingI : Float -> (Int -> Attribute msg) -> Attribute msg

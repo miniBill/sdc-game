@@ -204,8 +204,8 @@ mapEditor person =
     S.svg
         [ [ Quantity.zero
           , Quantity.zero
-          , Model.mapSize.width
-          , Model.mapSize.height
+          , mapSize.width
+          , mapSize.height
           ]
             |> List.map mapPixelToString
             |> String.join " "

@@ -18,10 +18,10 @@ elmUiRenderer =
     { heading = heading
     , paragraph = paragraph [ Theme.spacing ]
     , thematicBreak = Element.none
-    , text = Element.text
-    , strong = \content -> Element.row [ Font.bold ] content
-    , emphasis = \content -> Element.row [ Font.italic ] content
-    , strikethrough = \content -> Element.row [ Font.strike ] content
+    , text = text
+    , strong = \content -> row [ Font.bold ] content
+    , emphasis = \content -> row [ Font.italic ] content
+    , strikethrough = \content -> row [ Font.strike ] content
     , codeSpan = code
     , link =
         \{ destination } body ->
@@ -29,7 +29,7 @@ elmUiRenderer =
                 [ Element.htmlAttribute (Html.Attributes.style "display" "inline-flex") ]
                 { url = destination
                 , label =
-                    Element.paragraph
+                    paragraph
                         [ Font.color (Element.rgb255 0 0 255)
                         ]
                         body
@@ -43,7 +43,7 @@ elmUiRenderer =
                 }
     , blockQuote =
         \children ->
-            Element.column
+            column
                 [ Theme.borderWidthEach
                     { top = False
                     , right = False
@@ -111,7 +111,7 @@ code snippet =
         , Theme.padding
         , Font.family [ Font.monospace ]
         ]
-        (Element.text snippet)
+        (text snippet)
 
 
 codeBlock : { body : String, language : Maybe String } -> Element msg
@@ -122,7 +122,7 @@ codeBlock details =
         , Theme.padding
         , Font.family [ Font.monospace ]
         ]
-        (Element.text details.body)
+        (text details.body)
 
 
 heading :
@@ -132,7 +132,7 @@ heading :
     }
     -> Element msg
 heading { level, rawText, children } =
-    Element.paragraph
+    paragraph
         [ case level of
             Markdown.Block.H1 ->
                 Theme.fontSize 1.8
