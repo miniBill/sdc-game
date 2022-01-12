@@ -177,7 +177,7 @@ viewPerson id person =
             , width fill
             , height shrink
             ]
-            [ Editors.personEditor 0 person
+            [ Editors.personEditor person 0
             , mapEditor person
             ]
 
