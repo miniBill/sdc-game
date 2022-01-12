@@ -229,6 +229,7 @@ gotGameData data =
                 { currentPerson = ""
                 , tickets = Set.singleton orlaId
                 , usedTickets = Set.empty
+                , won = False
                 }
                 (ViewingTalking { chatHistory = [], currentDialog = initial.dialog })
 
@@ -719,7 +720,7 @@ updateGame msg a11y outerModel =
                         WinAndViewMap ->
                             { default
                                 | model = ViewingMap { travellingTo = Nothing }
-                                , a11y = { a11y | unlockEverything = True }
+                                , sharedModel = { sharedModel | won = True }
                             }
 
                         GotRandomTicket id ->

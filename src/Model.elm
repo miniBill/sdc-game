@@ -43,6 +43,7 @@ type alias SharedGameModel =
     { currentPerson : Id
     , tickets : Set Id
     , usedTickets : Set Id
+    , won : Bool
     }
 
 

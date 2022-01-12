@@ -245,7 +245,8 @@ viewMap data sharedGameModel mapModel =
                 |> Dict.toList
                 |> List.filter
                     (\( personId, _ ) ->
-                        a11y.unlockEverything || Set.member personId sharedGameModel.tickets
+                        (personId /= "")
+                            && (sharedGameModel.won || a11y.unlockEverything || Set.member personId sharedGameModel.tickets)
                     )
                 |> List.sortBy (\( personId, _ ) -> boolToInt <| personId == sharedGameModel.currentPerson)
                 |> List.map
@@ -342,7 +343,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
 
         fill =
             if Set.member id sharedGameModel.usedTickets then
-                if a11y.unlockEverything then
+                if a11y.unlockEverything || sharedGameModel.won then
                     "lightgray"
 
                 else
@@ -353,7 +354,7 @@ viewPinOnMap sharedGameModel a11y mapModel id { city } =
 
         disabled =
             (mapModel.travellingTo /= Nothing)
-                || (Set.member id sharedGameModel.usedTickets && not a11y.unlockEverything)
+                || (Set.member id sharedGameModel.usedTickets && not a11y.unlockEverything && not sharedGameModel.won)
 
         handler pointer =
             if disabled then
