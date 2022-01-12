@@ -1,98 +1,13 @@
-module Editors exposing (a11yOptionsEditor, sharedGameModelEditor, gameModelEditor, mapModelEditor, talkingModelEditor, chatHistoryEditor, chatLineEditor, menuModelEditor, dataEditor, idEditor, personEditor, cityEditor, soundEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, a11yOptionsDefault, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, chatLineDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, soundDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault)
+module Editors exposing (personEditor, personDefault)
 
 {-|
 
-@docs a11yOptionsEditor, sharedGameModelEditor, gameModelEditor, mapModelEditor, talkingModelEditor, chatHistoryEditor, chatLineEditor, menuModelEditor, dataEditor, idEditor, personEditor, cityEditor, soundEditor, cityNameEditor, coordinatesEditor, nationEditor, dialogEditor, choiceEditor, nextEditor, quizEditor, a11yOptionsDefault, sharedGameModelDefault, gameModelDefault, mapModelDefault, talkingModelDefault, chatHistoryDefault, chatLineDefault, menuModelDefault, dataDefault, idDefault, personDefault, cityDefault, soundDefault, cityNameDefault, coordinatesDefault, nationDefault, dialogDefault, choiceDefault, nextDefault, quizDefault
+@docs personEditor, personDefault
 
 -}
 
-import Dict
 import Frontend.EditorTheme
 import Model
-import Set
-
-
-a11yOptionsEditor : Int -> Model.A11yOptions -> Frontend.EditorTheme.Element Model.A11yOptions
-a11yOptionsEditor level value =
-    let
-        rawSimples =
-            [ ( "Unlock everything"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | unlockEverything = f })
-                    (Frontend.EditorTheme.boolEditor
-                        (level + 1)
-                        value.unlockEverything
-                    )
-              )
-            , ( "Open dyslexic"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | openDyslexic = f })
-                    (Frontend.EditorTheme.boolEditor
-                        (level + 1)
-                        value.openDyslexic
-                    )
-              )
-            , ( "Font size"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | fontSize = f })
-                    (Frontend.EditorTheme.floatEditor (level + 1) value.fontSize)
-              )
-            , ( "Opaque backgrounds"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | opaqueBackgrounds = f })
-                    (Frontend.EditorTheme.boolEditor
-                        (level + 1)
-                        value.opaqueBackgrounds
-                    )
-              )
-            ]
-
-        rawComplexes =
-            []
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
-
-
-sharedGameModelEditor :
-    Int
-    -> Model.SharedGameModel
-    -> Frontend.EditorTheme.Element Model.SharedGameModel
-sharedGameModelEditor level value =
-    let
-        rawSimples =
-            [ ( "Current person"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | currentPerson = f })
-                    (idEditor (level + 1) value.currentPerson)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "Tickets"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | tickets = f })
-                    (Frontend.EditorTheme.setEditor
-                        "Id"
-                        idEditor
-                        idDefault
-                        (level + 1)
-                        value.tickets
-                    )
-              )
-            , ( "Used tickets"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | usedTickets = f })
-                    (Frontend.EditorTheme.setEditor
-                        "Id"
-                        idEditor
-                        idDefault
-                        (level + 1)
-                        value.usedTickets
-                    )
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
 gameModelEditor : Int -> Model.GameModel -> Frontend.EditorTheme.Element Model.GameModel
@@ -272,17 +187,6 @@ menuModelEditor level value =
             ]
     in
     Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
-
-
-dataEditor : Int -> Model.Data -> Frontend.EditorTheme.Element Model.Data
-dataEditor level value =
-    Frontend.EditorTheme.dictEditor
-        idEditor
-        idDefault
-        personEditor
-        personDefault
-        level
-        value
 
 
 idEditor : Int -> Model.Id -> Frontend.EditorTheme.Element Model.Id
@@ -608,20 +512,6 @@ quizEditor level value =
     Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
 
 
-a11yOptionsDefault : Model.A11yOptions
-a11yOptionsDefault =
-    { unlockEverything = True
-    , openDyslexic = True
-    , fontSize = 0
-    , opaqueBackgrounds = True
-    }
-
-
-sharedGameModelDefault : Model.SharedGameModel
-sharedGameModelDefault =
-    { currentPerson = idDefault, tickets = Set.empty, usedTickets = Set.empty }
-
-
 gameModelDefault : Model.GameModel
 gameModelDefault =
     Model.ViewingPerson
@@ -650,11 +540,6 @@ chatLineDefault =
 menuModelDefault : Model.MenuModel
 menuModelDefault =
     { previous = gameModelDefault, background = "" }
-
-
-dataDefault : Model.Data
-dataDefault =
-    Dict.empty
 
 
 idDefault : Model.Id

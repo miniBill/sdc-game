@@ -1,6 +1,5 @@
-module Frontend.EditorTheme exposing (Attribute, Context, Element, boolEditor, borderRounded, button, colors, column, customEditor, dictEditor, enumEditor, floatEditor, fontSizes, getColor, image, imageXlinkHref, intEditor, listEditor, map, maybeEditor, objectEditor, padding, rythm, setEditor, spacing, stringEditor, tabButton, tupleEditor)
+module Frontend.EditorTheme exposing (Attribute, Context, Element, button, colors, column, customEditor, enumEditor, floatEditor, fontSizes, image, imageXlinkHref, intEditor, listEditor, map, maybeEditor, objectEditor, padding, rythm, spacing, stringEditor, tupleEditor)
 
-import Dict exposing (Dict)
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
@@ -10,7 +9,6 @@ import Env
 import Html.Attributes
 import List.Extra
 import Model exposing (A11yOptions)
-import Set exposing (Set)
 import Svg
 import Svg.Attributes
 import Types exposing (Size)
@@ -148,7 +146,7 @@ button :
 button attrs =
     Input.button
         ([ Border.width borderWidth
-         , Border.rounded rythm
+         , borderRounded
          , padding
          ]
             ++ attrs
@@ -240,20 +238,9 @@ objectEditor rawSimples rawComplexes level =
         , padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded rythm
+        , borderRounded
         ]
         (simplesTable :: complexes)
-
-
-setEditor :
-    String
-    -> (Int -> comparable -> Element comparable)
-    -> comparable
-    -> Int
-    -> Set comparable
-    -> Element (Set comparable)
-setEditor typeName valueEditor valueDefault level value =
-    Element.map Set.fromList <| listEditor typeName valueEditor valueDefault level <| Set.toList value
 
 
 listEditor :
@@ -292,7 +279,7 @@ listEditor typeName valueEditor valueDefault level value =
                                     , padding
                                     , Element.alignTop
                                     , Border.width 1
-                                    , Border.rounded rythm
+                                    , borderRounded
                                     , Background.gradient
                                         { angle = 0
                                         , steps =
@@ -337,7 +324,7 @@ listEditor typeName valueEditor valueDefault level value =
             , padding
             , Element.alignTop
             , Border.width 1
-            , Border.rounded rythm
+            , borderRounded
             ]
             rows
         , Element.el
@@ -350,7 +337,7 @@ listEditor typeName valueEditor valueDefault level value =
                 , padding
                 , Element.alignTop
                 , Border.width 1
-                , Border.rounded rythm
+                , borderRounded
                 , Background.gradient
                     { angle = 0
                     , steps =
@@ -385,7 +372,7 @@ customEditor variants inputsRow level value =
         , padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded rythm
+        , borderRounded
         ]
         [ variantRow variants value
         , Element.row [ Element.width Element.fill, spacing ] inputsRow
@@ -414,7 +401,7 @@ enumEditor variants value level =
         , padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded rythm
+        , borderRounded
         ]
         (variantRow variants value)
 
@@ -447,7 +434,7 @@ tupleEditor leftEditor leftSimple rightEditor rightSimple level ( left, right ) 
         , padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded rythm
+        , borderRounded
         ]
         [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
         , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
@@ -487,7 +474,7 @@ maybeEditor typeName valueEditor valueDefault level value =
         , padding
         , Element.alignTop
         , Border.width 1
-        , Border.rounded rythm
+        , borderRounded
         ]
         [ variantRow variants value, inputsRow ]
 
@@ -537,84 +524,6 @@ stringEditor level value =
         , text = value
         , placeholder = Maybe.Nothing
         , label = Input.labelHidden ""
-        }
-
-
-boolEditor : Int -> Bool -> Element Bool
-boolEditor _ value =
-    Input.radioRow
-        [ spacing, Element.alignTop ]
-        { onChange = identity
-        , options =
-            [ Input.option True (Element.text "True")
-            , Input.option False (Element.text "False")
-            ]
-        , selected = Maybe.Just value
-        , label = Input.labelHidden ""
-        }
-
-
-dictEditor :
-    (Int -> comparable -> Element comparable)
-    -> comparable
-    -> (Int -> v -> Element v)
-    -> v
-    -> Int
-    -> Dict comparable v
-    -> Element (Dict comparable v)
-dictEditor keyEditor keyDefault valueEditor valueDefault level value =
-    let
-        keysColumn =
-            { header = Element.none
-            , width = Element.shrink
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if
-                                lambdaArg0
-                                    == keyDefault
-                                    && memberValue
-                                    == valueDefault
-                            then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert
-                                    lambdaArg0
-                                    memberValue
-                                    (Dict.remove key value)
-                        )
-                        (keyEditor (level + 1) key)
-            }
-
-        valuesColumn =
-            { header = Element.none
-            , width = Element.fill
-            , view =
-                \( key, memberValue ) ->
-                    Element.map
-                        (\lambdaArg0 ->
-                            if key == keyDefault && lambdaArg0 == valueDefault then
-                                Dict.remove key value
-
-                            else
-                                Dict.insert key lambdaArg0 value
-                        )
-                        (valueEditor (level + 1) memberValue)
-            }
-    in
-    Element.table
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , Border.rounded rythm
-        ]
-        { data = Dict.toList value ++ [ ( keyDefault, valueDefault ) ]
-        , columns = [ keysColumn, valuesColumn ]
         }
 
 

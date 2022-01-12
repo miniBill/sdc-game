@@ -1,6 +1,6 @@
-module Frontend.GameMarkdown exposing (code, codeBlock, elmUiRenderer, heading, rawTextToId)
+module Frontend.GameMarkdown exposing (elmUiRenderer)
 
-import Element.WithContext as Element exposing (Orientation(..), alignTop, column, image, paragraph, row, text)
+import Element.WithContext as Element exposing (alignTop, column, paragraph, row, text)
 import Element.WithContext.Background as Background
 import Element.WithContext.Border as Border
 import Element.WithContext.Font as Font
@@ -11,8 +11,6 @@ import Html.Attributes
 import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Renderer
-import Model exposing (GameModel(..), Next(..))
-import Types exposing (GameMsg(..), OuterGameModel(..))
 
 
 elmUiRenderer : Markdown.Renderer.Renderer (Element msg)

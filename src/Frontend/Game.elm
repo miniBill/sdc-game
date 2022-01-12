@@ -11,7 +11,6 @@ import Frontend.GameMarkdown
 import Frontend.GameTheme as Theme exposing (Attribute, Element)
 import Html.Attributes
 import MapPixels
-import Markdown.Block exposing (ListItem(..), Task(..))
 import Markdown.Parser
 import Markdown.Renderer
 import Model exposing (A11yOptions, ChatHistory, Choice, City, Data, GameModel(..), Id, MapModel, MenuModel, Next(..), Person, Quiz, SharedGameModel, TalkingModel, mapSize)

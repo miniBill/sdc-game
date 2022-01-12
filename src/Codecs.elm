@@ -1,8 +1,8 @@
-module Codecs exposing (a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, chatLineCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, soundCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec)
+module Codecs exposing (a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, dataCodec)
 
 {-|
 
-@docs a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, mapModelCodec, talkingModelCodec, chatHistoryCodec, chatLineCodec, menuModelCodec, dataCodec, idCodec, personCodec, cityCodec, soundCodec, cityNameCodec, coordinatesCodec, nationCodec, dialogCodec, choiceCodec, nextCodec, quizCodec
+@docs a11yOptionsCodec, sharedGameModelCodec, gameModelCodec, dataCodec
 
 -}
 
