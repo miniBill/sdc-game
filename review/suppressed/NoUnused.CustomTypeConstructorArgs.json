@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "automatically created by": "elm-review suppress",
+  "learn more": "elm-review suppress --help",
+  "suppressions": [
+    { "count": 50, "filePath": "src/Evergreen/V1/Types.elm" },
+    { "count": 50, "filePath": "src/Evergreen/V21/Types.elm" },
+    { "count": 50, "filePath": "src/Evergreen/V26/Types.elm" },
+    { "count": 6, "filePath": "src/Evergreen/V1/Model.elm" },
+    { "count": 6, "filePath": "src/Evergreen/V21/Model.elm" },
+    { "count": 6, "filePath": "src/Evergreen/V26/Model.elm" },
+    { "count": 2, "filePath": "src/Types.elm" }
+  ]
+}
