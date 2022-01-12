@@ -28,7 +28,6 @@ type alias InnerFrontendModel =
 
 type alias AudioModel =
     { sources : Dict String Audio.Source
-    , mainVolume : Float
     , musicVolume : Float
     , effectsVolume : Float
     , playing : List Track
@@ -123,12 +122,12 @@ type GameMsg
     | ViewMenu { background : String }
     | PickQuiz
     | GiveTicketAndViewMap
+    | WinAndViewMap
     | GotRandomTicket Id
     | BackTo GameModel
     | Reset
     | A11y A11yOptions
     | LocalStorageLoaded String
-    | MainVolume Float
     | MusicVolume Float
     | EffectsVolume Float
 
@@ -136,7 +135,6 @@ type GameMsg
 type AudioMsg
     = AudioStop
     | AudioPlay Sound Bool TrackKind
-    | AudioMainVolume Float
     | AudioMusicVolume Float
     | AudioEffectsVolume Float
 

@@ -158,6 +158,7 @@ type Next
     | NextRandomQuiz
     | NextQuiz Quiz
     | NextGiveTicket
+    | NextWin
 
 
 type alias Quiz =

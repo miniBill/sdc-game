@@ -99,10 +99,10 @@ audioView _ { audio } =
                             volume =
                                 case kind of
                                     Music ->
-                                        audio.mainVolume * audio.musicVolume * 0.5
+                                        audio.musicVolume * 0.5
 
                                     Effect ->
-                                        audio.mainVolume * audio.effectsVolume
+                                        audio.effectsVolume
                         in
                         case fadingOutFrom of
                             Nothing ->
@@ -322,7 +322,6 @@ init url key =
       , screenSize = Nothing
       , audio =
             { sources = Dict.empty
-            , mainVolume = 1
             , musicVolume = 1
             , effectsVolume = 1
             , playing = []
@@ -437,9 +436,6 @@ update _ msg ({ audio } as model) =
             ( { model
                 | audio =
                     case amsg of
-                        AudioMainVolume mainVolume ->
-                            { audio | mainVolume = mainVolume }
-
                         AudioEffectsVolume effectsVolume ->
                             { audio | effectsVolume = effectsVolume }
 
@@ -720,6 +716,12 @@ updateGame msg a11y outerModel =
                                 , cmd = Cmd.map (\m -> GameMsg ( m, Nothing )) <| pickNewTicket data sharedModel
                             }
 
+                        WinAndViewMap ->
+                            { default
+                                | model = ViewingMap { travellingTo = Nothing }
+                                , a11y = { a11y | unlockEverything = True }
+                            }
+
                         GotRandomTicket id ->
                             { default
                                 | sharedModel =
@@ -817,9 +819,6 @@ updateGame msg a11y outerModel =
                                         else
                                             Audio.cmdNone
                                 }
-
-                        MainVolume mainVolume ->
-                            { default | cmd = Task.perform (TimedAudioMsg (AudioMainVolume mainVolume)) Time.now }
 
                         MusicVolume musicVolume ->
                             { default | cmd = Task.perform (TimedAudioMsg (AudioMusicVolume musicVolume)) Time.now }

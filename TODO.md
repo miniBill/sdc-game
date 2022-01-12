@@ -6,7 +6,7 @@
    2. Hash them and cache them
 2. Content
 3. Explaination
-4. Free travel only when won
+4. You shouldn't tell Orla you haven't seen Emily yet if you have
 
 # Maybe
 

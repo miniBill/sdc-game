@@ -459,7 +459,7 @@ nextCodec : Codec.Codec Model.Next
 nextCodec =
     Codec.lazy <| \() ->
     Codec.custom
-        (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket value ->
+        (\fnextDialog fnextViewMap fnextRandomQuiz fnextQuiz fnextGiveTicket fnextWin value ->
             case value of
                 Model.NextDialog arg0 ->
                     fnextDialog arg0
@@ -475,12 +475,16 @@ nextCodec =
 
                 Model.NextGiveTicket ->
                     fnextGiveTicket
+
+                Model.NextWin ->
+                    fnextWin
         )
         |> Codec.variant1 "NextDialog" Model.NextDialog dialogCodec
         |> Codec.variant0 "NextViewMap" Model.NextViewMap
         |> Codec.variant0 "NextRandomQuiz" Model.NextRandomQuiz
         |> Codec.variant1 "NextQuiz" Model.NextQuiz quizCodec
         |> Codec.variant0 "NextGiveTicket" Model.NextGiveTicket
+        |> Codec.variant0 "NextWin" Model.NextWin
         |> Codec.buildCustom
 
 

@@ -63,7 +63,7 @@ view audioModel model =
 
 
 viewMenu : AudioModel -> MenuModel -> Element GameMsgTuple
-viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
+viewMenu { musicVolume, effectsVolume } { previous, background } =
     Element.with .a11y <| \a11y ->
     let
         container attrs =
@@ -171,10 +171,6 @@ viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
                 .opaqueBackgrounds
                 (\newValue -> { a11y | opaqueBackgrounds = newValue })
             , toggle []
-                "Allow free travel"
-                .unlockEverything
-                (\newValue -> { a11y | unlockEverything = newValue })
-            , toggle []
                 "Use Open Dyslexic"
                 .openDyslexic
                 (\newValue -> { a11y | openDyslexic = newValue })
@@ -202,9 +198,12 @@ viewMenu { mainVolume, musicVolume, effectsVolume } { previous, background } =
                         , Just <| AudioPlay SoundLibrary.click False Effect
                         )
                     )
-            , volumeRow "Main Volume" mainVolume MainVolume
             , volumeRow "Music Volume" musicVolume MusicVolume
             , volumeRow "Effects Volume" effectsVolume EffectsVolume
+            , toggle []
+                "[Cheat] Unlock everyone"
+                .unlockEverything
+                (\newValue -> { a11y | unlockEverything = newValue })
             , menuRow []
                 "Reset save"
                 [ Segment [ Background.color <| Element.rgb 1 0.7 0.7 ]
@@ -761,6 +760,9 @@ viewChoice chatHistory { text, next } =
 
                     NextGiveTicket ->
                         GiveTicketAndViewMap
+
+                    NextWin ->
+                        WinAndViewMap
                 , Just <| AudioPlay SoundLibrary.quack1 False Effect
                 )
         }

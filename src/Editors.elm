@@ -207,12 +207,16 @@ nextEditor value =
                 Model.NextGiveTicket ->
                     extractedDefault
 
+                Model.NextWin ->
+                    extractedDefault
+
         variants =
             [ ( "Dialog", Model.NextDialog dialogExtracted )
             , ( "View map", Model.NextViewMap )
             , ( "Random quiz", Model.NextRandomQuiz )
             , ( "Quiz", Model.NextQuiz quizExtracted )
             , ( "Give ticket", Model.NextGiveTicket )
+            , ( "Win", Model.NextWin )
             ]
 
         inputsRow =
@@ -236,6 +240,9 @@ nextEditor value =
                     ]
 
                 Model.NextGiveTicket ->
+                    []
+
+                Model.NextWin ->
                     []
     in
     Frontend.EditorTheme.customEditor variants inputsRow value
