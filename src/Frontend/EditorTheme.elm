@@ -1,4 +1,4 @@
-module Frontend.EditorTheme exposing (Attribute, Context, Element, button, colors, column, customEditor, enumEditor, floatEditor, fontSizes, image, imageXlinkHref, intEditor, listEditor, map, maybeEditor, objectEditor, padding, rythm, spacing, stringEditor, tupleEditor)
+module Frontend.EditorTheme exposing (Attribute, Context, Element, button, colors, column, customEditor, enumEditor, floatEditor, fontSizes, image, imageXlinkHref, intEditor, listEditor, map, objectEditor, padding, rythm, spacing, stringEditor, tupleEditor)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
@@ -439,44 +439,6 @@ tupleEditor leftEditor leftSimple rightEditor rightSimple level ( left, right ) 
         [ Element.map (\lambdaArg0 -> ( lambdaArg0, right )) le
         , Element.map (\lambdaArg0 -> ( left, lambdaArg0 )) re
         ]
-
-
-maybeEditor :
-    String
-    -> (Int -> e -> Element e)
-    -> e
-    -> Int
-    -> Maybe e
-    -> Element (Maybe e)
-maybeEditor typeName valueEditor valueDefault level value =
-    let
-        extracted =
-            Maybe.withDefault valueDefault value
-
-        variants =
-            [ ( "Nothing", Nothing )
-            , ( typeName, Just extracted )
-            ]
-
-        inputsRow =
-            case value of
-                Nothing ->
-                    Element.none
-
-                Just inner ->
-                    Element.map Just
-                        (valueEditor (level + 1) inner)
-    in
-    Element.column
-        [ Background.color (getColor level)
-        , Element.width Element.fill
-        , spacing
-        , padding
-        , Element.alignTop
-        , Border.width 1
-        , borderRounded
-        ]
-        [ variantRow variants value, inputsRow ]
 
 
 intEditor : Int -> Int -> Element Int
