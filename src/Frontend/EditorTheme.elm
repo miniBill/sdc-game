@@ -188,7 +188,7 @@ imageXlinkHref src =
 -- Editors
 
 
-objectEditor : List ( String, Element msg ) -> List ( String, Element msg ) -> Int -> Element msg
+objectEditor : List ( String, Int -> Element msg ) -> List ( String, Int -> Element msg ) -> Int -> Element msg
 objectEditor rawSimples rawComplexes level =
     let
         simpleLabel =
@@ -203,7 +203,7 @@ objectEditor rawSimples rawComplexes level =
                         (\( fieldName, fieldEditor ) ->
                             Element.row
                                 [ spacing, Element.width Element.fill ]
-                                [ simpleLabel fieldName, fieldEditor ]
+                                [ simpleLabel fieldName, fieldEditor (level + 1) ]
                         )
                     |> Element.row [ spacing, Element.width Element.fill ]
 
@@ -217,7 +217,7 @@ objectEditor rawSimples rawComplexes level =
                           }
                         , { header = Element.none
                           , width = Element.fill
-                          , view = Tuple.second
+                          , view = \( _, fieldEditor ) -> fieldEditor (level + 1)
                           }
                         ]
                     , data = rawSimples
@@ -226,7 +226,7 @@ objectEditor rawSimples rawComplexes level =
         complexes =
             List.concatMap
                 (\( fieldName, fieldEditor ) ->
-                    [ Element.text fieldName, fieldEditor ]
+                    [ Element.text fieldName, fieldEditor (level + 1) ]
                 )
                 rawComplexes
     in
@@ -245,12 +245,12 @@ objectEditor rawSimples rawComplexes level =
 
 listEditor :
     String
-    -> (Int -> e -> Element e)
+    -> (e -> Int -> Element e)
     -> e
-    -> Int
     -> List e
+    -> Int
     -> Element (List e)
-listEditor typeName valueEditor valueDefault level value =
+listEditor typeName valueEditor valueDefault value level =
     let
         rows =
             List.indexedMap
@@ -263,57 +263,59 @@ listEditor typeName valueEditor valueDefault level value =
                             else
                                 List.Extra.setAt i lambdaArg0 value
                         )
-                        (Element.column
-                            [ Element.width Element.fill ]
-                            [ Element.el
-                                [ Element.paddingEach
-                                    { top = 0
-                                    , right = rythm
-                                    , bottom = 0
-                                    , left = 0
-                                    }
-                                , Element.alignRight
-                                ]
-                                (tabButton
-                                    [ spacing
-                                    , padding
-                                    , Element.alignTop
-                                    , Border.width 1
-                                    , borderRounded
-                                    , Background.gradient
-                                        { angle = 0
-                                        , steps =
-                                            [ getColor (level + 1)
-                                            , colors.delete
-                                            , colors.delete
-                                            ]
-                                        }
-                                    , Border.widthEach
-                                        { bottom = 0
-                                        , left = 1
-                                        , right = 1
-                                        , top = 1
-                                        }
-                                    , Border.roundEach
-                                        { topLeft = rythm
-                                        , topRight = rythm
-                                        , bottomLeft = 0
-                                        , bottomRight = 0
-                                        }
-                                    , Element.htmlAttribute
-                                        (Html.Attributes.style "z-index" "1")
-                                    ]
-                                    { onPress = Maybe.Just valueDefault
-                                    , label = Element.text "Delete"
-                                    }
-                                )
-                            , Element.el
-                                [ Element.width Element.fill, Element.moveUp 1 ]
-                                (valueEditor (level + 1) row)
-                            ]
-                        )
+                        (toRow row)
                 )
                 value
+
+        toRow row =
+            Element.column
+                [ Element.width Element.fill ]
+                [ Element.el
+                    [ Element.paddingEach
+                        { top = 0
+                        , right = rythm
+                        , bottom = 0
+                        , left = 0
+                        }
+                    , Element.alignRight
+                    ]
+                    (tabButton
+                        [ spacing
+                        , padding
+                        , Element.alignTop
+                        , Border.width 1
+                        , borderRounded
+                        , Background.gradient
+                            { angle = 0
+                            , steps =
+                                [ getColor (level + 1)
+                                , colors.delete
+                                , colors.delete
+                                ]
+                            }
+                        , Border.widthEach
+                            { bottom = 0
+                            , left = 1
+                            , right = 1
+                            , top = 1
+                            }
+                        , Border.roundEach
+                            { topLeft = rythm
+                            , topRight = rythm
+                            , bottomLeft = 0
+                            , bottomRight = 0
+                            }
+                        , Element.htmlAttribute
+                            (Html.Attributes.style "z-index" "1")
+                        ]
+                        { onPress = Maybe.Just valueDefault
+                        , label = Element.text "Delete"
+                        }
+                    )
+                , Element.el
+                    [ Element.width Element.fill, Element.moveUp 1 ]
+                    (valueEditor row (level + 1))
+                ]
     in
     Element.column
         [ Element.width Element.fill ]
@@ -363,8 +365,8 @@ listEditor typeName valueEditor valueDefault level value =
         ]
 
 
-customEditor : List ( String, a ) -> List (Element a) -> Int -> a -> Element a
-customEditor variants inputsRow level value =
+customEditor : List ( String, a ) -> List (Int -> Element a) -> a -> Int -> Element a
+customEditor variants inputsRow value level =
     Element.column
         [ Background.color (getColor level)
         , Element.width Element.fill
@@ -375,7 +377,7 @@ customEditor variants inputsRow level value =
         , borderRounded
         ]
         [ variantRow variants value
-        , Element.row [ Element.width Element.fill, spacing ] inputsRow
+        , Element.row [ Element.width Element.fill, spacing ] (List.map (\e -> e (level + 1)) inputsRow)
         ]
 
 
@@ -407,20 +409,20 @@ enumEditor variants value level =
 
 
 tupleEditor :
-    (Int -> l -> Element l)
+    (l -> Int -> Element l)
     -> Bool
-    -> (Int -> r -> Element r)
+    -> (r -> Int -> Element r)
     -> Bool
-    -> Int
     -> ( l, r )
+    -> Int
     -> Element ( l, r )
-tupleEditor leftEditor leftSimple rightEditor rightSimple level ( left, right ) =
+tupleEditor leftEditor leftSimple rightEditor rightSimple ( left, right ) level =
     let
         le =
-            leftEditor (level + 1) left
+            leftEditor left (level + 1)
 
         re =
-            rightEditor (level + 1) right
+            rightEditor right (level + 1)
     in
     (if leftSimple && rightSimple then
         Element.row
@@ -442,7 +444,7 @@ tupleEditor leftEditor leftSimple rightEditor rightSimple level ( left, right ) 
 
 
 intEditor : Int -> Int -> Element Int
-intEditor level value =
+intEditor value level =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
         (Input.text
@@ -458,8 +460,8 @@ intEditor level value =
         )
 
 
-floatEditor : Int -> Float -> Element Float
-floatEditor level value =
+floatEditor : Float -> Int -> Element Float
+floatEditor value level =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
         (Input.text
@@ -475,8 +477,8 @@ floatEditor level value =
         )
 
 
-stringEditor : Int -> String -> Element String.String
-stringEditor level value =
+stringEditor : String -> Int -> Element String.String
+stringEditor value level =
     Input.text
         [ Element.width (Element.minimum 100 Element.fill)
         , Element.alignTop
@@ -489,6 +491,6 @@ stringEditor level value =
         }
 
 
-map : (f -> v) -> Element f -> Element v
-map =
-    Element.map
+map : (f -> v) -> (Int -> Element f) -> (Int -> Element v)
+map f e level =
+    Element.map f (e level)
