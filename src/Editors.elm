@@ -223,7 +223,7 @@ nextEditor value =
             case value of
                 Model.NextDialog dialog ->
                     [ Frontend.EditorTheme.map
-                        (\f -> Model.NextDialog f)
+                        Model.NextDialog
                         (dialogEditor dialog)
                     ]
 
@@ -234,9 +234,7 @@ nextEditor value =
                     []
 
                 Model.NextQuiz quiz ->
-                    [ Frontend.EditorTheme.map
-                        (\f -> Model.NextQuiz f)
-                        (quizEditor quiz)
+                    [ Frontend.EditorTheme.map Model.NextQuiz (quizEditor quiz)
                     ]
 
                 Model.NextGiveTicket ->
