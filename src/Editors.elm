@@ -10,141 +10,121 @@ import Frontend.EditorTheme
 import Model
 
 
-personEditor : Model.Person -> Int -> Frontend.EditorTheme.Element Model.Person
-personEditor value level =
-    let
-        rawSimples =
-            [ ( "Name"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | name = f })
-                    (Frontend.EditorTheme.stringEditor value.name)
-              )
-            , ( "Image"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | image = f })
-                    (Frontend.EditorTheme.stringEditor value.image)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "City"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | city = f })
-                    (cityEditor value.city)
-              )
-            , ( "Dialog"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | dialog = f })
-                    (dialogEditor value.dialog)
-              )
-            , ( "Quizzes"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | quizzes = f })
-                    (Frontend.EditorTheme.listEditor
-                        "Quiz"
-                        quizEditor
-                        quizDefault
-                        value.quizzes
-                    )
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+personEditor : Model.Person -> Frontend.EditorTheme.Editor Model.Person
+personEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Name"
+          , Frontend.EditorTheme.map
+                (\f -> { value | name = f })
+                (Frontend.EditorTheme.stringEditor value.name)
+          )
+        , ( "Image"
+          , Frontend.EditorTheme.map
+                (\f -> { value | image = f })
+                (Frontend.EditorTheme.stringEditor value.image)
+          )
+        ]
+        [ ( "City"
+          , Frontend.EditorTheme.map
+                (\f -> { value | city = f })
+                (cityEditor value.city)
+          )
+        , ( "Dialog"
+          , Frontend.EditorTheme.map
+                (\f -> { value | dialog = f })
+                (dialogEditor value.dialog)
+          )
+        , ( "Quizzes"
+          , Frontend.EditorTheme.map
+                (\f -> { value | quizzes = f })
+                (Frontend.EditorTheme.listEditor
+                    "Quiz"
+                    quizEditor
+                    quizDefault
+                    value.quizzes
+                )
+          )
+        ]
 
 
-cityEditor : Model.City -> Int -> Frontend.EditorTheme.Element Model.City
-cityEditor value level =
-    let
-        rawSimples =
-            [ ( "Name"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | name = f })
-                    (cityNameEditor value.name)
-              )
-            , ( "Text"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | text = f })
-                    (Frontend.EditorTheme.stringEditor value.text)
-              )
-            , ( "Image"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | image = f })
-                    (Frontend.EditorTheme.stringEditor value.image)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "Coordinates"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | coordinates = f })
-                    (coordinatesEditor value.coordinates)
-              )
-            , ( "Nation"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | nation = f })
-                    (nationEditor value.nation)
-              )
-            , ( "Sound"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | sound = f })
-                    (soundEditor value.sound)
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+cityEditor : Model.City -> Frontend.EditorTheme.Editor Model.City
+cityEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Name"
+          , Frontend.EditorTheme.map
+                (\f -> { value | name = f })
+                (cityNameEditor value.name)
+          )
+        , ( "Text"
+          , Frontend.EditorTheme.map
+                (\f -> { value | text = f })
+                (Frontend.EditorTheme.stringEditor value.text)
+          )
+        , ( "Image"
+          , Frontend.EditorTheme.map
+                (\f -> { value | image = f })
+                (Frontend.EditorTheme.stringEditor value.image)
+          )
+        ]
+        [ ( "Coordinates"
+          , Frontend.EditorTheme.map
+                (\f -> { value | coordinates = f })
+                (coordinatesEditor value.coordinates)
+          )
+        , ( "Nation"
+          , Frontend.EditorTheme.map
+                (\f -> { value | nation = f })
+                (nationEditor value.nation)
+          )
+        , ( "Sound"
+          , Frontend.EditorTheme.map
+                (\f -> { value | sound = f })
+                (soundEditor value.sound)
+          )
+        ]
 
 
-soundEditor : Model.Sound -> Int -> Frontend.EditorTheme.Element Model.Sound
-soundEditor value level =
-    let
-        rawSimples =
-            [ ( "Name"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | name = f })
-                    (Frontend.EditorTheme.stringEditor value.name)
-              )
-            , ( "Duration"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | duration = f })
-                    (Frontend.EditorTheme.intEditor value.duration)
-              )
-            ]
-
-        rawComplexes =
-            []
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+soundEditor : Model.Sound -> Frontend.EditorTheme.Editor Model.Sound
+soundEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Name"
+          , Frontend.EditorTheme.map
+                (\f -> { value | name = f })
+                (Frontend.EditorTheme.stringEditor value.name)
+          )
+        , ( "Duration"
+          , Frontend.EditorTheme.map
+                (\f -> { value | duration = f })
+                (Frontend.EditorTheme.intEditor value.duration)
+          )
+        ]
+        []
 
 
-cityNameEditor : Model.CityName -> Int -> Frontend.EditorTheme.Element Model.CityName
-cityNameEditor value level =
-    Frontend.EditorTheme.stringEditor value level
+cityNameEditor : Model.CityName -> Frontend.EditorTheme.Editor Model.CityName
+cityNameEditor value =
+    Frontend.EditorTheme.stringEditor value
 
 
-coordinatesEditor : Model.Coordinates -> Int -> Frontend.EditorTheme.Element Model.Coordinates
-coordinatesEditor value level =
-    let
-        rawSimples =
-            [ ( "X"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | x = f })
-                    (Frontend.EditorTheme.floatEditor value.x)
-              )
-            , ( "Y"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | y = f })
-                    (Frontend.EditorTheme.floatEditor value.y)
-              )
-            ]
-
-        rawComplexes =
-            []
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+coordinatesEditor : Model.Coordinates -> Frontend.EditorTheme.Editor Model.Coordinates
+coordinatesEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "X"
+          , Frontend.EditorTheme.map
+                (\f -> { value | x = f })
+                (Frontend.EditorTheme.floatEditor value.x)
+          )
+        , ( "Y"
+          , Frontend.EditorTheme.map
+                (\f -> { value | y = f })
+                (Frontend.EditorTheme.floatEditor value.y)
+          )
+        ]
+        []
 
 
-nationEditor : Model.Nation -> Int -> Frontend.EditorTheme.Element Model.Nation
-nationEditor value level =
+nationEditor : Model.Nation -> Frontend.EditorTheme.Editor Model.Nation
+nationEditor value =
     let
         variants =
             [ ( "Austria", Model.Austria )
@@ -157,65 +137,55 @@ nationEditor value level =
             , ( "Norway", Model.Norway )
             ]
     in
-    Frontend.EditorTheme.enumEditor variants value level
+    Frontend.EditorTheme.enumEditor variants value
 
 
-dialogEditor : Model.Dialog -> Int -> Frontend.EditorTheme.Element Model.Dialog
-dialogEditor value level =
-    let
-        rawSimples =
-            [ ( "Text"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | text = f })
-                    (Frontend.EditorTheme.stringEditor value.text)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "Choices"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | choices = f })
-                    (Frontend.EditorTheme.tupleEditor
+dialogEditor : Model.Dialog -> Frontend.EditorTheme.Editor Model.Dialog
+dialogEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Text"
+          , Frontend.EditorTheme.map
+                (\f -> { value | text = f })
+                (Frontend.EditorTheme.stringEditor value.text)
+          )
+        ]
+        [ ( "Choices"
+          , Frontend.EditorTheme.map
+                (\f -> { value | choices = f })
+                (Frontend.EditorTheme.tupleEditor
+                    choiceEditor
+                    False
+                    (Frontend.EditorTheme.listEditor
+                        "Choice"
                         choiceEditor
-                        False
-                        (Frontend.EditorTheme.listEditor
-                            "Choice"
-                            choiceEditor
-                            choiceDefault
-                        )
-                        False
-                        value.choices
+                        choiceDefault
                     )
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+                    False
+                    value.choices
+                )
+          )
+        ]
 
 
-choiceEditor : Model.Choice -> Int -> Frontend.EditorTheme.Element Model.Choice
-choiceEditor value level =
-    let
-        rawSimples =
-            [ ( "Text"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | text = f })
-                    (Frontend.EditorTheme.stringEditor value.text)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "Next"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | next = f })
-                    (nextEditor value.next)
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+choiceEditor : Model.Choice -> Frontend.EditorTheme.Editor Model.Choice
+choiceEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Text"
+          , Frontend.EditorTheme.map
+                (\f -> { value | text = f })
+                (Frontend.EditorTheme.stringEditor value.text)
+          )
+        ]
+        [ ( "Next"
+          , Frontend.EditorTheme.map
+                (\f -> { value | next = f })
+                (nextEditor value.next)
+          )
+        ]
 
 
-nextEditor : Model.Next -> Int -> Frontend.EditorTheme.Element Model.Next
-nextEditor value level =
+nextEditor : Model.Next -> Frontend.EditorTheme.Editor Model.Next
+nextEditor value =
     let
         extractedDefault =
             { dialogExtracted = dialogDefault, quizExtracted = quizDefault }
@@ -268,49 +238,44 @@ nextEditor value level =
                 Model.NextGiveTicket ->
                     []
     in
-    Frontend.EditorTheme.customEditor variants inputsRow value level
+    Frontend.EditorTheme.customEditor variants inputsRow value
 
 
-quizEditor : Model.Quiz -> Int -> Frontend.EditorTheme.Element Model.Quiz
-quizEditor value level =
-    let
-        rawSimples =
-            [ ( "Question"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | question = f })
-                    (Frontend.EditorTheme.stringEditor value.question)
-              )
-            , ( "Correct answer"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | correctAnswer = f })
-                    (Frontend.EditorTheme.stringEditor value.correctAnswer)
-              )
-            , ( "Message if correct"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | messageIfCorrect = f })
-                    (Frontend.EditorTheme.stringEditor value.messageIfCorrect)
-              )
-            , ( "Message if wrong"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | messageIfWrong = f })
-                    (Frontend.EditorTheme.stringEditor value.messageIfWrong)
-              )
-            ]
-
-        rawComplexes =
-            [ ( "Wrong answers"
-              , Frontend.EditorTheme.map
-                    (\f -> { value | wrongAnswers = f })
-                    (Frontend.EditorTheme.listEditor
-                        "String"
-                        Frontend.EditorTheme.stringEditor
-                        ""
-                        value.wrongAnswers
-                    )
-              )
-            ]
-    in
-    Frontend.EditorTheme.objectEditor rawSimples rawComplexes level
+quizEditor : Model.Quiz -> Frontend.EditorTheme.Editor Model.Quiz
+quizEditor value =
+    Frontend.EditorTheme.objectEditor
+        [ ( "Question"
+          , Frontend.EditorTheme.map
+                (\f -> { value | question = f })
+                (Frontend.EditorTheme.stringEditor value.question)
+          )
+        , ( "Correct answer"
+          , Frontend.EditorTheme.map
+                (\f -> { value | correctAnswer = f })
+                (Frontend.EditorTheme.stringEditor value.correctAnswer)
+          )
+        , ( "Message if correct"
+          , Frontend.EditorTheme.map
+                (\f -> { value | messageIfCorrect = f })
+                (Frontend.EditorTheme.stringEditor value.messageIfCorrect)
+          )
+        , ( "Message if wrong"
+          , Frontend.EditorTheme.map
+                (\f -> { value | messageIfWrong = f })
+                (Frontend.EditorTheme.stringEditor value.messageIfWrong)
+          )
+        ]
+        [ ( "Wrong answers"
+          , Frontend.EditorTheme.map
+                (\f -> { value | wrongAnswers = f })
+                (Frontend.EditorTheme.listEditor
+                    "String"
+                    Frontend.EditorTheme.stringEditor
+                    ""
+                    value.wrongAnswers
+                )
+          )
+        ]
 
 
 personDefault : Model.Person

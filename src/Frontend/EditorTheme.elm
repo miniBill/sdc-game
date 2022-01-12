@@ -1,4 +1,4 @@
-module Frontend.EditorTheme exposing (Attribute, Context, Element, button, colors, column, customEditor, enumEditor, floatEditor, fontSizes, image, imageXlinkHref, intEditor, listEditor, map, objectEditor, padding, rythm, spacing, stringEditor, tupleEditor)
+module Frontend.EditorTheme exposing (Attribute, Context, Editor, Element, button, colors, column, customEditor, enumEditor, floatEditor, fontSizes, image, imageXlinkHref, intEditor, listEditor, map, objectEditor, padding, rythm, spacing, stringEditor, tupleEditor)
 
 import Element.WithContext as Element exposing (Color)
 import Element.WithContext.Background as Background
@@ -188,7 +188,11 @@ imageXlinkHref src =
 -- Editors
 
 
-objectEditor : List ( String, Int -> Element msg ) -> List ( String, Int -> Element msg ) -> Int -> Element msg
+type alias Editor msg =
+    Int -> Element msg
+
+
+objectEditor : List ( String, Editor msg ) -> List ( String, Editor msg ) -> Editor msg
 objectEditor rawSimples rawComplexes level =
     let
         simpleLabel =
@@ -245,11 +249,10 @@ objectEditor rawSimples rawComplexes level =
 
 listEditor :
     String
-    -> (e -> Int -> Element e)
+    -> (e -> Editor e)
     -> e
     -> List e
-    -> Int
-    -> Element (List e)
+    -> Editor (List e)
 listEditor typeName valueEditor valueDefault value level =
     let
         rows =
@@ -365,7 +368,7 @@ listEditor typeName valueEditor valueDefault value level =
         ]
 
 
-customEditor : List ( String, a ) -> List (Int -> Element a) -> a -> Int -> Element a
+customEditor : List ( String, a ) -> List (Editor a) -> a -> Editor a
 customEditor variants inputsRow value level =
     Element.column
         [ Background.color (getColor level)
@@ -394,7 +397,7 @@ variantRow variants value =
         }
 
 
-enumEditor : List ( String, a ) -> a -> Int -> Element a
+enumEditor : List ( String, a ) -> a -> Editor a
 enumEditor variants value level =
     Element.el
         [ Background.color (getColor level)
@@ -409,13 +412,12 @@ enumEditor variants value level =
 
 
 tupleEditor :
-    (l -> Int -> Element l)
+    (l -> Editor l)
     -> Bool
-    -> (r -> Int -> Element r)
+    -> (r -> Editor r)
     -> Bool
     -> ( l, r )
-    -> Int
-    -> Element ( l, r )
+    -> Editor ( l, r )
 tupleEditor leftEditor leftSimple rightEditor rightSimple ( left, right ) level =
     let
         le =
@@ -443,7 +445,7 @@ tupleEditor leftEditor leftSimple rightEditor rightSimple ( left, right ) level 
         ]
 
 
-intEditor : Int -> Int -> Element Int
+intEditor : Int -> Editor Int
 intEditor value level =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toInt |> Maybe.withDefault value)
@@ -460,7 +462,7 @@ intEditor value level =
         )
 
 
-floatEditor : Float -> Int -> Element Float
+floatEditor : Float -> Editor Float
 floatEditor value level =
     Element.map
         (\lambdaArg0 -> lambdaArg0 |> String.toFloat |> Maybe.withDefault value)
@@ -477,7 +479,7 @@ floatEditor value level =
         )
 
 
-stringEditor : String -> Int -> Element String.String
+stringEditor : String -> Editor String
 stringEditor value level =
     Input.text
         [ Element.width (Element.minimum 100 Element.fill)
@@ -491,6 +493,6 @@ stringEditor value level =
         }
 
 
-map : (f -> v) -> (Int -> Element f) -> (Int -> Element v)
+map : (f -> v) -> Editor f -> Editor v
 map f e level =
     Element.map f (e level)
