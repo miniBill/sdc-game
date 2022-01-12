@@ -7,6 +7,7 @@
       1. Need n versions of avatar (big page vs smol chat), explore imageset
    2. Hash them and cache them
 4. Content
+5. Explaination
 
 # Maybe
 
